@@ -1,18 +1,7 @@
 defmodule Mudbrick do
-  @moduledoc """
-  Documentation for `Mudbrick`.
-  """
+  def new do
+  end
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Mudbrick.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def parse(_) do
   end
 end

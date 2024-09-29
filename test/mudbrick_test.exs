@@ -1,8 +1,7 @@
 defmodule MudbrickTest do
   use ExUnit.Case
-  doctest Mudbrick
 
-  test "greets the world" do
-    assert Mudbrick.hello() == :world
+  test "can roundtrip" do
+    assert Mudbrick.new() |> Mudbrick.parse() == Mudbrick.new()
   end
 end
