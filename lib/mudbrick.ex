@@ -5,7 +5,9 @@ defmodule Mudbrick do
   def render(_) do
     """
     %PDF-2.0
+    %%EOF
     """
+    |> String.trim_trailing()
   end
 
   def parse(_) do
