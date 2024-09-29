@@ -12,6 +12,7 @@
       devShells.x86_64-linux.default = with pkgs; mkShell {
         packages = [
           elixir_1_17
+          (elixir_ls.override { elixir = elixir_1_17; })
         ];
       };
     };
