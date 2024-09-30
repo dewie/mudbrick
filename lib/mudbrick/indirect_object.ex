@@ -1,6 +1,8 @@
 defmodule Mudbrick.IndirectObject do
   defstruct [:value, :number]
 
+  alias Mudbrick.PDFObject
+
   def new(value, number: number) do
     %Mudbrick.IndirectObject{value: value, number: number}
   end
@@ -9,11 +11,11 @@ defmodule Mudbrick.IndirectObject do
     "#{number} 0 R"
   end
 
-  defimpl String.Chars do
-    def to_string(%Mudbrick.IndirectObject{value: value, number: number}) do
+  defimpl Mudbrick.PDFObject do
+    def from(%Mudbrick.IndirectObject{value: value, number: number}) do
       """
       #{number} 0 obj
-      #{value}
+      #{PDFObject.from(value)}
       endobj
       """
     end
