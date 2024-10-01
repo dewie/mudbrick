@@ -33,15 +33,15 @@ defmodule Mudbrick.Document do
 
     alias Mudbrick.Document
     alias Mudbrick.IndirectObject.Reference
-    alias Mudbrick.PDFObject
+    alias Mudbrick.Object
 
     def to_string(%Document{objects: [catalog | _rest] = raw_objects}) do
       version = "%PDF-2.0"
-      objects = Enum.map(raw_objects, &PDFObject.from/1)
+      objects = Enum.map(raw_objects, &Object.from/1)
       sections = [version] ++ objects
 
       trailer =
-        PDFObject.from(%{
+        Object.from(%{
           Size: length(objects) + 1,
           Root: Reference.new(catalog)
         })

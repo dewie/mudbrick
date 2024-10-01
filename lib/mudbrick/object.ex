@@ -1,9 +1,9 @@
-defprotocol Mudbrick.PDFObject do
+defprotocol Mudbrick.Object do
   @spec from(value :: any()) :: String.t()
   def from(value)
 end
 
-defimpl Mudbrick.PDFObject, for: Atom do
+defimpl Mudbrick.Object, for: Atom do
   def from(a) when a in [true, false] do
     "#{a}"
   end
@@ -13,7 +13,7 @@ defimpl Mudbrick.PDFObject, for: Atom do
   end
 end
 
-defimpl Mudbrick.PDFObject, for: BitString do
+defimpl Mudbrick.Object, for: BitString do
   @escapees %{
     ?\n => "\\n",
     ?\r => "\\r",
@@ -42,18 +42,18 @@ defimpl Mudbrick.PDFObject, for: BitString do
   end
 end
 
-defimpl Mudbrick.PDFObject, for: Mudbrick.Catalog do
+defimpl Mudbrick.Object, for: Mudbrick.Catalog do
   def from(catalog) do
-    Mudbrick.PDFObject.from(%{
+    Mudbrick.Object.from(%{
       Type: :Catalog,
       Pages: catalog.page_tree
     })
   end
 end
 
-defimpl Mudbrick.PDFObject, for: Mudbrick.PageTree do
+defimpl Mudbrick.Object, for: Mudbrick.PageTree do
   def from(page_tree) do
-    Mudbrick.PDFObject.from(%{
+    Mudbrick.Object.from(%{
       Type: :Pages,
       Kids: page_tree.kids,
       Count: length(page_tree.kids)
@@ -61,14 +61,14 @@ defimpl Mudbrick.PDFObject, for: Mudbrick.PageTree do
   end
 end
 
-defimpl Mudbrick.PDFObject, for: Mudbrick.Page do
+defimpl Mudbrick.Object, for: Mudbrick.Page do
   def from(_page) do
     hacked_parent =
       Mudbrick.PageTree.new(kids: [])
       |> Mudbrick.IndirectObject.new(number: 2)
       |> Mudbrick.IndirectObject.Reference.new()
 
-    Mudbrick.PDFObject.from(%{
+    Mudbrick.Object.from(%{
       Type: :Page,
       Parent: hacked_parent,
       MediaBox: [0, 0, 612, 792]
@@ -76,25 +76,25 @@ defimpl Mudbrick.PDFObject, for: Mudbrick.Page do
   end
 end
 
-defimpl Mudbrick.PDFObject, for: Float do
+defimpl Mudbrick.Object, for: Float do
   def from(f) do
     "#{f}"
   end
 end
 
-defimpl Mudbrick.PDFObject, for: Integer do
+defimpl Mudbrick.Object, for: Integer do
   def from(i) do
     "#{i}"
   end
 end
 
-defimpl Mudbrick.PDFObject, for: List do
+defimpl Mudbrick.Object, for: List do
   def from(list) do
-    "[#{Enum.map_join(list, " ", fn item -> Mudbrick.PDFObject.from(item) end)}]"
+    "[#{Enum.map_join(list, " ", fn item -> Mudbrick.Object.from(item) end)}]"
   end
 end
 
-defimpl Mudbrick.PDFObject, for: Map do
+defimpl Mudbrick.Object, for: Map do
   def from(kvs) do
     "<<#{pairs(kvs)}\n>>"
   end
@@ -107,11 +107,11 @@ defimpl Mudbrick.PDFObject, for: Map do
   end
 
   defp pair(k, v) do
-    "#{Mudbrick.PDFObject.from(k)} #{Mudbrick.PDFObject.from(v)}"
+    "#{Mudbrick.Object.from(k)} #{Mudbrick.Object.from(v)}"
   end
 end
 
-defimpl Mudbrick.PDFObject, for: Mudbrick.Name do
+defimpl Mudbrick.Object, for: Mudbrick.Name do
   def from(name) do
     "/#{escape_chars(name.value)}"
   end
