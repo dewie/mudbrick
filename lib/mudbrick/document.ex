@@ -1,5 +1,5 @@
 defmodule Mudbrick.Document do
-  defstruct [:catalog, :root_page_tree, :pages]
+  defstruct [:objects]
 
   alias Mudbrick.Catalog
   alias Mudbrick.Document
@@ -24,30 +24,26 @@ defmodule Mudbrick.Document do
       Catalog.new(page_tree: Reference.new(page_tree))
       |> IndirectObject.new(number: 1)
 
-    %Document{
-      catalog: catalog,
-      root_page_tree: page_tree,
-      pages: pages
-    }
+    %Document{objects: [catalog, page_tree] ++ pages}
   end
 
   defimpl String.Chars do
     @initial_generation "00000"
     @free_entries_first_generation "65535"
 
-    def to_string(doc) do
-      version = "%PDF-2.0"
-      catalog = Mudbrick.PDFObject.from(doc.catalog)
-      root_page_tree = Mudbrick.PDFObject.from(doc.root_page_tree)
-      pages = Enum.map(doc.pages, &Mudbrick.PDFObject.from/1)
+    alias Mudbrick.Document
+    alias Mudbrick.IndirectObject.Reference
+    alias Mudbrick.PDFObject
 
-      objects = [catalog, root_page_tree] ++ pages
+    def to_string(%Document{objects: [catalog | _rest] = raw_objects}) do
+      version = "%PDF-2.0"
+      objects = Enum.map(raw_objects, &PDFObject.from/1)
       sections = [version] ++ objects
 
       trailer =
-        Mudbrick.PDFObject.from(%{
+        PDFObject.from(%{
           Size: length(objects) + 1,
-          Root: Mudbrick.IndirectObject.Reference.new(doc.catalog)
+          Root: Reference.new(catalog)
         })
 
       """
