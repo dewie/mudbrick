@@ -28,7 +28,7 @@ defmodule Mudbrick.PDFObjectTest do
 
   describe "catalog" do
     test "is a dictionary with a reference to a page tree" do
-      page_tree = IndirectObject.new(PageTree.new(), number: 42)
+      page_tree = IndirectObject.new(PageTree.new(kids: []), number: 42)
 
       catalog =
         IndirectObject.new(Catalog.new(page_tree: IndirectObject.Reference.new(page_tree)),

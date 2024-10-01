@@ -52,8 +52,27 @@ defimpl Mudbrick.PDFObject, for: Mudbrick.Catalog do
 end
 
 defimpl Mudbrick.PDFObject, for: Mudbrick.PageTree do
-  def from(_page_tree) do
-    Mudbrick.PDFObject.from(%{Type: :Pages, Kids: [], Count: 0})
+  def from(page_tree) do
+    Mudbrick.PDFObject.from(%{
+      Type: :Pages,
+      Kids: page_tree.kids,
+      Count: length(page_tree.kids)
+    })
+  end
+end
+
+defimpl Mudbrick.PDFObject, for: Mudbrick.Page do
+  def from(_page) do
+    hacked_parent =
+      Mudbrick.PageTree.new(kids: [])
+      |> Mudbrick.IndirectObject.new(number: 2)
+      |> Mudbrick.IndirectObject.Reference.new()
+
+    Mudbrick.PDFObject.from(%{
+      Type: :Page,
+      Parent: hacked_parent,
+      MediaBox: [0, 0, 612, 792]
+    })
   end
 end
 

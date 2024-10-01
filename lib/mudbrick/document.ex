@@ -1,5 +1,5 @@
 defmodule Mudbrick.Document do
-  defstruct [:catalog, :root_page_tree]
+  defstruct [:catalog, :root_page_tree, :pages]
 
   alias Mudbrick.Catalog
   alias Mudbrick.Document
@@ -7,8 +7,18 @@ defmodule Mudbrick.Document do
   alias Mudbrick.IndirectObject.Reference
   alias Mudbrick.PageTree
 
-  def new do
-    page_tree = PageTree.new() |> IndirectObject.new(number: 2)
+  def new(opts \\ [pages: []]) do
+    pages =
+      case opts |> Keyword.fetch!(:pages) do
+        [] -> []
+        [page] -> [IndirectObject.new(page, number: 3)]
+      end
+
+    page_refs = Enum.map(pages, &Reference.new/1)
+
+    page_tree =
+      PageTree.new(kids: page_refs)
+      |> IndirectObject.new(number: 2)
 
     catalog =
       Catalog.new(page_tree: Reference.new(page_tree))
@@ -16,7 +26,8 @@ defmodule Mudbrick.Document do
 
     %Document{
       catalog: catalog,
-      root_page_tree: page_tree
+      root_page_tree: page_tree,
+      pages: pages
     }
   end
 
@@ -28,13 +39,14 @@ defmodule Mudbrick.Document do
       version = "%PDF-2.0"
       catalog = Mudbrick.PDFObject.from(doc.catalog)
       root_page_tree = Mudbrick.PDFObject.from(doc.root_page_tree)
+      pages = Enum.map(doc.pages, &Mudbrick.PDFObject.from/1)
 
-      objects = [catalog, root_page_tree]
+      objects = [catalog, root_page_tree] ++ pages
       sections = [version] ++ objects
 
       trailer =
         Mudbrick.PDFObject.from(%{
-          Size: 3,
+          Size: length(objects) + 1,
           Root: Mudbrick.IndirectObject.Reference.new(doc.catalog)
         })
 

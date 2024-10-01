@@ -1,7 +1,7 @@
 defmodule Mudbrick.PageTree do
-  defstruct []
+  defstruct [:kids]
 
-  def new do
-    %Mudbrick.PageTree{}
+  def new(kids: kids) do
+    %Mudbrick.PageTree{kids: kids}
   end
 end
