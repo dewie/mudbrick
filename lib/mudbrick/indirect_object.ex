@@ -7,17 +7,27 @@ defmodule Mudbrick.IndirectObject do
     %Mudbrick.IndirectObject{value: value, number: number}
   end
 
-  def reference(%Mudbrick.IndirectObject{number: number}) do
-    "#{number} 0 R"
-  end
-
   defimpl Mudbrick.PDFObject do
     def from(%Mudbrick.IndirectObject{value: value, number: number}) do
       """
       #{number} 0 obj
       #{PDFObject.from(value)}
-      endobj
+      endobj\
       """
+    end
+  end
+
+  defmodule Reference do
+    defstruct [:referent]
+
+    def new(%Mudbrick.IndirectObject{} = obj) do
+      %Reference{referent: obj}
+    end
+
+    defimpl Mudbrick.PDFObject do
+      def from(%Mudbrick.IndirectObject.Reference{referent: referent}) do
+        "#{referent.number} 0 R"
+      end
     end
   end
 end

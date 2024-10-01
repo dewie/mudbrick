@@ -42,6 +42,21 @@ defimpl Mudbrick.PDFObject, for: BitString do
   end
 end
 
+defimpl Mudbrick.PDFObject, for: Mudbrick.Catalog do
+  def from(catalog) do
+    Mudbrick.PDFObject.from(%{
+      Type: :Catalog,
+      Pages: catalog.page_tree
+    })
+  end
+end
+
+defimpl Mudbrick.PDFObject, for: Mudbrick.PageTree do
+  def from(_page_tree) do
+    Mudbrick.PDFObject.from(%{Type: :Pages, Kids: [], Count: 0})
+  end
+end
+
 defimpl Mudbrick.PDFObject, for: Float do
   def from(f) do
     "#{f}"

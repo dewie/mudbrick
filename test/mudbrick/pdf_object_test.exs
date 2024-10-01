@@ -2,8 +2,49 @@ defmodule Mudbrick.PDFObjectTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
+  alias Mudbrick.Catalog
+  alias Mudbrick.IndirectObject
   alias Mudbrick.Name
+  alias Mudbrick.PageTree
   alias Mudbrick.PDFObject
+
+  describe "indirect object" do
+    test "includes object number, static generation and contents" do
+      assert PDFObject.from(IndirectObject.new("Brillig", number: 12)) ==
+               """
+               12 0 obj
+               (Brillig)
+               endobj\
+               """
+    end
+
+    test "reference has number, static generation and letter R" do
+      assert PDFObject.from(
+               IndirectObject.new("Brillig", number: 12)
+               |> IndirectObject.Reference.new()
+             ) == "12 0 R"
+    end
+  end
+
+  describe "catalog" do
+    test "is a dictionary with a reference to a page tree" do
+      page_tree = IndirectObject.new(PageTree.new(), number: 42)
+
+      catalog =
+        IndirectObject.new(Catalog.new(page_tree: IndirectObject.Reference.new(page_tree)),
+          number: 999
+        )
+
+      assert PDFObject.from(catalog) ==
+               """
+               999 0 obj
+               <</Pages 42 0 R
+                 /Type /Catalog
+               >>
+               endobj\
+               """
+    end
+  end
 
   describe "dictionary (map)" do
     test "is enclosed in double angle brackets" do
@@ -28,9 +69,8 @@ defmodule Mudbrick.PDFObjectTest do
                  /SubType /DictionaryExample
                  /Type /Example
                  /Version 0.01
-               >>
+               >>\
                """
-               |> String.trim_trailing()
     end
   end
 
