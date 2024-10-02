@@ -1,13 +1,10 @@
-defmodule Mudbrick.DocumentTest do
+defmodule MudbrickTest do
   use ExUnit.Case, async: true
 
-  test "can serialise with multiple empty pages" do
-    assert Mudbrick.Document.new(
-             pages: [
-               Mudbrick.Page.new(),
-               Mudbrick.Page.new()
-             ]
-           )
+  test "can serialise with multiple pages" do
+    assert Mudbrick.new()
+           |> Mudbrick.page()
+           |> Mudbrick.page()
            |> to_string() ==
              """
              %PDF-2.0
@@ -52,7 +49,8 @@ defmodule Mudbrick.DocumentTest do
   end
 
   test "can serialise with one empty page" do
-    assert Mudbrick.Document.new(pages: [Mudbrick.Page.new()])
+    assert Mudbrick.new()
+           |> Mudbrick.page()
            |> to_string() ==
              """
              %PDF-2.0
@@ -90,7 +88,7 @@ defmodule Mudbrick.DocumentTest do
   end
 
   test "can serialise with no pages" do
-    assert Mudbrick.Document.new()
+    assert Mudbrick.new()
            |> to_string() ==
              """
              %PDF-2.0

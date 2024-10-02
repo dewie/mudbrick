@@ -1,11 +1,10 @@
 defmodule Mudbrick.Page do
   defstruct [:parent]
 
-  def new do
-    new(parent: Mudbrick.Document.page_tree_root_ref())
-  end
-
-  def new(parent: parent) do
-    %Mudbrick.Page{parent: parent}
+  def new(opts \\ []) do
+    struct(
+      Mudbrick.Page,
+      Keyword.put_new(opts, :parent, Mudbrick.Document.page_tree_root_ref())
+    )
   end
 end
