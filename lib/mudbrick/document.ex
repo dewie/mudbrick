@@ -2,6 +2,7 @@ defmodule Mudbrick.Document do
   defstruct [:objects]
 
   alias Mudbrick.Catalog
+  alias Mudbrick.ContentStream
   alias Mudbrick.Document
   alias Mudbrick.Indirect
   alias Mudbrick.Page
@@ -19,13 +20,26 @@ defmodule Mudbrick.Document do
     %Document{objects: [catalog, page_tree]}
   end
 
-  def add_page(doc) do
-    page =
-      Indirect.Reference.new(next_object_number(doc))
-      |> Indirect.Object.new(Page.new())
+  def add_page(doc, opts) do
+    page_reference = Indirect.Reference.new(next_object_number(doc))
+
+    contents =
+      Indirect.Reference.new(page_reference.number + 1)
+      |> Indirect.Object.new(ContentStream.new(opts))
+
+    {additional_objects, opts} =
+      case opts[:text] do
+        nil ->
+          {[], opts}
+
+        _text ->
+          {[contents], Keyword.put(opts, :contents_reference, contents.reference)}
+      end
+
+    page = Indirect.Object.new(page_reference, Page.new(opts))
 
     Map.update!(doc, :objects, fn objects ->
-      (objects ++ [page])
+      (objects ++ [page] ++ additional_objects)
       |> List.update_at(1, &add_page_ref(&1, page))
     end)
   end

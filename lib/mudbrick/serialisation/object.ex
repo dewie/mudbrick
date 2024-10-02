@@ -51,6 +51,24 @@ defimpl Mudbrick.Object, for: Mudbrick.Catalog do
   end
 end
 
+defimpl Mudbrick.Object, for: Mudbrick.ContentStream do
+  def from(stream) do
+    inner = """
+    BT
+    300 400 Td
+    (#{stream.text}) Tj
+    ET\
+    """
+
+    """
+    #{Mudbrick.Object.from(%{Length: byte_size(inner)})}
+    stream
+    #{inner}
+    endstream\
+    """
+  end
+end
+
 defimpl Mudbrick.Object, for: Mudbrick.PageTree do
   def from(page_tree) do
     Mudbrick.Object.from(%{
@@ -63,11 +81,19 @@ end
 
 defimpl Mudbrick.Object, for: Mudbrick.Page do
   def from(page) do
-    Mudbrick.Object.from(%{
-      Type: :Page,
-      Parent: page.parent,
-      MediaBox: [0, 0, 612, 792]
-    })
+    Mudbrick.Object.from(
+      %{
+        Type: :Page,
+        Parent: page.parent,
+        MediaBox: [0, 0, 612, 792]
+      }
+      |> Map.merge(
+        case page.contents_reference do
+          nil -> %{}
+          ref -> %{Contents: ref}
+        end
+      )
+    )
   end
 end
 

@@ -5,7 +5,7 @@ defmodule Mudbrick do
     Document.new()
   end
 
-  def page(doc) do
-    doc |> Document.add_page()
+  def page(doc, opts \\ []) do
+    Document.add_page(doc, opts)
   end
 end

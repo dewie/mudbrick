@@ -1,5 +1,5 @@
 defmodule Mudbrick.Page do
-  defstruct [:parent]
+  defstruct [:parent, :contents_reference]
 
   def new(opts \\ []) do
     struct(
