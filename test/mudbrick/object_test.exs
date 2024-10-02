@@ -3,14 +3,14 @@ defmodule Mudbrick.ObjectTest do
   use ExUnitProperties
 
   alias Mudbrick.Catalog
-  alias Mudbrick.IndirectObject
+  alias Mudbrick.Indirect
   alias Mudbrick.Name
   alias Mudbrick.Object
   alias Mudbrick.PageTree
 
   describe "indirect object" do
     test "includes object number, static generation and contents" do
-      assert Object.from(IndirectObject.new("Brillig", number: 12)) ==
+      assert Object.from(Indirect.Object.new("Brillig", number: 12)) ==
                """
                12 0 obj
                (Brillig)
@@ -20,18 +20,18 @@ defmodule Mudbrick.ObjectTest do
 
     test "reference has number, static generation and letter R" do
       assert Object.from(
-               IndirectObject.new("Brillig", number: 12)
-               |> IndirectObject.Reference.new()
+               Indirect.Object.new("Brillig", number: 12)
+               |> Indirect.Reference.new()
              ) == "12 0 R"
     end
   end
 
   describe "catalog" do
     test "is a dictionary with a reference to a page tree" do
-      page_tree = IndirectObject.new(PageTree.new(kids: []), number: 42)
+      page_tree = Indirect.Object.new(PageTree.new(kids: []), number: 42)
 
       catalog =
-        IndirectObject.new(Catalog.new(page_tree: IndirectObject.Reference.new(page_tree)),
+        Indirect.Object.new(Catalog.new(page_tree: Indirect.Reference.new(page_tree)),
           number: 999
         )
 

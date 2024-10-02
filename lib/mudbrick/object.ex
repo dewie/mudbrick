@@ -62,13 +62,17 @@ defimpl Mudbrick.Object, for: Mudbrick.PageTree do
 end
 
 defimpl Mudbrick.Object, for: Mudbrick.Page do
+  alias Mudbrick.Indirect
+  alias Mudbrick.Object
+  alias Mudbrick.PageTree
+
   def from(_page) do
     hacked_parent =
-      Mudbrick.PageTree.new(kids: [])
-      |> Mudbrick.IndirectObject.new(number: 2)
-      |> Mudbrick.IndirectObject.Reference.new()
+      PageTree.new(kids: [])
+      |> Indirect.Object.new(number: 2)
+      |> Indirect.Reference.new()
 
-    Mudbrick.Object.from(%{
+    Object.from(%{
       Type: :Page,
       Parent: hacked_parent,
       MediaBox: [0, 0, 612, 792]
