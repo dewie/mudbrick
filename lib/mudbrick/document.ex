@@ -12,7 +12,7 @@ defmodule Mudbrick.Document do
       |> Keyword.fetch!(:pages)
       |> Enum.with_index()
       |> Enum.map(fn {page, idx} ->
-        Indirect.Reference.new(idx + page_tree_root_ref().number + 1)
+        Indirect.Reference.new(idx + first_page_number())
         |> Indirect.Object.new(page)
       end)
 
@@ -27,12 +27,16 @@ defmodule Mudbrick.Document do
     %Document{objects: [catalog, page_tree] ++ pages}
   end
 
-  def catalog_ref do
+  def page_tree_root_ref do
+    Indirect.Reference.new(2)
+  end
+
+  defp catalog_ref do
     Indirect.Reference.new(1)
   end
 
-  def page_tree_root_ref do
-    Indirect.Reference.new(2)
+  defp first_page_number do
+    page_tree_root_ref().number + 1
   end
 
   defimpl String.Chars do
