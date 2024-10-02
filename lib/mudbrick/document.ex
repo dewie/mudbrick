@@ -9,10 +9,10 @@ defmodule Mudbrick.Document do
 
   def new(opts \\ [pages: []]) do
     pages =
-      case opts |> Keyword.fetch!(:pages) do
-        [] -> []
-        [page] -> [IndirectObject.new(page, number: 3)]
-      end
+      opts
+      |> Keyword.fetch!(:pages)
+      |> Enum.with_index()
+      |> Enum.map(fn {page, idx} -> IndirectObject.new(page, number: 3 + idx) end)
 
     page_refs = Enum.map(pages, &Reference.new/1)
 
