@@ -71,6 +71,22 @@ defimpl Mudbrick.Object, for: Mudbrick.Page do
   end
 end
 
+defimpl Mudbrick.Object, for: Mudbrick.Indirect.Object do
+  def from(%Mudbrick.Indirect.Object{value: value, reference: reference}) do
+    """
+    #{reference.number} 0 obj
+    #{Mudbrick.Object.from(value)}
+    endobj\
+    """
+  end
+end
+
+defimpl Mudbrick.Object, for: Mudbrick.Indirect.Reference do
+  def from(%Mudbrick.Indirect.Reference{number: number}) do
+    "#{number} 0 R"
+  end
+end
+
 defimpl Mudbrick.Object, for: Float do
   def from(f) do
     "#{f}"
