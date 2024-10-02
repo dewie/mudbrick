@@ -11,19 +11,28 @@ defmodule Mudbrick.Document do
       opts
       |> Keyword.fetch!(:pages)
       |> Enum.with_index()
-      |> Enum.map(fn {page, idx} -> Indirect.Object.new(page, number: 3 + idx) end)
-
-    page_refs = Enum.map(pages, &Indirect.Reference.new/1)
+      |> Enum.map(fn {page, idx} ->
+        Indirect.Reference.new(idx + page_tree_root_ref().number + 1)
+        |> Indirect.Object.new(page)
+      end)
 
     page_tree =
-      PageTree.new(kids: page_refs)
-      |> Indirect.Object.new(number: 2)
+      page_tree_root_ref()
+      |> Indirect.Object.new(PageTree.new(kids: Enum.map(pages, & &1.reference)))
 
     catalog =
-      Catalog.new(page_tree: Indirect.Reference.new(page_tree))
-      |> Indirect.Object.new(number: 1)
+      catalog_ref()
+      |> Indirect.Object.new(Catalog.new(page_tree: page_tree.reference))
 
     %Document{objects: [catalog, page_tree] ++ pages}
+  end
+
+  def catalog_ref do
+    Indirect.Reference.new(1)
+  end
+
+  def page_tree_root_ref do
+    Indirect.Reference.new(2)
   end
 
   defimpl String.Chars do
@@ -31,7 +40,6 @@ defmodule Mudbrick.Document do
     @free_entries_first_generation "65535"
 
     alias Mudbrick.Document
-    alias Mudbrick.Indirect
     alias Mudbrick.Object
 
     def to_string(%Document{objects: [catalog | _rest] = raw_objects}) do
@@ -42,7 +50,7 @@ defmodule Mudbrick.Document do
       trailer =
         Object.from(%{
           Size: length(objects) + 1,
-          Root: Indirect.Reference.new(catalog)
+          Root: catalog.reference
         })
 
       """

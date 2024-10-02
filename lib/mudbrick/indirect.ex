@@ -1,17 +1,15 @@
 defmodule Mudbrick.Indirect.Object do
-  defstruct [:value, :number]
+  defstruct [:value, :reference]
 
-  alias Mudbrick.Object
-
-  def new(value, number: number) do
-    %Mudbrick.Indirect.Object{value: value, number: number}
+  def new(reference, value) do
+    %Mudbrick.Indirect.Object{value: value, reference: reference}
   end
 
   defimpl Mudbrick.Object do
-    def from(%Mudbrick.Indirect.Object{value: value, number: number}) do
+    def from(%Mudbrick.Indirect.Object{value: value, reference: reference}) do
       """
-      #{number} 0 obj
-      #{Object.from(value)}
+      #{reference.number} 0 obj
+      #{Mudbrick.Object.from(value)}
       endobj\
       """
     end
@@ -19,15 +17,15 @@ defmodule Mudbrick.Indirect.Object do
 end
 
 defmodule Mudbrick.Indirect.Reference do
-  defstruct [:referent]
+  defstruct [:number]
 
-  def new(%Mudbrick.Indirect.Object{} = obj) do
-    %Mudbrick.Indirect.Reference{referent: obj}
+  def new(number) do
+    %Mudbrick.Indirect.Reference{number: number}
   end
 
   defimpl Mudbrick.Object do
-    def from(%Mudbrick.Indirect.Reference{referent: referent}) do
-      "#{referent.number} 0 R"
+    def from(%Mudbrick.Indirect.Reference{number: number}) do
+      "#{number} 0 R"
     end
   end
 end
