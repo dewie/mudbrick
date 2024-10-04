@@ -1,8 +1,8 @@
 defmodule Mudbrick.PageTree do
-  defstruct [:kids]
+  defstruct kids: []
 
-  def new(kids: kids) do
-    %Mudbrick.PageTree{kids: kids}
+  def new(opts \\ []) do
+    struct(Mudbrick.PageTree, opts)
   end
 
   def add_page_ref(tree, ref) do

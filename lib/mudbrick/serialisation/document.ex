@@ -5,7 +5,7 @@ defimpl String.Chars, for: Mudbrick.Document do
   alias Mudbrick.Document
   alias Mudbrick.Object
 
-  def to_string(%Document{objects: [catalog | _rest] = raw_objects}) do
+  def to_string(%Document{objects: raw_objects}) do
     version = "%PDF-2.0"
     objects = Enum.map(raw_objects, &Object.from/1)
     sections = [version] ++ objects
@@ -13,7 +13,7 @@ defimpl String.Chars, for: Mudbrick.Document do
     trailer =
       Object.from(%{
         Size: length(objects) + 1,
-        Root: catalog.reference
+        Root: Document.catalog_ref()
       })
 
     """
