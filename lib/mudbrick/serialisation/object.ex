@@ -55,6 +55,7 @@ defimpl Mudbrick.Object, for: Mudbrick.ContentStream do
   def from(stream) do
     inner = """
     BT
+    /F1 24 Tf
     300 400 Td
     (#{stream.text}) Tj
     ET\
@@ -90,7 +91,7 @@ defimpl Mudbrick.Object, for: Mudbrick.Page do
       |> Map.merge(
         case page.contents_reference do
           nil -> %{}
-          ref -> %{Contents: ref}
+          ref -> %{Contents: ref, Resources: %{Font: %{F1: page.font_reference}}}
         end
       )
     )

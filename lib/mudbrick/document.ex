@@ -22,21 +22,15 @@ defmodule Mudbrick.Document do
 
   def add_page(doc, opts) do
     page_reference = Indirect.Reference.new(next_object_number(doc))
+    content_stream = ContentStream.new(opts)
 
     contents =
       Indirect.Reference.new(page_reference.number + 1)
-      |> Indirect.Object.new(ContentStream.new(opts))
+      |> Indirect.Object.new(content_stream)
 
-    {additional_objects, opts} =
-      case opts[:text] do
-        nil ->
-          {[], opts}
+    {additional_objects, page_opts} = additional_objects(contents)
 
-        _text ->
-          {[contents], Keyword.put(opts, :contents_reference, contents.reference)}
-      end
-
-    page = Indirect.Object.new(page_reference, Page.new(opts))
+    page = Indirect.Object.new(page_reference, Page.new(page_opts))
 
     Map.update!(doc, :objects, fn objects ->
       (objects ++ [page] ++ additional_objects)
@@ -50,6 +44,28 @@ defmodule Mudbrick.Document do
 
   defp catalog_ref do
     Indirect.Reference.new(1)
+  end
+
+  def additional_objects(%Indirect.Object{value: stream}) when is_nil(stream.text) do
+    {[], []}
+  end
+
+  def additional_objects(%Indirect.Object{value: stream} = indirect_contents) do
+    [font] =
+      renumbered =
+      renumber_refs(ContentStream.objects(stream), indirect_contents.reference.number)
+
+    {
+      [indirect_contents] ++
+        renumbered,
+      contents_reference: indirect_contents.reference, font_reference: font.reference
+    }
+  end
+
+  defp renumber_refs(indirect_objects, previous_number) do
+    indirect_objects
+    |> Enum.with_index()
+    |> Enum.map(fn {o, idx} -> Indirect.Object.renumber(o, previous_number + idx + 1) end)
   end
 
   defp next_object_number(doc) do
