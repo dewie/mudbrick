@@ -38,13 +38,17 @@ defmodule Mudbrick.Document do
   end
 
   def update({doc, just_added_objects}, indirect_object, fun) do
-    Map.update!(doc, :objects, fn objs ->
-      update_in(objs, [Access.find(&(&1 == indirect_object))], fn ind_obj ->
-        new_value = fun.(just_added_objects, ind_obj.value)
+    updated_obj = %{
+      indirect_object
+      | value: fun.(just_added_objects, indirect_object.value)
+    }
 
-        %{ind_obj | value: new_value}
-      end)
-    end)
+    {
+      Map.update!(doc, :objects, fn objs ->
+        put_in(objs, [Access.find(&(&1 == indirect_object))], updated_obj)
+      end),
+      updated_obj
+    }
   end
 
   def finish({doc, _objects}) do
