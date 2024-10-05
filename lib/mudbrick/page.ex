@@ -19,7 +19,7 @@ defmodule Mudbrick.Page do
 
   defp add_content_page(doc, opts) do
     doc
-    |> Document.add_objects([
+    |> Document.add([
       ContentStream.new(opts),
       %{
         BaseFont: :Helvetica,
@@ -28,7 +28,7 @@ defmodule Mudbrick.Page do
         Type: :Font
       }
     ])
-    |> Document.add_object(fn [contents, font] ->
+    |> Document.add(fn [contents, font] ->
       new(
         contents_reference: contents.reference,
         font_reference: font.reference,
@@ -39,7 +39,7 @@ defmodule Mudbrick.Page do
   end
 
   defp add_empty_page(doc) do
-    Document.add_object(doc, new(parent: Document.page_tree_root_ref()))
+    Document.add(doc, new(parent: Document.page_tree_root_ref()))
     |> Document.finish()
   end
 
