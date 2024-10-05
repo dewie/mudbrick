@@ -146,6 +146,7 @@ defmodule MudbrickTest do
   def output(chain) do
     tap(chain, fn {doc, _} ->
       File.write("test.pdf", to_string(doc))
+      System.cmd("gio", ~w(open test.pdf))
     end)
   end
 end
