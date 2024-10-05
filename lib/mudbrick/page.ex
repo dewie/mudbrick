@@ -1,7 +1,7 @@
 defmodule Mudbrick.Page do
   defstruct contents_ref: nil,
             font_ref: nil,
-            page_size: nil,
+            size: nil,
             parent: nil
 
   alias Mudbrick.Document
@@ -10,18 +10,15 @@ defmodule Mudbrick.Page do
     struct(Mudbrick.Page, opts)
   end
 
-  def add(doc, _opts) do
-    add_empty_page(doc)
+  def add(doc, opts) do
+    add_empty_page(doc, opts)
     |> add_to_page_tree()
   end
 
-  defp add_empty_page(doc) do
+  defp add_empty_page(doc, opts) do
     Document.add(
       doc,
-      new(
-        page_size: doc.page_size,
-        parent: Document.root_page_tree(doc).ref
-      )
+      new(Keyword.put(opts, :parent, Document.root_page_tree(doc).ref))
     )
   end
 

@@ -82,7 +82,7 @@ end
 
 defimpl Mudbrick.Object, for: Mudbrick.Page do
   def from(page) do
-    {width, height} = page.page_size
+    {width, height} = page.size
 
     Mudbrick.Object.from(
       %{

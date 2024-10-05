@@ -10,23 +10,25 @@ defmodule Mudbrick do
     letter: {8.5 * @dpi, 11 * @dpi}
   }
 
-  def new(opts \\ []) do
-    opts
-    |> Keyword.update(
-      :page_size,
-      @page_sizes.a4,
-      &Map.fetch!(@page_sizes, &1)
-    )
-    |> Document.new()
+  def new() do
+    Document.new()
   end
 
   def page(a, opts \\ [])
 
   def page({doc, _page}, opts) do
-    Page.add(doc, opts)
+    page(doc, opts)
   end
 
   def page(doc, opts) do
+    opts =
+      opts
+      |> Keyword.update(
+        :size,
+        @page_sizes.a4,
+        &Map.fetch!(@page_sizes, &1)
+      )
+
     Page.add(doc, opts)
   end
 
