@@ -3,14 +3,15 @@ defmodule MudbrickTest do
 
   test "can serialise with multiple pages" do
     assert Mudbrick.new(page_size: :a4)
-           |> Mudbrick.page(text: "hello, world!")
+           |> Mudbrick.page()
+           |> Mudbrick.text("hello, world!")
            |> Mudbrick.page()
            |> Mudbrick.render() ==
              """
              %PDF-2.0
              1 0 obj
              <</Count 2
-               /Kids [5 0 R 6 0 R]
+               /Kids [3 0 R 6 0 R]
                /Type /Pages
              >>
              endobj
@@ -20,6 +21,16 @@ defmodule MudbrickTest do
              >>
              endobj
              3 0 obj
+             <</Contents 4 0 R
+               /MediaBox [0 0 597.6 842.4]
+               /Parent 1 0 R
+               /Resources <</Font <</F1 5 0 R
+             >>
+             >>
+               /Type /Page
+             >>
+             endobj
+             4 0 obj
              <</Length 45
              >>
              stream
@@ -30,21 +41,11 @@ defmodule MudbrickTest do
              ET
              endstream
              endobj
-             4 0 obj
+             5 0 obj
              <</BaseFont /Helvetica
                /Encoding /Identity-H
                /Subtype /TrueType
                /Type /Font
-             >>
-             endobj
-             5 0 obj
-             <</Contents 3 0 R
-               /MediaBox [0 0 597.6 842.4]
-               /Parent 1 0 R
-               /Resources <</Font <</F1 4 0 R
-             >>
-             >>
-               /Type /Page
              >>
              endobj
              6 0 obj
@@ -59,8 +60,8 @@ defmodule MudbrickTest do
              0000000009 00000 n 
              0000000075 00000 n 
              0000000125 00000 n 
-             0000000219 00000 n 
-             0000000319 00000 n 
+             0000000260 00000 n 
+             0000000354 00000 n 
              0000000454 00000 n 
              trailer
              <</Root 2 0 R
@@ -142,8 +143,8 @@ defmodule MudbrickTest do
              """
   end
 
-  def output(doc) do
-    tap(doc, fn doc ->
+  def output(chain) do
+    tap(chain, fn {doc, _} ->
       File.write("test.pdf", to_string(doc))
     end)
   end

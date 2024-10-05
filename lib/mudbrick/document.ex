@@ -37,6 +37,16 @@ defmodule Mudbrick.Document do
     %{tree_obj | value: PageTree.add_page_ref(tree, page.ref)}
   end
 
+  def update({doc, just_added_objects}, indirect_object, fun) do
+    Map.update!(doc, :objects, fn objs ->
+      update_in(objs, [Access.find(&(&1 == indirect_object))], fn ind_obj ->
+        new_value = fun.(just_added_objects, ind_obj.value)
+
+        %{ind_obj | value: new_value}
+      end)
+    end)
+  end
+
   def finish({doc, _objects}) do
     doc
   end

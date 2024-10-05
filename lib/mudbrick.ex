@@ -1,4 +1,5 @@
 defmodule Mudbrick do
+  alias Mudbrick.ContentStream
   alias Mudbrick.Document
   alias Mudbrick.Page
 
@@ -27,6 +28,22 @@ defmodule Mudbrick do
 
   def page(doc, opts) do
     Page.add(doc, opts)
+  end
+
+  def text({doc, page}, text) do
+    doc
+    |> Document.add([
+      ContentStream.new(text: text),
+      %{
+        BaseFont: :Helvetica,
+        Encoding: :"Identity-H",
+        Subtype: :TrueType,
+        Type: :Font
+      }
+    ])
+    |> Document.update(page, fn [contents, font], %Page{} = p ->
+      %{p | contents_ref: contents.ref, font_ref: font.ref}
+    end)
   end
 
   def render({doc, _page}) do
