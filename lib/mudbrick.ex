@@ -19,8 +19,18 @@ defmodule Mudbrick do
     |> Document.new()
   end
 
-  def page(doc, opts \\ []) do
+  def page(a, opts \\ [])
+
+  def page({doc, _page}, opts) do
     Page.add(doc, opts)
+  end
+
+  def page(doc, opts) do
+    Page.add(doc, opts)
+  end
+
+  def render({doc, _page}) do
+    to_string(doc)
   end
 
   def render(doc) do

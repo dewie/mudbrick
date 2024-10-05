@@ -52,8 +52,11 @@ defmodule Mudbrick.Page do
   end
 
   defp add_to_page_tree({doc, [page]}) do
-    Document.update_root_page_tree(doc, fn page_tree ->
-      Document.add_page_ref(page_tree, page)
-    end)
+    {
+      Document.update_root_page_tree(doc, fn page_tree ->
+        Document.add_page_ref(page_tree, page)
+      end),
+      page
+    }
   end
 end
