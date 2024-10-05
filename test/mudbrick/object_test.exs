@@ -9,7 +9,7 @@ defmodule Mudbrick.ObjectTest do
 
   describe "indirect object" do
     test "includes object number, static generation and contents" do
-      assert Indirect.Reference.new(12)
+      assert Indirect.Ref.new(12)
              |> Indirect.Object.new("Brillig")
              |> Object.from() ==
                """
@@ -19,16 +19,16 @@ defmodule Mudbrick.ObjectTest do
                """
     end
 
-    test "reference has number, static generation and letter R" do
-      assert Object.from(Indirect.Reference.new(12)) == "12 0 R"
+    test "ref has number, static generation and letter R" do
+      assert Object.from(Indirect.Ref.new(12)) == "12 0 R"
     end
   end
 
   describe "catalog" do
-    test "is a dictionary with a reference to a page tree" do
-      ref = Indirect.Reference.new(42)
+    test "is a dictionary with a ref to a page tree" do
+      ref = Indirect.Ref.new(42)
 
-      assert Indirect.Reference.new(999)
+      assert Indirect.Ref.new(999)
              |> Indirect.Object.new(Catalog.new(page_tree: ref))
              |> Object.from() == """
              999 0 obj

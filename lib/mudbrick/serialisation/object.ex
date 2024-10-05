@@ -89,9 +89,9 @@ defimpl Mudbrick.Object, for: Mudbrick.Page do
         MediaBox: [0, 0, 612, 792]
       }
       |> Map.merge(
-        case page.contents_reference do
+        case page.contents_ref do
           nil -> %{}
-          ref -> %{Contents: ref, Resources: %{Font: %{F1: page.font_reference}}}
+          ref -> %{Contents: ref, Resources: %{Font: %{F1: page.font_ref}}}
         end
       )
     )
@@ -99,17 +99,17 @@ defimpl Mudbrick.Object, for: Mudbrick.Page do
 end
 
 defimpl Mudbrick.Object, for: Mudbrick.Indirect.Object do
-  def from(%Mudbrick.Indirect.Object{value: value, reference: reference}) do
+  def from(%Mudbrick.Indirect.Object{value: value, ref: ref}) do
     """
-    #{reference.number} 0 obj
+    #{ref.number} 0 obj
     #{Mudbrick.Object.from(value)}
     endobj\
     """
   end
 end
 
-defimpl Mudbrick.Object, for: Mudbrick.Indirect.Reference do
-  def from(%Mudbrick.Indirect.Reference{number: number}) do
+defimpl Mudbrick.Object, for: Mudbrick.Indirect.Ref do
+  def from(%Mudbrick.Indirect.Ref{number: number}) do
     "#{number} 0 R"
   end
 end

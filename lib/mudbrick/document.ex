@@ -10,7 +10,7 @@ defmodule Mudbrick.Document do
     %Document{}
     |> add(PageTree.new())
     |> add(fn [page_tree] ->
-      Catalog.new(page_tree: page_tree.reference)
+      Catalog.new(page_tree: page_tree.ref)
     end)
     |> finish()
   end
@@ -33,7 +33,7 @@ defmodule Mudbrick.Document do
   end
 
   def add_page_ref(%Indirect.Object{value: tree} = tree_obj, page) do
-    %{tree_obj | value: PageTree.add_page_ref(tree, page.reference)}
+    %{tree_obj | value: PageTree.add_page_ref(tree, page.ref)}
   end
 
   def finish({doc, _objects}) do
@@ -65,7 +65,7 @@ defmodule Mudbrick.Document do
   end
 
   defp next_ref(doc) do
-    doc |> next_object_number() |> Indirect.Reference.new()
+    doc |> next_object_number() |> Indirect.Ref.new()
   end
 
   defp next_object_number(doc) do

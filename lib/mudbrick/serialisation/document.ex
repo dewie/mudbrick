@@ -13,7 +13,7 @@ defimpl String.Chars, for: Mudbrick.Document do
     trailer =
       Object.from(%{
         Size: length(objects) + 1,
-        Root: Document.catalog(doc).reference
+        Root: Document.catalog(doc).ref
       })
 
     """
