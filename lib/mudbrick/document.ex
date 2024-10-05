@@ -55,24 +55,24 @@ defmodule Mudbrick.Document do
   end
 
   def root_page_tree(%Document{objects: objects}) do
-    Enum.find(objects, &is_page_tree/1)
+    Enum.find(objects, &page_tree?/1)
   end
 
   def update_root_page_tree(doc, fun) do
     Map.update!(doc, :objects, fn objs ->
-      update_in(objs, [Access.find(&is_page_tree/1)], &fun.(&1))
+      update_in(objs, [Access.find(&page_tree?/1)], &fun.(&1))
     end)
   end
 
   def catalog(%Document{objects: objects}) do
-    Enum.find(objects, &is_catalog/1)
+    Enum.find(objects, &catalog?/1)
   end
 
-  defp is_catalog(%Indirect.Object{value: %Catalog{}}), do: true
-  defp is_catalog(_), do: false
+  defp catalog?(%Indirect.Object{value: %Catalog{}}), do: true
+  defp catalog?(_), do: false
 
-  defp is_page_tree(%Indirect.Object{value: %PageTree{}}), do: true
-  defp is_page_tree(_), do: false
+  defp page_tree?(%Indirect.Object{value: %PageTree{}}), do: true
+  defp page_tree?(_), do: false
 
   defp next_object(doc, value) do
     doc |> next_ref() |> Indirect.Object.new(value)
