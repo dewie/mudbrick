@@ -13,6 +13,7 @@
         packages = [
           elixir_1_17
           (elixir_ls.override { elixir = elixir_1_17; })
+          inotify-tools
         ];
       };
     };

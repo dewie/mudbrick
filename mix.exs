@@ -21,7 +21,8 @@ defmodule Mudbrick.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:stream_data, "~> 1.0", only: [:dev, :test]}
+      {:stream_data, "~> 1.0", only: [:dev, :test]},
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 end
