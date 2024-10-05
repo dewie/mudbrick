@@ -1,12 +1,14 @@
 defmodule MudbrickTest do
   use ExUnit.Case, async: true
 
+  import Mudbrick
+
   test "can serialise with multiple pages" do
-    assert Mudbrick.new()
-           |> Mudbrick.page(size: :letter)
-           |> Mudbrick.text("hello, world!")
-           |> Mudbrick.page(size: :a4)
-           |> Mudbrick.render() ==
+    assert new()
+           |> page(size: :letter)
+           |> text("hello, world!")
+           |> page(size: :a4)
+           |> render() ==
              """
              %PDF-2.0
              1 0 obj
@@ -74,9 +76,9 @@ defmodule MudbrickTest do
   end
 
   test "can serialise with one empty page" do
-    assert Mudbrick.new()
-           |> Mudbrick.page()
-           |> Mudbrick.render() ==
+    assert new()
+           |> page()
+           |> render() ==
              """
              %PDF-2.0
              1 0 obj
@@ -113,8 +115,8 @@ defmodule MudbrickTest do
   end
 
   test "can serialise with no pages" do
-    assert Mudbrick.new()
-           |> Mudbrick.render() ==
+    assert new()
+           |> render() ==
              """
              %PDF-2.0
              1 0 obj
