@@ -22,4 +22,8 @@ defmodule Mudbrick do
   def page(doc, opts \\ []) do
     Page.add(doc, opts)
   end
+
+  def render(doc) do
+    to_string(doc)
+  end
 end

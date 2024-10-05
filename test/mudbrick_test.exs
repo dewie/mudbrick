@@ -5,7 +5,7 @@ defmodule MudbrickTest do
     assert Mudbrick.new(page_size: :a4)
            |> Mudbrick.page(text: "hello, world!")
            |> Mudbrick.page()
-           |> to_string() ==
+           |> Mudbrick.render() ==
              """
              %PDF-2.0
              1 0 obj
@@ -75,7 +75,7 @@ defmodule MudbrickTest do
   test "can serialise with one empty page" do
     assert Mudbrick.new()
            |> Mudbrick.page()
-           |> to_string() ==
+           |> Mudbrick.render() ==
              """
              %PDF-2.0
              1 0 obj
@@ -113,7 +113,7 @@ defmodule MudbrickTest do
 
   test "can serialise with no pages" do
     assert Mudbrick.new()
-           |> to_string() ==
+           |> Mudbrick.render() ==
              """
              %PDF-2.0
              1 0 obj
