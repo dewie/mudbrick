@@ -2,9 +2,11 @@ defmodule Mudbrick do
   alias Mudbrick.Document
   alias Mudbrick.Page
 
+  @dpi 72
+
   @page_sizes %{
-    a4: {8.3 * 72, 11.7 * 72},
-    letter: {8.5 * 72, 11 * 72}
+    a4: {8.3 * @dpi, 11.7 * @dpi},
+    letter: {8.5 * @dpi, 11 * @dpi}
   }
 
   def new(opts \\ []) do
