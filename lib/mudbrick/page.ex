@@ -1,5 +1,8 @@
 defmodule Mudbrick.Page do
-  defstruct [:parent, :contents_ref, :font_ref]
+  defstruct contents_ref: nil,
+            font_ref: nil,
+            page_size: nil,
+            parent: nil
 
   alias Mudbrick.ContentStream
   alias Mudbrick.Document
@@ -32,13 +35,20 @@ defmodule Mudbrick.Page do
       new(
         contents_ref: contents.ref,
         font_ref: font.ref,
+        page_size: doc.page_size,
         parent: Document.root_page_tree(doc).ref
       )
     end)
   end
 
   defp add_empty_page(doc) do
-    Document.add(doc, new(parent: Document.root_page_tree(doc).ref))
+    Document.add(
+      doc,
+      new(
+        page_size: doc.page_size,
+        parent: Document.root_page_tree(doc).ref
+      )
+    )
   end
 
   defp add_to_page_tree({doc, [page]}) do

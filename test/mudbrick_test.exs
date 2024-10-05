@@ -2,7 +2,7 @@ defmodule MudbrickTest do
   use ExUnit.Case, async: true
 
   test "can serialise with multiple pages" do
-    assert Mudbrick.new()
+    assert Mudbrick.new(page_size: :a4)
            |> Mudbrick.page(text: "hello, world!")
            |> Mudbrick.page()
            |> to_string() ==
@@ -39,7 +39,7 @@ defmodule MudbrickTest do
              endobj
              5 0 obj
              <</Contents 3 0 R
-               /MediaBox [0 0 612 792]
+               /MediaBox [0 0 597.6 842.4]
                /Parent 1 0 R
                /Resources <</Font <</F1 4 0 R
              >>
@@ -48,7 +48,7 @@ defmodule MudbrickTest do
              >>
              endobj
              6 0 obj
-             <</MediaBox [0 0 612 792]
+             <</MediaBox [0 0 597.6 842.4]
                /Parent 1 0 R
                /Type /Page
              >>
@@ -61,13 +61,13 @@ defmodule MudbrickTest do
              0000000125 00000 n 
              0000000219 00000 n 
              0000000319 00000 n 
-             0000000450 00000 n 
+             0000000454 00000 n 
              trailer
              <</Root 2 0 R
                /Size 7
              >>
              startxref
-             524
+             532
              %%EOF\
              """
   end
@@ -90,7 +90,7 @@ defmodule MudbrickTest do
              >>
              endobj
              3 0 obj
-             <</MediaBox [0 0 612 792]
+             <</MediaBox [0 0 597.6 842.4]
                /Parent 1 0 R
                /Type /Page
              >>
@@ -106,7 +106,7 @@ defmodule MudbrickTest do
                /Size 4
              >>
              startxref
-             193
+             197
              %%EOF\
              """
   end

@@ -82,11 +82,13 @@ end
 
 defimpl Mudbrick.Object, for: Mudbrick.Page do
   def from(page) do
+    {width, height} = page.page_size
+
     Mudbrick.Object.from(
       %{
         Type: :Page,
         Parent: page.parent,
-        MediaBox: [0, 0, 612, 792]
+        MediaBox: [0, 0, width, height]
       }
       |> Map.merge(
         case page.contents_ref do

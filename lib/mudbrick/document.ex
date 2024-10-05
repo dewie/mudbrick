@@ -1,13 +1,14 @@
 defmodule Mudbrick.Document do
-  defstruct objects: []
+  defstruct page_size: nil, objects: []
 
   alias Mudbrick.Catalog
   alias Mudbrick.Document
   alias Mudbrick.Indirect
   alias Mudbrick.PageTree
 
-  def new do
-    %Document{}
+  def new(opts) do
+    Document
+    |> struct(opts)
     |> add(PageTree.new())
     |> add(fn [page_tree] ->
       Catalog.new(page_tree: page_tree.ref)
