@@ -32,21 +32,18 @@ defmodule Mudbrick.Page do
       new(
         contents_reference: contents.reference,
         font_reference: font.reference,
-        parent: Document.page_tree_root_ref()
+        parent: Document.root_page_tree(doc).reference
       )
     end)
-    |> Document.finish()
   end
 
   defp add_empty_page(doc) do
-    Document.add(doc, new(parent: Document.page_tree_root_ref()))
-    |> Document.finish()
+    Document.add(doc, new(parent: Document.root_page_tree(doc).reference))
   end
 
-  defp add_to_page_tree(doc) do
-    doc
-    |> Map.update!(:objects, fn [page_tree | objects] ->
-      [Document.add_page_ref(page_tree, List.last(objects)) | objects]
+  defp add_to_page_tree({doc, [page]}) do
+    Document.update_root_page_tree(doc, fn page_tree ->
+      Document.add_page_ref(page_tree, page)
     end)
   end
 end
