@@ -57,7 +57,8 @@ defmodule MudbrickTest do
            |> text_position(0, -24)
            |> text("a new line!")
            |> page(size: :a4)
-           |> render() ==
+           |> render()
+           |> to_string() ==
              """
              %PDF-2.0
              1 0 obj
@@ -139,7 +140,8 @@ defmodule MudbrickTest do
   test "can serialise with one empty page" do
     assert new()
            |> page()
-           |> render() ==
+           |> render()
+           |> to_string() ==
              """
              %PDF-2.0
              1 0 obj
@@ -177,7 +179,8 @@ defmodule MudbrickTest do
 
   test "can serialise with no pages" do
     assert new()
-           |> render() ==
+           |> render()
+           |> to_string() ==
              """
              %PDF-2.0
              1 0 obj

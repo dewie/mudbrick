@@ -62,10 +62,10 @@ defmodule Mudbrick do
   end
 
   def render({doc, _page}) do
-    to_string(doc)
+    render(doc)
   end
 
   def render(doc) do
-    to_string(doc)
+    Mudbrick.Serialisation.Document.render(doc)
   end
 end

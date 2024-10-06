@@ -1,11 +1,11 @@
-defimpl String.Chars, for: Mudbrick.Document do
+defmodule Mudbrick.Serialisation.Document do
   @initial_generation "00000"
   @free_entries_first_generation "65535"
 
   alias Mudbrick.Document
   alias Mudbrick.Object
 
-  def to_string(%Document{objects: raw_objects} = doc) do
+  def render(%Document{objects: raw_objects} = doc) do
     version = "%PDF-2.0"
     objects = raw_objects |> Enum.reverse() |> Enum.map(&Object.from/1)
     sections = [version | objects]
@@ -17,7 +17,7 @@ defimpl String.Chars, for: Mudbrick.Document do
       })
 
     [
-      Enum.join(sections, "\n"),
+      Enum.intersperse(sections, ?\n),
       "\nxref\n",
       ["0 ", Kernel.to_string(length(objects) + 1), "\n"],
       offsets(sections),
@@ -27,7 +27,6 @@ defimpl String.Chars, for: Mudbrick.Document do
       offset(sections),
       "\n%%EOF"
     ]
-    |> Kernel.to_string()
   end
 
   defp offsets(sections) do
