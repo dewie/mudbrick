@@ -3,7 +3,7 @@ defmodule MudbrickTest do
 
   import Mudbrick
 
-  test "can add and use fonts" do
+  test "can add fonts" do
     {doc, _} =
       new()
       |> page(
@@ -41,13 +41,21 @@ defmodule MudbrickTest do
                  name: :Helvetica,
                  type: :TrueType,
                  encoding: :PDFDocEncoding
+               ],
+               courier: [
+                 name: :Courier,
+                 type: :TrueType,
+                 encoding: :PDFDocEncoding
                ]
              }
            )
            |> contents()
-           |> font(font: :F1, size: 24)
+           |> font(font: :helvetica, size: 24)
            |> text_position(300, 400)
            |> text("hello, world!")
+           |> font(font: :courier, size: 12)
+           |> text_position(0, -24)
+           |> text("a new line!")
            |> page(size: :a4)
            |> render() ==
              """
@@ -55,7 +63,7 @@ defmodule MudbrickTest do
              1 0 obj
              <</Type /Pages
                /Count 2
-               /Kids [4 0 R 6 0 R]
+               /Kids [5 0 R 7 0 R]
              >>
              endobj
              2 0 obj
@@ -66,52 +74,64 @@ defmodule MudbrickTest do
              3 0 obj
              <</Type /Font
                /Subtype /TrueType
-               /BaseFont /Helvetica
+               /BaseFont /Courier
                /Encoding /PDFDocEncoding
              >>
              endobj
              4 0 obj
-             <</Type /Page
-               /Contents 5 0 R
-               /MediaBox [0 0 612.0 792]
-               /Parent 1 0 R
-               /Resources <</Font <</F1 3 0 R
-             >>
-             >>
+             <</Type /Font
+               /Subtype /TrueType
+               /BaseFont /Helvetica
+               /Encoding /PDFDocEncoding
              >>
              endobj
              5 0 obj
-             <</Length 45
+             <</Type /Page
+               /Contents 6 0 R
+               /MediaBox [0 0 612.0 792]
+               /Parent 1 0 R
+               /Resources <</Font <</F1 3 0 R
+               /F2 4 0 R
+             >>
+             >>
+             >>
+             endobj
+             6 0 obj
+             <</Length 81
              >>
              stream
              BT
-             /F1 24 Tf
+             /F2 24 Tf
              300 400 Td
              (hello, world!) Tj
+             /F1 12 Tf
+             0 -24 Td
+             (a new line!) Tj
              ET
              endstream
              endobj
-             6 0 obj
+             7 0 obj
              <</Type /Page
                /MediaBox [0 0 597.6 842.4]
                /Parent 1 0 R
              >>
              endobj
              xref
-             0 7
+             0 8
              0000000000 65535 f 
              0000000009 00000 n 
              0000000075 00000 n 
              0000000125 00000 n 
-             0000000229 00000 n 
-             0000000362 00000 n 
-             0000000456 00000 n 
+             0000000227 00000 n 
+             0000000331 00000 n 
+             0000000476 00000 n 
+             0000000606 00000 n 
              trailer
              <</Root 2 0 R
-               /Size 7
+               /Size 8
              >>
              startxref
-             534
+             684
              %%EOF\
              """
   end

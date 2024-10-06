@@ -1,5 +1,6 @@
 defmodule Mudbrick.ContentStream do
-  defstruct operations: []
+  @enforce_keys [:page]
+  defstruct page: nil, operations: []
 
   alias Mudbrick.Document
 

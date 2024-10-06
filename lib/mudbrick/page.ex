@@ -22,11 +22,18 @@ defmodule Mudbrick.Page do
         Document.add(doc, new_at_root(opts, doc))
 
       {fonts, opts} ->
-        {doc, font_objects} =
-          for {human_name, font_opts} <- fonts, reduce: {doc, %{}} do
-            {doc, font_objects} ->
-              {doc, font} = Document.add(doc, Font.new(font_opts))
-              {doc, Map.put(font_objects, human_name, font)}
+        {doc, font_objects, _id} =
+          for {human_name, font_opts} <- fonts, reduce: {doc, %{}, 0} do
+            {doc, font_objects, id} ->
+              {doc, font} =
+                Document.add(
+                  doc,
+                  font_opts
+                  |> Keyword.put(:resource_identifier, :"F#{id + 1}")
+                  |> Font.new()
+                )
+
+              {doc, Map.put(font_objects, human_name, font), id + 1}
           end
 
         doc
@@ -67,10 +74,16 @@ defmodule Mudbrick.Page do
               %{}
 
             contents ->
-              %{Contents: contents.ref, Resources: %{Font: %{F1: page.fonts[:helvetica].ref}}}
+              %{Contents: contents.ref, Resources: %{Font: font_dictionary(page.fonts)}}
           end
         )
       )
+    end
+
+    defp font_dictionary(fonts) do
+      for {_human_identifier, object} <- fonts, into: %{} do
+        {object.value.resource_identifier, object.ref}
+      end
     end
   end
 end

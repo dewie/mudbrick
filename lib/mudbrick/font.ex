@@ -1,5 +1,13 @@
 defmodule Mudbrick.Font do
+  @enforce_keys [
+    :resource_identifier,
+    :name,
+    :encoding,
+    :type
+  ]
+
   defstruct [
+    :resource_identifier,
     :name,
     :encoding,
     :type

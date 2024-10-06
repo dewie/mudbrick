@@ -35,7 +35,7 @@ defmodule Mudbrick do
   def contents({doc, page}) do
     {doc, page} =
       doc
-      |> Document.add(ContentStream.new())
+      |> Document.add(ContentStream.new(page: page.value))
       |> Document.update(page, fn contents, %Page{} = p ->
         %{p | contents: contents}
       end)
@@ -43,8 +43,14 @@ defmodule Mudbrick do
     {doc, page.value.contents}
   end
 
-  def font(context, opts) do
-    ContentStream.add(context, ContentStream.Tf, opts)
+  def font({_document, content_stream_object} = context, opts) do
+    ContentStream.add(
+      context,
+      ContentStream.Tf,
+      Keyword.update!(opts, :font, fn user_identifier ->
+        content_stream_object.value.page.fonts[user_identifier].value.resource_identifier
+      end)
+    )
   end
 
   def text_position(context, x, y) do

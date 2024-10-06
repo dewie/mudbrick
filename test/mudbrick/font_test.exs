@@ -8,7 +8,8 @@ defmodule Mudbrick.FontTest do
     assert Font.new(
              name: :Helvetica,
              encoding: :"Identity-H",
-             type: :TrueType
+             type: :TrueType,
+             resource_identifier: :F1
            )
            |> Object.from() ==
              """
