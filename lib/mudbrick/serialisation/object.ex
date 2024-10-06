@@ -1,11 +1,18 @@
 defprotocol Mudbrick.Object do
+  @fallback_to_any true
   @spec from(value :: any()) :: String.t()
   def from(value)
 end
 
+defimpl Mudbrick.Object, for: Any do
+  def from(term) do
+    to_string(term)
+  end
+end
+
 defimpl Mudbrick.Object, for: Atom do
   def from(a) when a in [true, false] do
-    "#{a}"
+    to_string(a)
   end
 
   def from(name) do
@@ -55,18 +62,6 @@ defimpl Mudbrick.Object, for: BitString do
 
   defp escape_char(char) do
     [Map.get(@escapees, char, char)]
-  end
-end
-
-defimpl Mudbrick.Object, for: Float do
-  def from(f) do
-    "#{f}"
-  end
-end
-
-defimpl Mudbrick.Object, for: Integer do
-  def from(i) do
-    "#{i}"
   end
 end
 
