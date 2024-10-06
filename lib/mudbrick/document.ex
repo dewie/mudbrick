@@ -16,8 +16,8 @@ defmodule Mudbrick.Document do
   end
 
   def add(%Document{objects: objects} = doc, value) do
-    obj = next_object(doc, value)
-    {%Document{doc | objects: [obj | objects]}, obj}
+    object = next_object(doc, value)
+    {%Document{doc | objects: [object | objects]}, object}
   end
 
   def add({doc, just_added_object}, fun) do
@@ -28,18 +28,12 @@ defmodule Mudbrick.Document do
     %{tree_obj | value: PageTree.add_page_ref(tree, page.ref)}
   end
 
-  def update({doc, just_added_objects}, indirect_object, fun) do
-    put(doc, %{
-      indirect_object
-      | value: fun.(just_added_objects, indirect_object.value)
-    })
+  def update({doc, just_added_object}, object, fun) do
+    put(doc, %{object | value: fun.(just_added_object, object.value)})
   end
 
-  def update(doc, indirect_object, fun) do
-    put(doc, %{
-      indirect_object
-      | value: fun.(indirect_object.value)
-    })
+  def update(doc, object, fun) do
+    put(doc, %{object | value: fun.(object.value)})
   end
 
   def finish({doc, _objects}) do
@@ -51,8 +45,8 @@ defmodule Mudbrick.Document do
   end
 
   def update_root_page_tree(doc, fun) do
-    Map.update!(doc, :objects, fn objs ->
-      update_in(objs, [Access.find(&page_tree?/1)], &fun.(&1))
+    Map.update!(doc, :objects, fn objects ->
+      update_in(objects, [Access.find(&page_tree?/1)], &fun.(&1))
     end)
   end
 
