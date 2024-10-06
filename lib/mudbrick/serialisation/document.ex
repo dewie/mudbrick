@@ -16,29 +16,34 @@ defimpl String.Chars, for: Mudbrick.Document do
         Root: Document.catalog(doc).ref
       })
 
-    """
-    #{Enum.join(sections, "\n")}
-    xref
-    0 #{length(objects) + 1}
-    #{offsets(sections)}
-    trailer
-    #{trailer}
-    startxref
-    #{offset(sections)}
-    %%EOF\
-    """
+    [
+      Enum.join(sections, "\n"),
+      "\nxref\n",
+      "0 #{length(objects) + 1}\n",
+      offsets(sections),
+      "\ntrailer\n",
+      trailer,
+      "\nstartxref\n",
+      offset(sections),
+      "\n%%EOF"
+    ]
+    |> Kernel.to_string()
   end
 
   defp offsets(sections) do
     {_, retval} =
-      for section <- sections, reduce: {[], ""} do
-        {past_sections, ""} ->
-          {[section | past_sections],
-           "#{padded_offset(past_sections)} #{@free_entries_first_generation} f "}
+      for section <- sections, reduce: {[], []} do
+        {past_sections, []} ->
+          {
+            [section | past_sections],
+            ["#{padded_offset(past_sections)} #{@free_entries_first_generation} f "]
+          }
 
-        {past_sections, acc} ->
-          {[section | past_sections],
-           "#{acc}\n#{padded_offset(past_sections)} #{@initial_generation} n "}
+        {past_sections, iolist} ->
+          {
+            [section | past_sections],
+            [iolist, "\n#{padded_offset(past_sections)} #{@initial_generation} n "]
+          }
       end
 
     retval
