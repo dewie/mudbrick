@@ -15,14 +15,6 @@ defmodule Mudbrick.Document do
     |> finish()
   end
 
-  def add(doc, values) when is_list(values) do
-    for value <- values, reduce: {doc, []} do
-      {acc_doc, acc_objects} ->
-        acc_doc = add(acc_doc, value) |> finish()
-        {acc_doc, acc_objects ++ [List.last(acc_doc.objects)]}
-    end
-  end
-
   def add(%Document{objects: objects} = doc, value) do
     obj = next_object(doc, value)
     {%Document{doc | objects: objects ++ [obj]}, [obj]}
