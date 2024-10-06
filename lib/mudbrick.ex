@@ -1,6 +1,7 @@
 defmodule Mudbrick do
   alias Mudbrick.ContentStream
   alias Mudbrick.Document
+  alias Mudbrick.Font
   alias Mudbrick.Page
 
   @dpi 72
@@ -36,12 +37,11 @@ defmodule Mudbrick do
     doc
     |> Document.add([
       ContentStream.new(text: text),
-      %{
-        BaseFont: :Helvetica,
-        Encoding: :"Identity-H",
-        Subtype: :TrueType,
-        Type: :Font
-      }
+      Font.new(
+        name: :Helvetica,
+        encoding: :"Identity-H",
+        subtype: :TrueType
+      )
     ])
     |> Document.update(page, fn [contents, font], %Page{} = p ->
       %{p | contents_ref: contents.ref, font_ref: font.ref}

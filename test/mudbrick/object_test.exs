@@ -3,9 +3,28 @@ defmodule Mudbrick.ObjectTest do
   use ExUnitProperties
 
   alias Mudbrick.Catalog
+  alias Mudbrick.Font
   alias Mudbrick.Indirect
   alias Mudbrick.Name
   alias Mudbrick.Object
+
+  describe "font" do
+    test "converts keys" do
+      assert Font.new(
+               name: :Helvetica,
+               encoding: :"Identity-H",
+               subtype: :TrueType
+             )
+             |> Object.from() ==
+               """
+               <</Type /Font
+                 /Subtype /TrueType
+                 /BaseFont /Helvetica
+                 /Encoding /Identity-H
+               >>\
+               """
+    end
+  end
 
   describe "indirect object" do
     test "includes object number, static generation and contents" do
