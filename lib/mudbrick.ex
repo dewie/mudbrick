@@ -36,7 +36,7 @@ defmodule Mudbrick do
     {doc, page} =
       doc
       |> Document.add(ContentStream.new())
-      |> Document.update(page, fn [contents], %Page{} = p ->
+      |> Document.update(page, fn contents, %Page{} = p ->
         %{p | contents: contents}
       end)
 

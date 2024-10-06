@@ -25,7 +25,7 @@ defmodule Mudbrick.Page do
         {doc, font_objects} =
           for {human_name, font_opts} <- fonts, reduce: {doc, %{}} do
             {doc, font_objects} ->
-              {doc, [font]} = Document.add(doc, Font.new(font_opts))
+              {doc, font} = Document.add(doc, Font.new(font_opts))
               {doc, Map.put(font_objects, human_name, font)}
           end
 
@@ -42,7 +42,7 @@ defmodule Mudbrick.Page do
     Keyword.put(opts, :parent, Document.root_page_tree(doc).ref) |> new()
   end
 
-  defp add_to_page_tree({doc, [page]}) do
+  defp add_to_page_tree({doc, page}) do
     {
       Document.update_root_page_tree(doc, fn page_tree ->
         Document.add_page_ref(page_tree, page)
