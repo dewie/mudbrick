@@ -30,4 +30,24 @@ defmodule Mudbrick.Page do
       page
     }
   end
+
+  defimpl Mudbrick.Object do
+    def from(page) do
+      {width, height} = page.size
+
+      Mudbrick.Object.from(
+        %{
+          Type: :Page,
+          Parent: page.parent,
+          MediaBox: [0, 0, width, height]
+        }
+        |> Map.merge(
+          case page.contents_ref do
+            nil -> %{}
+            ref -> %{Contents: ref, Resources: %{Font: %{F1: page.font_ref}}}
+          end
+        )
+      )
+    end
+  end
 end

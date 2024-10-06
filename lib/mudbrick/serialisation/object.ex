@@ -8,8 +8,24 @@ defimpl Mudbrick.Object, for: Atom do
     "#{a}"
   end
 
-  def from(a) do
-    "/#{a}"
+  def from(name) do
+    "/#{escape_chars(to_string(name))}"
+  end
+
+  defp escape_chars(name) do
+    name
+    |> to_string()
+    |> String.to_charlist()
+    |> Enum.flat_map(&escape_char/1)
+    |> Kernel.to_string()
+  end
+
+  defp escape_char(char) when char not in ?!..?~ do
+    "##{Base.encode16("#{[char]}")}" |> String.to_charlist()
+  end
+
+  defp escape_char(char) do
+    [char]
   end
 end
 
@@ -39,80 +55,6 @@ defimpl Mudbrick.Object, for: BitString do
 
   defp escape_char(char) do
     [Map.get(@escapees, char, char)]
-  end
-end
-
-defimpl Mudbrick.Object, for: Mudbrick.Catalog do
-  def from(catalog) do
-    Mudbrick.Object.from(%{
-      Type: :Catalog,
-      Pages: catalog.page_tree
-    })
-  end
-end
-
-defimpl Mudbrick.Object, for: Mudbrick.ContentStream do
-  def from(stream) do
-    inner = """
-    BT
-    /F1 24 Tf
-    300 400 Td
-    (#{stream.text}) Tj
-    ET\
-    """
-
-    """
-    #{Mudbrick.Object.from(%{Length: byte_size(inner)})}
-    stream
-    #{inner}
-    endstream\
-    """
-  end
-end
-
-defimpl Mudbrick.Object, for: Mudbrick.PageTree do
-  def from(page_tree) do
-    Mudbrick.Object.from(%{
-      Type: :Pages,
-      Kids: page_tree.kids,
-      Count: length(page_tree.kids)
-    })
-  end
-end
-
-defimpl Mudbrick.Object, for: Mudbrick.Page do
-  def from(page) do
-    {width, height} = page.size
-
-    Mudbrick.Object.from(
-      %{
-        Type: :Page,
-        Parent: page.parent,
-        MediaBox: [0, 0, width, height]
-      }
-      |> Map.merge(
-        case page.contents_ref do
-          nil -> %{}
-          ref -> %{Contents: ref, Resources: %{Font: %{F1: page.font_ref}}}
-        end
-      )
-    )
-  end
-end
-
-defimpl Mudbrick.Object, for: Mudbrick.Indirect.Object do
-  def from(%Mudbrick.Indirect.Object{value: value, ref: ref}) do
-    """
-    #{ref.number} 0 obj
-    #{Mudbrick.Object.from(value)}
-    endobj\
-    """
-  end
-end
-
-defimpl Mudbrick.Object, for: Mudbrick.Indirect.Ref do
-  def from(%Mudbrick.Indirect.Ref{number: number}) do
-    "#{number} 0 R"
   end
 end
 
@@ -154,26 +96,5 @@ defimpl Mudbrick.Object, for: Map do
 
   defp pair(k, v) do
     "#{Mudbrick.Object.from(k)} #{Mudbrick.Object.from(v)}"
-  end
-end
-
-defimpl Mudbrick.Object, for: Mudbrick.Name do
-  def from(name) do
-    "/#{escape_chars(name.value)}"
-  end
-
-  defp escape_chars(name) do
-    name
-    |> String.to_charlist()
-    |> Enum.flat_map(&escape_char/1)
-    |> Kernel.to_string()
-  end
-
-  defp escape_char(char) when char not in ?!..?~ do
-    "##{Base.encode16("#{[char]}")}" |> String.to_charlist()
-  end
-
-  defp escape_char(char) do
-    [char]
   end
 end
