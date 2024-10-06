@@ -69,7 +69,7 @@ defmodule Mudbrick.Document do
   defp put(doc, updated_object) do
     {
       Map.update!(doc, :objects, fn objs ->
-        put_in(objs, [Access.find(&(&1.ref == updated_object.ref))], updated_object)
+        List.replace_at(objs, -updated_object.ref.number, updated_object)
       end),
       updated_object
     }
