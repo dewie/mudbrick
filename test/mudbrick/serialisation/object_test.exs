@@ -17,7 +17,7 @@ defmodule Mudbrick.ObjectTest do
           AString: "hi there"
         }
 
-      assert Object.from(example) ==
+      assert example |> as_string() ==
                """
                <</Type /Example
                  /AString (hi there)
@@ -34,22 +34,22 @@ defmodule Mudbrick.ObjectTest do
 
   describe "names (atoms)" do
     test "are prefixed with a solidus" do
-      assert Object.from(:Name1) == "/Name1"
-      assert Object.from(:ASomewhatLongerName) == "/ASomewhatLongerName"
+      assert as_string(:Name1) == "/Name1"
+      assert as_string(:ASomewhatLongerName) == "/ASomewhatLongerName"
 
-      assert Object.from(:"A;Name_With-Various***Characters?") ==
+      assert as_string(:"A;Name_With-Various***Characters?") ==
                "/A;Name_With-Various***Characters?"
 
-      assert Object.from(:"1.2") == "/1.2"
+      assert as_string(:"1.2") == "/1.2"
     end
 
     test "literal whitespace is escaped as hex" do
-      assert Object.from(:"hi there") == "/hi#20there"
+      assert as_string(:"hi there") == "/hi#20there"
     end
 
     property "characters outside of ! to ~ don't appear as literals" do
       check all s <- string([0..(?! - 1), (?~ + 1)..999], min_length: 1) do
-        rendered = Object.from(:"#{s}")
+        rendered = as_string(:"#{s}")
         refute rendered =~ s
         assert rendered =~ "#"
       end
@@ -58,17 +58,19 @@ defmodule Mudbrick.ObjectTest do
 
   describe "lists" do
     test "become PDF arrays, elements separated by space" do
-      assert Object.from([]) == "[]"
+      assert as_string([]) == "[]"
 
-      assert Object.from([549, 3.14, false, "Ralph", :SomeName]) ==
+      assert as_string([549, 3.14, false, "Ralph", :SomeName]) ==
                "[549 3.14 false (Ralph) /SomeName]"
     end
   end
 
   describe "strings" do
     test "escape certain characters" do
-      assert Object.from("\n \r \t \b \f ) ( \\ #{[0xDDD]}") ==
+      assert as_string("\n \r \t \b \f ) ( \\ #{[0xDDD]}") ==
                "(\\n \\r \\t \\b \\f \\) \\( \\ \\ddd)"
     end
   end
+
+  defp as_string(l), do: l |> Object.from() |> to_string()
 end

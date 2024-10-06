@@ -11,7 +11,8 @@ defmodule Mudbrick.FontTest do
              type: :TrueType,
              resource_identifier: :F1
            )
-           |> Object.from() ==
+           |> Object.from()
+           |> to_string() ==
              """
              <</Type /Font
                /Subtype /TrueType

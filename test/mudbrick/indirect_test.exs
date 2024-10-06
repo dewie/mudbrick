@@ -7,7 +7,8 @@ defmodule Mudbrick.IndirectTest do
   test "object includes object number, static generation and contents" do
     assert Indirect.Ref.new(12)
            |> Indirect.Object.new("Brillig")
-           |> Object.from() ==
+           |> Object.from()
+           |> to_string() ==
              """
              12 0 obj
              (Brillig)
@@ -16,6 +17,6 @@ defmodule Mudbrick.IndirectTest do
   end
 
   test "ref has number, static generation and letter R" do
-    assert Object.from(Indirect.Ref.new(12)) == "12 0 R"
+    assert 12 |> Indirect.Ref.new() |> Object.from() |> to_string() == "12 0 R"
   end
 end

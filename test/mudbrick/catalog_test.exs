@@ -10,7 +10,8 @@ defmodule Mudbrick.CatalogTest do
 
     assert Indirect.Ref.new(999)
            |> Indirect.Object.new(Catalog.new(page_tree: ref))
-           |> Object.from() == """
+           |> Object.from()
+           |> to_string() == """
            999 0 obj
            <</Type /Catalog
              /Pages 42 0 R

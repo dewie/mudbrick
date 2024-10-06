@@ -18,18 +18,18 @@ defmodule Mudbrick.ContentStream do
 
   defimpl Mudbrick.Object do
     def from(stream) do
-      inner = """
-      BT
-      #{Enum.map_join(stream.operations, "\n", &Mudbrick.Object.from/1)}
-      ET\
-      """
+      inner = [
+        "BT\n",
+        Enum.map_join(stream.operations, "\n", &Mudbrick.Object.from/1),
+        "\nET"
+      ]
 
-      """
-      #{Mudbrick.Object.from(%{Length: byte_size(inner)})}
-      stream
-      #{inner}
-      endstream\
-      """
+      [
+        Mudbrick.Object.from(%{Length: :erlang.iolist_size(inner)}),
+        "\nstream\n",
+        inner,
+        "\nendstream"
+      ]
     end
   end
 
@@ -38,7 +38,7 @@ defmodule Mudbrick.ContentStream do
 
     defimpl Mudbrick.Object do
       def from(tf) do
-        "#{Mudbrick.Object.from(tf.font)} #{tf.size} Tf"
+        [Mudbrick.Object.from(tf.font), " ", to_string(tf.size), " Tf"]
       end
     end
   end
@@ -48,7 +48,7 @@ defmodule Mudbrick.ContentStream do
 
     defimpl Mudbrick.Object do
       def from(td) do
-        "#{td.tx} #{td.ty} Td"
+        [td.tx, td.ty, "Td"] |> Enum.map(&to_string/1) |> Enum.intersperse(" ")
       end
     end
   end
@@ -58,7 +58,7 @@ defmodule Mudbrick.ContentStream do
 
     defimpl Mudbrick.Object do
       def from(td) do
-        "#{Mudbrick.Object.from(td.text)} Tj"
+        [Mudbrick.Object.from(td.text), " Tj"]
       end
     end
   end
