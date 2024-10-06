@@ -44,6 +44,9 @@ defmodule MudbrickTest do
                ]
              }
            )
+           |> contents()
+           |> font(font: :F1, size: 24)
+           |> text_position(300, 400)
            |> text("hello, world!")
            |> page(size: :a4)
            |> render() ==

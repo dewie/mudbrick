@@ -1,10 +1,18 @@
 defmodule Mudbrick.ContentStream do
-  defstruct [
-    :operations
-  ]
+  defstruct operations: []
 
-  def new(opts) do
+  alias Mudbrick.Document
+
+  def new(opts \\ []) do
     struct!(Mudbrick.ContentStream, opts)
+  end
+
+  def add({doc, contents_obj}, mod, opts) do
+    Document.update(doc, contents_obj, fn contents ->
+      Map.update!(contents, :operations, fn ops ->
+        ops ++ [struct(mod, opts)]
+      end)
+    end)
   end
 
   defimpl Mudbrick.Object do

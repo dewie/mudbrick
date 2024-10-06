@@ -21,31 +21,38 @@ defmodule Mudbrick do
   end
 
   def page(doc, opts) do
-    opts =
-      opts
-      |> Keyword.update(
+    Page.add(
+      doc,
+      Keyword.update(
+        opts,
         :size,
         @page_sizes.a4,
         &Map.fetch!(@page_sizes, &1)
       )
-
-    Page.add(doc, opts)
+    )
   end
 
-  def text({doc, page}, text) do
-    doc
-    |> Document.add([
-      ContentStream.new(
-        operations: [
-          %ContentStream.Tf{font: :F1, size: 24},
-          %ContentStream.Td{tx: 300, ty: 400},
-          %ContentStream.Tj{text: text}
-        ]
-      )
-    ])
-    |> Document.update(page, fn [contents], %Page{} = p ->
-      %{p | contents_ref: contents.ref}
-    end)
+  def contents({doc, page}) do
+    {doc, page} =
+      doc
+      |> Document.add(ContentStream.new())
+      |> Document.update(page, fn [contents], %Page{} = p ->
+        %{p | contents: contents}
+      end)
+
+    {doc, page.value.contents}
+  end
+
+  def font(context, opts) do
+    ContentStream.add(context, ContentStream.Tf, opts)
+  end
+
+  def text_position(context, x, y) do
+    ContentStream.add(context, ContentStream.Td, tx: x, ty: y)
+  end
+
+  def text(context, text) do
+    ContentStream.add(context, ContentStream.Tj, text: text)
   end
 
   def render({doc, _page}) do

@@ -37,17 +37,17 @@ defmodule Mudbrick.Document do
   end
 
   def update({doc, just_added_objects}, indirect_object, fun) do
-    updated_obj = %{
+    put(doc, %{
       indirect_object
       | value: fun.(just_added_objects, indirect_object.value)
-    }
+    })
+  end
 
-    {
-      Map.update!(doc, :objects, fn objs ->
-        put_in(objs, [Access.find(&(&1 == indirect_object))], updated_obj)
-      end),
-      updated_obj
-    }
+  def update(doc, indirect_object, fun) do
+    put(doc, %{
+      indirect_object
+      | value: fun.(indirect_object.value)
+    })
   end
 
   def finish({doc, _objects}) do
@@ -73,6 +73,15 @@ defmodule Mudbrick.Document do
 
   defp page_tree?(%Indirect.Object{value: %PageTree{}}), do: true
   defp page_tree?(_), do: false
+
+  defp put(doc, updated_object) do
+    {
+      Map.update!(doc, :objects, fn objs ->
+        put_in(objs, [Access.find(&(&1.ref == updated_object.ref))], updated_object)
+      end),
+      updated_object
+    }
+  end
 
   defp next_object(doc, value) do
     doc |> next_ref() |> Indirect.Object.new(value)

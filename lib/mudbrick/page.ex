@@ -1,5 +1,5 @@
 defmodule Mudbrick.Page do
-  defstruct contents_ref: nil,
+  defstruct contents: nil,
             fonts: %{},
             size: nil,
             parent: nil
@@ -62,9 +62,12 @@ defmodule Mudbrick.Page do
           MediaBox: [0, 0, width, height]
         }
         |> Map.merge(
-          case page.contents_ref do
-            nil -> %{}
-            ref -> %{Contents: ref, Resources: %{Font: %{F1: page.fonts[:helvetica].ref}}}
+          case page.contents do
+            nil ->
+              %{}
+
+            contents ->
+              %{Contents: contents.ref, Resources: %{Font: %{F1: page.fonts[:helvetica].ref}}}
           end
         )
       )
