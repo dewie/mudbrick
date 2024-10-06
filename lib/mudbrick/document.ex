@@ -17,7 +17,7 @@ defmodule Mudbrick.Document do
 
   def add(%Document{objects: objects} = doc, value) do
     obj = next_object(doc, value)
-    {%Document{doc | objects: objects ++ [obj]}, [obj]}
+    {%Document{doc | objects: [obj | objects]}, [obj]}
   end
 
   def add({doc, just_added_objects}, fun) do

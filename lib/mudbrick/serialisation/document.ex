@@ -7,7 +7,7 @@ defimpl String.Chars, for: Mudbrick.Document do
 
   def to_string(%Document{objects: raw_objects} = doc) do
     version = "%PDF-2.0"
-    objects = Enum.map(raw_objects, &Object.from/1)
+    objects = raw_objects |> Enum.reverse() |> Enum.map(&Object.from/1)
     sections = [version] ++ objects
 
     trailer =
