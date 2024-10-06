@@ -12,24 +12,24 @@ defmodule MudbrickTest do
              """
              %PDF-2.0
              1 0 obj
-             <</Count 2
+             <</Type /Pages
+               /Count 2
                /Kids [3 0 R 6 0 R]
-               /Type /Pages
              >>
              endobj
              2 0 obj
-             <</Pages 1 0 R
-               /Type /Catalog
+             <</Type /Catalog
+               /Pages 1 0 R
              >>
              endobj
              3 0 obj
-             <</Contents 4 0 R
+             <</Type /Page
+               /Contents 4 0 R
                /MediaBox [0 0 612.0 792]
                /Parent 1 0 R
                /Resources <</Font <</F1 5 0 R
              >>
              >>
-               /Type /Page
              >>
              endobj
              4 0 obj
@@ -44,16 +44,16 @@ defmodule MudbrickTest do
              endstream
              endobj
              5 0 obj
-             <</BaseFont /Helvetica
+             <</Type /Font
+               /BaseFont /Helvetica
                /Encoding /Identity-H
                /Subtype /TrueType
-               /Type /Font
              >>
              endobj
              6 0 obj
-             <</MediaBox [0 0 597.6 842.4]
+             <</Type /Page
+               /MediaBox [0 0 597.6 842.4]
                /Parent 1 0 R
-               /Type /Page
              >>
              endobj
              xref
@@ -82,20 +82,20 @@ defmodule MudbrickTest do
              """
              %PDF-2.0
              1 0 obj
-             <</Count 1
+             <</Type /Pages
+               /Count 1
                /Kids [3 0 R]
-               /Type /Pages
              >>
              endobj
              2 0 obj
-             <</Pages 1 0 R
-               /Type /Catalog
+             <</Type /Catalog
+               /Pages 1 0 R
              >>
              endobj
              3 0 obj
-             <</MediaBox [0 0 597.6 842.4]
+             <</Type /Page
+               /MediaBox [0 0 597.6 842.4]
                /Parent 1 0 R
-               /Type /Page
              >>
              endobj
              xref
@@ -120,14 +120,14 @@ defmodule MudbrickTest do
              """
              %PDF-2.0
              1 0 obj
-             <</Count 0
+             <</Type /Pages
+               /Count 0
                /Kids []
-               /Type /Pages
              >>
              endobj
              2 0 obj
-             <</Pages 1 0 R
-               /Type /Catalog
+             <</Type /Catalog
+               /Pages 1 0 R
              >>
              endobj
              xref

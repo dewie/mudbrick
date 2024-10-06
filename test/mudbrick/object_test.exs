@@ -32,8 +32,8 @@ defmodule Mudbrick.ObjectTest do
              |> Indirect.Object.new(Catalog.new(page_tree: ref))
              |> Object.from() == """
              999 0 obj
-             <</Pages 42 0 R
-               /Type /Catalog
+             <</Type /Catalog
+               /Pages 42 0 R
              >>
              endobj\
              """
@@ -55,13 +55,13 @@ defmodule Mudbrick.ObjectTest do
 
       assert Object.from(example) ==
                """
-               <</AString (hi there)
+               <</Type /Example
+                 /AString (hi there)
                  /IntegerItem 12
                  /StringItem (a string)
                  /SubDictionary <</Item1 0.4
                >>
                  /SubType /DictionaryExample
-                 /Type /Example
                  /Version 0.01
                >>\
                """

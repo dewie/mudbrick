@@ -141,7 +141,11 @@ defimpl Mudbrick.Object, for: Map do
 
   defp pairs(kvs) do
     kvs
-    |> Enum.sort()
+    |> Enum.sort(fn
+      {:Type, _v1}, {_k2, _v2} -> true
+      {_k1, _v1}, {:Type, _v2} -> false
+      {k1, _v1}, {k2, _v2} -> k1 <= k2
+    end)
     |> Enum.map_join("\n", fn {k, v} -> "  #{pair(k, v)}" end)
     |> String.trim_leading()
   end
