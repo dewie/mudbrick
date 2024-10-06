@@ -68,7 +68,9 @@ defimpl Mudbrick.Object, for: List do
   def from(list) do
     [
       ?[,
-      Enum.map(list, fn item -> Mudbrick.Object.from(item) end) |> Enum.intersperse(?\s),
+      list
+      |> Enum.map(&Mudbrick.Object.from(&1))
+      |> Enum.intersperse(?\s),
       ?]
     ]
   end
@@ -98,6 +100,6 @@ defimpl Mudbrick.Object, for: Map do
   end
 
   defp pair(k, v) do
-    [Mudbrick.Object.from(k), " ", Mudbrick.Object.from(v)]
+    [Mudbrick.Object.from(k), ?\s, Mudbrick.Object.from(v)]
   end
 end
