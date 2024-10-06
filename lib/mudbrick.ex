@@ -43,13 +43,15 @@ defmodule Mudbrick do
     {doc, page.value.contents}
   end
 
-  def font({_document, content_stream_object} = context, opts) do
+  def font({_document, content_stream_object} = context, user_identifier, opts) do
     ContentStream.add(
       context,
       ContentStream.Tf,
-      Keyword.update!(opts, :font, fn user_identifier ->
+      Keyword.put(
+        opts,
+        :font,
         content_stream_object.value.page.fonts[user_identifier].value.resource_identifier
-      end)
+      )
     )
   end
 

@@ -50,10 +50,10 @@ defmodule MudbrickTest do
              }
            )
            |> contents()
-           |> font(font: :helvetica, size: 24)
+           |> font(:helvetica, size: 24)
            |> text_position(300, 400)
            |> text("hello, world!")
-           |> font(font: :courier, size: 12)
+           |> font(:courier, size: 12)
            |> text_position(0, -24)
            |> text("a new line!")
            |> page(size: :a4)
