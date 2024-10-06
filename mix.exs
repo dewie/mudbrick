@@ -22,8 +22,9 @@ defmodule Mudbrick.MixProject do
   defp deps do
     [
       {:credo, "~> 1.7.0", only: [:dev, :test]},
-      {:stream_data, "~> 1.0", only: [:dev, :test]},
-      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false}
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:stream_data, "~> 1.0", only: [:dev, :test]}
     ]
   end
 end
