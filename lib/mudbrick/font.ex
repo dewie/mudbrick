@@ -1,13 +1,12 @@
 defmodule Mudbrick.Font do
   defstruct [
     :name,
-    :base_font,
     :encoding,
-    :subtype
+    :type
   ]
 
   def new(opts) do
-    struct(Mudbrick.Font, opts)
+    struct!(Mudbrick.Font, opts)
   end
 
   defimpl Mudbrick.Object do
@@ -16,7 +15,7 @@ defmodule Mudbrick.Font do
         Type: :Font,
         BaseFont: font.name,
         Encoding: font.encoding,
-        Subtype: font.subtype
+        Subtype: font.type
       })
     end
   end

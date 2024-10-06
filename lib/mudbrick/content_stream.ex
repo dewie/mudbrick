@@ -2,7 +2,7 @@ defmodule Mudbrick.ContentStream do
   defstruct [:text]
 
   def new(opts) do
-    struct(Mudbrick.ContentStream, opts)
+    struct!(Mudbrick.ContentStream, opts)
   end
 
   defimpl Mudbrick.Object do

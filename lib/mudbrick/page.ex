@@ -5,9 +5,10 @@ defmodule Mudbrick.Page do
             parent: nil
 
   alias Mudbrick.Document
+  alias Mudbrick.Font
 
   def new(opts \\ []) do
-    struct(Mudbrick.Page, opts)
+    struct!(Mudbrick.Page, opts)
   end
 
   def add(doc, opts) do
@@ -16,10 +17,24 @@ defmodule Mudbrick.Page do
   end
 
   defp add_empty_page(doc, opts) do
-    Document.add(
-      doc,
-      new(Keyword.put(opts, :parent, Document.root_page_tree(doc).ref))
-    )
+    case Keyword.pop(opts, :fonts) do
+      {nil, opts} ->
+        Document.add(doc, new_at_root(opts, doc))
+
+      {[font_opts], opts} ->
+        doc
+        |> Document.add(Font.new(font_opts))
+        |> Document.add(fn
+          [font] ->
+            opts
+            |> Keyword.put(:font_ref, font.ref)
+            |> new_at_root(doc)
+        end)
+    end
+  end
+
+  defp new_at_root(opts, doc) do
+    Keyword.put(opts, :parent, Document.root_page_tree(doc).ref) |> new()
   end
 
   defp add_to_page_tree({doc, [page]}) do

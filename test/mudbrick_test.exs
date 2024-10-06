@@ -3,9 +3,47 @@ defmodule MudbrickTest do
 
   import Mudbrick
 
+  test "can add and use fonts" do
+    {doc, _} =
+      new()
+      |> page(
+        size: :letter,
+        fonts: [
+          [
+            name: :Helvetica,
+            type: :TrueType,
+            encoding: :PDFDocEncoding
+          ]
+        ]
+      )
+
+    assert Enum.find(doc.objects, fn
+             %Mudbrick.Indirect.Object{
+               value: %Mudbrick.Font{
+                 name: :Helvetica,
+                 encoding: :PDFDocEncoding,
+                 type: :TrueType
+               }
+             } ->
+               true
+
+             _ ->
+               false
+           end)
+  end
+
   test "can serialise with multiple pages" do
     assert new()
-           |> page(size: :letter)
+           |> page(
+             size: :letter,
+             fonts: [
+               [
+                 name: :Helvetica,
+                 type: :TrueType,
+                 encoding: :PDFDocEncoding
+               ]
+             ]
+           )
            |> text("hello, world!")
            |> page(size: :a4)
            |> render() ==
@@ -14,7 +52,7 @@ defmodule MudbrickTest do
              1 0 obj
              <</Type /Pages
                /Count 2
-               /Kids [3 0 R 6 0 R]
+               /Kids [4 0 R 6 0 R]
              >>
              endobj
              2 0 obj
@@ -23,16 +61,23 @@ defmodule MudbrickTest do
              >>
              endobj
              3 0 obj
+             <</Type /Font
+               /Subtype /TrueType
+               /BaseFont /Helvetica
+               /Encoding /PDFDocEncoding
+             >>
+             endobj
+             4 0 obj
              <</Type /Page
-               /Contents 4 0 R
+               /Contents 5 0 R
                /MediaBox [0 0 612.0 792]
                /Parent 1 0 R
-               /Resources <</Font <</F1 5 0 R
+               /Resources <</Font <</F1 3 0 R
              >>
              >>
              >>
              endobj
-             4 0 obj
+             5 0 obj
              <</Length 45
              >>
              stream
@@ -42,13 +87,6 @@ defmodule MudbrickTest do
              (hello, world!) Tj
              ET
              endstream
-             endobj
-             5 0 obj
-             <</Type /Font
-               /Subtype /TrueType
-               /BaseFont /Helvetica
-               /Encoding /Identity-H
-             >>
              endobj
              6 0 obj
              <</Type /Page
@@ -62,15 +100,15 @@ defmodule MudbrickTest do
              0000000009 00000 n 
              0000000075 00000 n 
              0000000125 00000 n 
-             0000000258 00000 n 
-             0000000352 00000 n 
-             0000000452 00000 n 
+             0000000229 00000 n 
+             0000000362 00000 n 
+             0000000456 00000 n 
              trailer
              <</Root 2 0 R
                /Size 7
              >>
              startxref
-             530
+             534
              %%EOF\
              """
   end
