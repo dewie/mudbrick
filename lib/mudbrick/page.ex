@@ -1,6 +1,6 @@
 defmodule Mudbrick.Page do
   defstruct contents_ref: nil,
-            font_ref: nil,
+            fonts: %{},
             size: nil,
             parent: nil
 
@@ -21,15 +21,20 @@ defmodule Mudbrick.Page do
       {nil, opts} ->
         Document.add(doc, new_at_root(opts, doc))
 
-      {[font_opts], opts} ->
+      {fonts, opts} ->
+        {doc, font_objects} =
+          for {human_name, font_opts} <- fonts, reduce: {doc, %{}} do
+            {doc, font_objects} ->
+              {doc, [font]} = Document.add(doc, Font.new(font_opts))
+              {doc, Map.put(font_objects, human_name, font)}
+          end
+
         doc
-        |> Document.add(Font.new(font_opts))
-        |> Document.add(fn
-          [font] ->
-            opts
-            |> Keyword.put(:font_ref, font.ref)
-            |> new_at_root(doc)
-        end)
+        |> Document.add(
+          opts
+          |> Keyword.put(:fonts, font_objects)
+          |> new_at_root(doc)
+        )
     end
   end
 
@@ -59,7 +64,7 @@ defmodule Mudbrick.Page do
         |> Map.merge(
           case page.contents_ref do
             nil -> %{}
-            ref -> %{Contents: ref, Resources: %{Font: %{F1: page.font_ref}}}
+            ref -> %{Contents: ref, Resources: %{Font: %{F1: page.fonts[:helvetica].ref}}}
           end
         )
       )

@@ -8,13 +8,13 @@ defmodule MudbrickTest do
       new()
       |> page(
         size: :letter,
-        fonts: [
-          [
+        fonts: %{
+          helvetica: [
             name: :Helvetica,
             type: :TrueType,
             encoding: :PDFDocEncoding
           ]
-        ]
+        }
       )
 
     assert Enum.find(doc.objects, fn
@@ -36,13 +36,13 @@ defmodule MudbrickTest do
     assert new()
            |> page(
              size: :letter,
-             fonts: [
-               [
+             fonts: %{
+               helvetica: [
                  name: :Helvetica,
                  type: :TrueType,
                  encoding: :PDFDocEncoding
                ]
-             ]
+             }
            )
            |> text("hello, world!")
            |> page(size: :a4)
