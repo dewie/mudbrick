@@ -6,7 +6,7 @@ defmodule Mudbrick.Document do
   alias Mudbrick.Indirect
   alias Mudbrick.PageTree
 
-  def new() do
+  def new do
     %Document{}
     |> add(PageTree.new())
     |> add(fn [page_tree] ->

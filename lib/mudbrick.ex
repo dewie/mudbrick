@@ -11,7 +11,7 @@ defmodule Mudbrick do
     letter: {8.5 * @dpi, 11 * @dpi}
   }
 
-  def new() do
+  def new do
     Document.new()
   end
 
