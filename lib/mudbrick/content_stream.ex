@@ -1,5 +1,7 @@
 defmodule Mudbrick.ContentStream do
-  defstruct [:text]
+  defstruct [
+    :operations
+  ]
 
   def new(opts) do
     struct!(Mudbrick.ContentStream, opts)
@@ -9,9 +11,7 @@ defmodule Mudbrick.ContentStream do
     def from(stream) do
       inner = """
       BT
-      /F1 24 Tf
-      300 400 Td
-      (#{stream.text}) Tj
+      #{Enum.map_join(stream.operations, "\n", &Mudbrick.Object.from/1)}
       ET\
       """
 
@@ -21,6 +21,36 @@ defmodule Mudbrick.ContentStream do
       #{inner}
       endstream\
       """
+    end
+  end
+
+  defmodule Tf do
+    defstruct [:font, :size]
+
+    defimpl Mudbrick.Object do
+      def from(tf) do
+        "#{Mudbrick.Object.from(tf.font)} #{tf.size} Tf"
+      end
+    end
+  end
+
+  defmodule Td do
+    defstruct [:tx, :ty]
+
+    defimpl Mudbrick.Object do
+      def from(td) do
+        "#{td.tx} #{td.ty} Td"
+      end
+    end
+  end
+
+  defmodule Tj do
+    defstruct [:text]
+
+    defimpl Mudbrick.Object do
+      def from(td) do
+        "#{Mudbrick.Object.from(td.text)} Tj"
+      end
     end
   end
 end

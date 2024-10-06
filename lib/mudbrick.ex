@@ -35,7 +35,13 @@ defmodule Mudbrick do
   def text({doc, page}, text) do
     doc
     |> Document.add([
-      ContentStream.new(text: text)
+      ContentStream.new(
+        operations: [
+          %ContentStream.Tf{font: :F1, size: 24},
+          %ContentStream.Td{tx: 300, ty: 400},
+          %ContentStream.Tj{text: text}
+        ]
+      )
     ])
     |> Document.update(page, fn [contents], %Page{} = p ->
       %{p | contents_ref: contents.ref}
