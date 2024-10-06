@@ -45,9 +45,9 @@ defmodule MudbrickTest do
              endobj
              5 0 obj
              <</Type /Font
+               /Subtype /TrueType
                /BaseFont /Helvetica
                /Encoding /Identity-H
-               /Subtype /TrueType
              >>
              endobj
              6 0 obj
