@@ -15,6 +15,12 @@ jobs:
         shell: nix develop . --command -- bash {0}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          key: ${{ runner.os }}-dev-build-v1-${{ hashFiles('mix.lock', 'flake.lock') }}
+          path: |
+            deps
+            _build
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - run: |
