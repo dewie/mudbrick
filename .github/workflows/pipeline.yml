@@ -9,6 +9,7 @@ on:
 
 jobs:
   test:
+    runs-on: ubuntu-24.04
     defaults:
       run:
         shell: nix develop . -- command -- bash {0}
