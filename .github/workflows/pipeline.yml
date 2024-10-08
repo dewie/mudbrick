@@ -17,5 +17,5 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - run: |
-        mix do deps.get, dialyzer, credo
-        mix test
+          mix do deps.get, dialyzer, credo
+          mix test
