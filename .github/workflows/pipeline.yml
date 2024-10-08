@@ -1,0 +1,21 @@
+name: Pipeline
+
+on:
+  push:
+    branches: [main]
+    workflow_dispatch:
+    schedule: {cron: "0 0 * * *"}
+    pull_request:
+
+jobs:
+  test:
+    defaults:
+      run:
+        shell: nix develop . -- command -- bash {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: |
+        mix do deps.get, dialyzer, credo
+        mix test
