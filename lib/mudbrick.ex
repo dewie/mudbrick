@@ -44,15 +44,21 @@ defmodule Mudbrick do
   end
 
   def font({_document, content_stream_object} = context, user_identifier, opts) do
-    ContentStream.add(
-      context,
-      ContentStream.Tf,
-      Keyword.put(
-        opts,
-        :font,
-        content_stream_object.value.page.fonts[user_identifier].value.resource_identifier
-      )
-    )
+    case Map.fetch(content_stream_object.value.page.fonts, user_identifier) do
+      {:ok, font} ->
+        ContentStream.add(
+          context,
+          ContentStream.Tf,
+          Keyword.put(
+            opts,
+            :font,
+            font.value.resource_identifier
+          )
+        )
+
+      :error ->
+        raise Mudbrick.Font.Unregistered, "Unregistered font: #{user_identifier}"
+    end
   end
 
   def text_position(context, x, y) do

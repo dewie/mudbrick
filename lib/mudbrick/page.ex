@@ -60,7 +60,7 @@ defmodule Mudbrick.Page do
                         Keyword.merge(font_opts,
                           descendant: &1,
                           name: font_name,
-                          type: String.to_existing_atom(font_type)
+                          type: Font.type!(font_type)
                         )
                       )
                     )

@@ -15,6 +15,17 @@ defmodule Mudbrick.Font do
     :type
   ]
 
+  def type!(s),
+    do:
+      %{
+        "Type0" => :Type0
+      }
+      |> Map.fetch!(s)
+
+  defmodule Unregistered do
+    defexception [:message]
+  end
+
   defmodule Descendant do
     @enforce_keys [:font_name, :descriptor, :type]
     defstruct [:font_name, :descriptor, :type]

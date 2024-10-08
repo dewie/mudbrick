@@ -50,6 +50,22 @@ defmodule Mudbrick.FontTest do
     assert Document.object_with_ref(doc, file.ref)
   end
 
+  test "asking for an unregistered font is an error" do
+    import Mudbrick
+
+    chain =
+      new()
+      |> page(fonts: %{})
+      |> contents()
+
+    e =
+      assert_raise Font.Unregistered, fn ->
+        chain |> font(:bodoni, 24)
+      end
+
+    assert e.message == "Unregistered font: bodoni"
+  end
+
   describe "serialisation" do
     test "font" do
       assert %Font{
