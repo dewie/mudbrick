@@ -74,6 +74,6 @@ defmodule Mudbrick do
   end
 
   def render(doc) do
-    Mudbrick.Serialisation.Document.render(doc)
+    Mudbrick.Object.from(doc)
   end
 end

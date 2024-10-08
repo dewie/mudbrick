@@ -1,11 +1,11 @@
-defmodule Mudbrick.Serialisation.Document do
+defimpl Mudbrick.Object, for: Mudbrick.Document do
   @initial_generation "00000"
   @free_entries_first_generation "65535"
 
   alias Mudbrick.Document
   alias Mudbrick.Object
 
-  def render(%Document{objects: raw_objects} = doc) do
+  def from(%Document{objects: raw_objects} = doc) do
     version = "%PDF-2.0"
     objects = raw_objects |> Enum.reverse() |> Enum.map(&Object.from/1)
     sections = [version | objects]
