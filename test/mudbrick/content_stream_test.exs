@@ -2,7 +2,8 @@ defmodule Mudbrick.ContentStreamTest do
   use ExUnit.Case, async: true
 
   import Mudbrick
-  alias Mudbrick.ContentStream.{Tf, Td, Tj, Ts}
+
+  alias Mudbrick.ContentStream.{Td, Tf, Tj, Ts}
 
   test "translates subscripts to lowercased below-line versions" do
     {_, object} =

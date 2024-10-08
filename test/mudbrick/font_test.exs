@@ -1,7 +1,6 @@
 defmodule Mudbrick.FontTest do
   use ExUnit.Case, async: true
 
-  alias OpenType.Font
   alias Mudbrick.Document
   alias Mudbrick.Font
   alias Mudbrick.Indirect
@@ -45,7 +44,7 @@ defmodule Mudbrick.FontTest do
     assert %Mudbrick.Stream{
              data: ^data,
              additional_entries: %{
-               Length1: 42952,
+               Length1: 42_952,
                Subtype: :OpenType
              }
            } = file.value
