@@ -25,13 +25,46 @@ defmodule Mudbrick.Page do
         {doc, font_objects, _id} =
           for {human_name, font_opts} <- fonts, reduce: {doc, %{}, 0} do
             {doc, font_objects, id} ->
+              font_opts =
+                Keyword.put(font_opts, :resource_identifier, :"F#{id + 1}")
+
               {doc, font} =
-                Document.add(
-                  doc,
-                  font_opts
-                  |> Keyword.put(:resource_identifier, :"F#{id + 1}")
-                  |> Font.new()
-                )
+                case Keyword.pop(font_opts, :file) do
+                  {nil, font_opts} ->
+                    Document.add(doc, Font.new(font_opts))
+
+                  {file_contents, font_opts} ->
+                    f = OpenType.new() |> OpenType.parse(file_contents)
+
+                    {:name, font_type} = f["SubType"]
+
+                    font_name = String.to_atom(f.name)
+
+                    doc
+                    |> Document.add(Mudbrick.Stream.new(data: file_contents))
+                    |> Document.add(
+                      &Font.Descriptor.new(
+                        file: &1,
+                        font_name: font_name
+                      )
+                    )
+                    |> Document.add(
+                      &Font.Descendant.new(
+                        descriptor: &1,
+                        type: :CIDFontType0,
+                        font_name: font_name
+                      )
+                    )
+                    |> Document.add(
+                      &Font.new(
+                        Keyword.merge(font_opts,
+                          descendant: &1,
+                          name: font_name,
+                          type: String.to_existing_atom(font_type)
+                        )
+                      )
+                    )
+                end
 
               {doc, Map.put(font_objects, human_name, font), id + 1}
           end

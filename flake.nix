@@ -14,11 +14,11 @@
           elixir_1_17
           (elixir_ls.override { elixir = elixir_1_17; })
           inotify-tools
-          libre-bodoni
         ];
 
         shellHook = ''
           export ERL_AFLAGS="-kernel shell_history enabled shell_history_file_bytes 1024000"
+          export FONT_LIBRE_BODONI_REGULAR="${libre-bodoni}/share/fonts/opentype/LibreBodoni-Regular.otf"
         '';
       };
     };

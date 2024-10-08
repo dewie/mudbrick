@@ -6,5 +6,7 @@
   "file_system": {:hex, :file_system, "1.0.1", "79e8ceaddb0416f8b8cd02a0127bdbababe7bf4a23d2a395b983c1f8b3f73edd", [:mix], [], "hexpm", "4414d1f38863ddf9120720cd976fce5bdde8e91d8283353f0e31850fa89feb9e"},
   "jason": {:hex, :jason, "1.4.4", "b9226785a9aa77b6857ca22832cffa5d5011a667207eb2a0ad56adb5db443b8a", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "c5eb0cab91f094599f94d55bc63409236a8ec69a21a67814529e8d5f6cc90b3b"},
   "mix_test_watch": {:hex, :mix_test_watch, "1.2.0", "1f9acd9e1104f62f280e30fc2243ae5e6d8ddc2f7f4dc9bceb454b9a41c82b42", [:mix], [{:file_system, "~> 0.2 or ~> 1.0", [hex: :file_system, repo: "hexpm", optional: false]}], "hexpm", "278dc955c20b3fb9a3168b5c2493c2e5cffad133548d307e0a50c7f2cfbf34f6"},
+  "opentype": {:hex, :opentype, "0.5.1", "da1b99f2a5070ade233ff44a1b5729cf7f87f45af6154b71bbfe0d825ef6d366", [:mix], [{:unicode_data, "~> 0.7.0", [hex: :unicode_data, repo: "hexpm", optional: false]}], "hexpm", "1868bfe0729fd0c18add911a169eb18b695cfb5acade210359b92bacec2f23c5"},
   "stream_data": {:hex, :stream_data, "1.1.1", "fd515ca95619cca83ba08b20f5e814aaf1e5ebff114659dc9731f966c9226246", [:mix], [], "hexpm", "45d0cd46bd06738463fd53f22b70042dbb58c384bb99ef4e7576e7bb7d3b8c8c"},
+  "unicode_data": {:hex, :unicode_data, "0.7.0", "10682f8d592ff1714b84aaa30bcd958e207a21b464f204eed5fc590904a6412b", [:mix], [], "hexpm", "77aaff71b16d502ac61cddb50d42ec7d7dd546ed79b19b7343117079dbdbbec1"},
 }

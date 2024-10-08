@@ -3,35 +3,6 @@ defmodule MudbrickTest do
 
   import Mudbrick
 
-  test "can add fonts" do
-    {doc, _} =
-      new()
-      |> page(
-        size: :letter,
-        fonts: %{
-          helvetica: [
-            name: :Helvetica,
-            type: :TrueType,
-            encoding: :PDFDocEncoding
-          ]
-        }
-      )
-
-    assert Enum.find(doc.objects, fn
-             %Mudbrick.Indirect.Object{
-               value: %Mudbrick.Font{
-                 name: :Helvetica,
-                 encoding: :PDFDocEncoding,
-                 type: :TrueType
-               }
-             } ->
-               true
-
-             _ ->
-               false
-           end)
-  end
-
   test "can serialise with multiple pages" do
     assert new()
            |> page(

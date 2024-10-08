@@ -33,14 +33,14 @@ defmodule Mudbrick do
   end
 
   def contents({doc, page}) do
-    {doc, page} =
-      doc
-      |> Document.add(ContentStream.new(page: page.value))
-      |> Document.update(page, fn contents, %Page{} = p ->
-        %{p | contents: contents}
-      end)
+    import Document
 
-    {doc, page.value.contents}
+    doc
+    |> add(ContentStream.new(page: page.value))
+    |> update(page, fn contents, %Page{} = p ->
+      %{p | contents: contents}
+    end)
+    |> finish(& &1.value.contents)
   end
 
   def font({_document, content_stream_object} = context, user_identifier, opts) do

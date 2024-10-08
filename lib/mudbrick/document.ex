@@ -36,6 +36,10 @@ defmodule Mudbrick.Document do
     put(doc, %{object | value: fun.(object.value)})
   end
 
+  def finish({doc, object}, fun) do
+    {doc, fun.(object)}
+  end
+
   def finish({doc, _objects}) do
     doc
   end
@@ -52,6 +56,10 @@ defmodule Mudbrick.Document do
 
   def catalog(%Document{objects: objects}) do
     Enum.find(objects, &catalog?/1)
+  end
+
+  def object_with_ref(doc, ref) do
+    Enum.at(doc.objects, -ref.number)
   end
 
   defp catalog?(%Indirect.Object{value: %Catalog{}}), do: true

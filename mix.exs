@@ -24,6 +24,7 @@ defmodule Mudbrick.MixProject do
       {:credo, "~> 1.7.0", only: [:dev, :test]},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:opentype, "~> 0.5"},
       {:stream_data, "~> 1.0", only: [:dev, :test]}
     ]
   end
