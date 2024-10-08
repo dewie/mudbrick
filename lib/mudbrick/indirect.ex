@@ -16,14 +16,8 @@ defmodule Mudbrick.Indirect do
   defmodule Object do
     defstruct [:value, :ref]
 
-    alias Mudbrick.Indirect
-
     def new(ref, value) do
       %__MODULE__{value: value, ref: ref}
-    end
-
-    def renumber(obj, number) do
-      %__MODULE__{obj | ref: %Indirect.Ref{obj.ref | number: number}}
     end
 
     defimpl Mudbrick.Object do
