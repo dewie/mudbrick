@@ -43,7 +43,11 @@ defmodule Mudbrick.FontTest do
            } = descriptor.value
 
     assert %Mudbrick.Stream{
-             data: ^data
+             data: ^data,
+             additional_entries: %{
+               Length1: 42952,
+               Subtype: :OpenType
+             }
            } = file.value
 
     assert Document.object_with_ref(doc, descendant.ref)

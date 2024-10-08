@@ -41,7 +41,15 @@ defmodule Mudbrick.Page do
                     font_name = String.to_atom(f.name)
 
                     doc
-                    |> Document.add(Mudbrick.Stream.new(data: file_contents))
+                    |> Document.add(
+                      Mudbrick.Stream.new(
+                        data: file_contents,
+                        additional_entries: %{
+                          Length1: byte_size(file_contents),
+                          Subtype: :OpenType
+                        }
+                      )
+                    )
                     |> Document.add(
                       &Font.Descriptor.new(
                         file: &1,

@@ -19,4 +19,18 @@ defmodule Mudbrick.StreamTest do
            endstream\
            """)
   end
+
+  test "includes additional entries merged into the dictionary" do
+    assert Mudbrick.Stream.new(data: "yo", additional_entries: %{Hi: :There})
+           |> Mudbrick.Object.from()
+           |> to_string() ==
+             """
+             <</Hi /There
+               /Length 2
+             >>
+             stream
+             yo
+             endstream\
+             """
+  end
 end

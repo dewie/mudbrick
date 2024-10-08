@@ -1,5 +1,6 @@
 defmodule Mudbrick.Stream do
-  defstruct [:data]
+  defstruct data: nil,
+            additional_entries: %{}
 
   def new(opts) do
     struct!(Mudbrick.Stream, opts)
@@ -14,10 +15,13 @@ defmodule Mudbrick.Stream do
       # :zlib.close(z)
 
       [
-        Mudbrick.Object.from(%{
-          Length: byte_size(stream.data)
-          # Filter: [:FlateDecode]
-        }),
+        Mudbrick.Object.from(
+          %{
+            Length: byte_size(stream.data)
+            # Filter: [:FlateDecode]
+          }
+          |> Map.merge(stream.additional_entries)
+        ),
         "\nstream\n",
         stream.data,
         "\nendstream"
