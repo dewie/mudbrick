@@ -5,8 +5,7 @@
 
   outputs = { self, nixpkgs }:
     let
-      pkgs =
-        nixpkgs.legacyPackages.x86_64-linux;
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
     in
     {
       devShells.x86_64-linux.default = with pkgs; mkShell {
@@ -14,6 +13,7 @@
           elixir_1_17
           (elixir_ls.override { elixir = elixir_1_17; })
           inotify-tools
+          qpdf
         ];
 
         shellHook = ''
