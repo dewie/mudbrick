@@ -1,6 +1,6 @@
 defprotocol Mudbrick.Object do
   @fallback_to_any true
-  @spec from(value :: any()) :: list()
+  @spec from(value :: any()) :: iodata()
   def from(value)
 end
 
