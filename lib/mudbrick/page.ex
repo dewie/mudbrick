@@ -49,7 +49,7 @@ defmodule Mudbrick.Page do
                       )
                     )
                     |> Document.add(
-                      &Font.Descendant.new(
+                      &Font.CIDFont.new(
                         descriptor: &1,
                         type: :CIDFontType0,
                         font_name: font_name

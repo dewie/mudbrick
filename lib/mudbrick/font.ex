@@ -26,7 +26,7 @@ defmodule Mudbrick.Font do
     defexception [:message]
   end
 
-  defmodule Descendant do
+  defmodule CIDFont do
     @enforce_keys [:font_name, :descriptor, :type]
     defstruct [:font_name, :descriptor, :type]
 
@@ -70,12 +70,21 @@ defmodule Mudbrick.Font do
 
   defimpl Mudbrick.Object do
     def from(font) do
-      Mudbrick.Object.from(%{
-        Type: :Font,
-        BaseFont: font.name,
-        Encoding: font.encoding,
-        Subtype: font.type
-      })
+      Mudbrick.Object.from(
+        %{
+          Type: :Font,
+          BaseFont: font.name,
+          Encoding: font.encoding,
+          Subtype: font.type
+        }
+        |> Map.merge(
+          if font.descendant,
+            do: %{
+              DescendantFonts: [font.descendant.ref]
+            },
+            else: %{}
+        )
+      )
     end
   end
 end

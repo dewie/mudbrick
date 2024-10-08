@@ -4,6 +4,7 @@ defmodule Mudbrick.FontTest do
   alias OpenType.Font
   alias Mudbrick.Document
   alias Mudbrick.Font
+  alias Mudbrick.Indirect
   alias Mudbrick.Object
 
   test "embedded OTF fonts create descendant, descriptor and file objects" do
@@ -30,7 +31,7 @@ defmodule Mudbrick.FontTest do
              resource_identifier: :F1
            } = font.value
 
-    assert %Font.Descendant{
+    assert %Font.CIDFont{
              font_name: :"LibreBodoni-Regular",
              descriptor: descriptor,
              type: :CIDFontType0
@@ -67,12 +68,30 @@ defmodule Mudbrick.FontTest do
   end
 
   describe "serialisation" do
-    test "font" do
+    test "without descendant" do
+      assert %Font{
+               name: :SomeFont,
+               type: :TrueType,
+               encoding: :PDFDocEncoding,
+               resource_identifier: :F1
+             }
+             |> Object.from()
+             |> to_string() ==
+               """
+               <</Type /Font
+                 /Subtype /TrueType
+                 /BaseFont /SomeFont
+                 /Encoding /PDFDocEncoding
+               >>\
+               """
+    end
+
+    test "with descendant" do
       assert %Font{
                name: :"LibreBodoni-Regular",
                type: :Type0,
                encoding: :"Identity-H",
-               descendant: %{},
+               descendant: Indirect.Ref.new(22) |> Indirect.Object.new(%{}),
                resource_identifier: :F1
              }
              |> Object.from()
@@ -81,13 +100,14 @@ defmodule Mudbrick.FontTest do
                <</Type /Font
                  /Subtype /Type0
                  /BaseFont /LibreBodoni-Regular
+                 /DescendantFonts [22 0 R]
                  /Encoding /Identity-H
                >>\
                """
     end
 
-    test "descendant" do
-      assert %Font.Descendant{
+    test "CID font" do
+      assert %Font.CIDFont{
                font_name: :"LibreBodoni-Regular",
                descriptor: %{},
                type: :CIDFontType0
@@ -105,7 +125,7 @@ defmodule Mudbrick.FontTest do
     test "descriptor" do
       assert %Font.Descriptor{
                font_name: :"LibreBodoni-Regular",
-               file: Mudbrick.Indirect.Ref.new(99) |> Mudbrick.Indirect.Object.new(%{})
+               file: Indirect.Ref.new(99) |> Indirect.Object.new(%{})
              }
              |> Object.from()
              |> to_string() ==
