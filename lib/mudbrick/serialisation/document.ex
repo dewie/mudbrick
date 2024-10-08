@@ -6,9 +6,9 @@ defimpl Mudbrick.Object, for: Mudbrick.Document do
   alias Mudbrick.Object
 
   def from(%Document{objects: raw_objects} = doc) do
-    version = "%PDF-2.0"
+    header = "%PDF-2.0\n%����"
     objects = raw_objects |> Enum.reverse() |> Enum.map(&Object.from/1)
-    sections = [version | objects]
+    sections = [header | objects]
 
     trailer =
       Object.from(%{

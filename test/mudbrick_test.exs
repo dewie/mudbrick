@@ -32,6 +32,7 @@ defmodule MudbrickTest do
            |> to_string() ==
              """
              %PDF-2.0
+             %����
              1 0 obj
              <</Type /Pages
                /Count 2
@@ -91,19 +92,19 @@ defmodule MudbrickTest do
              xref
              0 8
              0000000000 65535 f 
-             0000000009 00000 n 
-             0000000075 00000 n 
-             0000000125 00000 n 
-             0000000227 00000 n 
-             0000000331 00000 n 
-             0000000476 00000 n 
-             0000000606 00000 n 
+             0000000023 00000 n 
+             0000000089 00000 n 
+             0000000139 00000 n 
+             0000000241 00000 n 
+             0000000345 00000 n 
+             0000000490 00000 n 
+             0000000620 00000 n 
              trailer
              <</Root 2 0 R
                /Size 8
              >>
              startxref
-             684
+             698
              %%EOF\
              """
   end
@@ -115,6 +116,7 @@ defmodule MudbrickTest do
            |> to_string() ==
              """
              %PDF-2.0
+             %����
              1 0 obj
              <</Type /Pages
                /Count 1
@@ -135,15 +137,15 @@ defmodule MudbrickTest do
              xref
              0 4
              0000000000 65535 f 
-             0000000009 00000 n 
-             0000000069 00000 n 
-             0000000119 00000 n 
+             0000000023 00000 n 
+             0000000083 00000 n 
+             0000000133 00000 n 
              trailer
              <</Root 2 0 R
                /Size 4
              >>
              startxref
-             197
+             211
              %%EOF\
              """
   end
@@ -154,6 +156,7 @@ defmodule MudbrickTest do
            |> to_string() ==
              """
              %PDF-2.0
+             %����
              1 0 obj
              <</Type /Pages
                /Count 0
@@ -168,14 +171,14 @@ defmodule MudbrickTest do
              xref
              0 3
              0000000000 65535 f 
-             0000000009 00000 n 
-             0000000064 00000 n 
+             0000000023 00000 n 
+             0000000078 00000 n 
              trailer
              <</Root 2 0 R
                /Size 3
              >>
              startxref
-             114
+             128
              %%EOF\
              """
   end
