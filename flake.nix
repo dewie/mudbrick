@@ -15,6 +15,10 @@
           (elixir_ls.override { elixir = elixir_1_17; })
           inotify-tools
         ];
+
+        shellHook = ''
+          export ERL_AFLAGS="-kernel shell_history enabled shell_history_file_bytes 1024000"
+        '';
       };
     };
 }
