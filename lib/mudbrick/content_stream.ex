@@ -51,7 +51,7 @@ defmodule Mudbrick.ContentStream do
   def add({doc, contents_obj}, Tj, opts) do
     Document.update(doc, contents_obj, fn contents ->
       Map.update!(contents, :operations, fn ops ->
-        ops ++ [%Tj{text: opts[:text]}]
+        [%Tj{text: opts[:text]} | ops]
       end)
     end)
   end
@@ -59,7 +59,7 @@ defmodule Mudbrick.ContentStream do
   def add({doc, contents_obj}, mod, opts) do
     Document.update(doc, contents_obj, fn contents ->
       Map.update!(contents, :operations, fn ops ->
-        ops ++ [struct(mod, opts)]
+        [struct(mod, opts) | ops]
       end)
     end)
   end
@@ -68,7 +68,7 @@ defmodule Mudbrick.ContentStream do
     def from(stream) do
       inner = [
         "BT\n",
-        Enum.map_join(stream.operations, "\n", &Mudbrick.Object.from/1),
+        Enum.map_join(Enum.reverse(stream.operations), "\n", &Mudbrick.Object.from/1),
         "\nET"
       ]
 
