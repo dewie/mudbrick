@@ -1,6 +1,5 @@
 defmodule Mudbrick.Font do
   @enforce_keys [
-    :encoding,
     :name,
     :resource_identifier,
     :type
@@ -38,8 +37,14 @@ defmodule Mudbrick.Font do
       def from(descendant) do
         Mudbrick.Object.from(%{
           Type: :Font,
+          Subtype: descendant.type,
           BaseFont: descendant.font_name,
-          Subtype: descendant.type
+          CIDSystemInfo: %{
+            Registry: "Adobe",
+            Ordering: "Identity",
+            Supplement: 0
+          },
+          FontDescriptor: descendant.descriptor.ref
         })
       end
     end
@@ -74,9 +79,9 @@ defmodule Mudbrick.Font do
         %{
           Type: :Font,
           BaseFont: font.name,
-          Encoding: font.encoding,
           Subtype: font.type
         }
+        |> optional(:Encoding, font.encoding)
         |> Map.merge(
           if font.descendant,
             do: %{
@@ -85,6 +90,14 @@ defmodule Mudbrick.Font do
             else: %{}
         )
       )
+    end
+
+    defp optional(orig, _name, nil) do
+      orig
+    end
+
+    defp optional(orig, name, value) do
+      Map.put(orig, name, value)
     end
   end
 end

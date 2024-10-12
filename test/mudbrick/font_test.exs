@@ -71,6 +71,22 @@ defmodule Mudbrick.FontTest do
   end
 
   describe "serialisation" do
+    test "without encoding" do
+      assert %Font{
+               name: :SomeFont,
+               type: :TrueType,
+               resource_identifier: :F1
+             }
+             |> Object.from()
+             |> to_string() ==
+               """
+               <</Type /Font
+                 /Subtype /TrueType
+                 /BaseFont /SomeFont
+               >>\
+               """
+    end
+
     test "without descendant" do
       assert %Font{
                name: :SomeFont,
@@ -112,7 +128,7 @@ defmodule Mudbrick.FontTest do
     test "CID font" do
       assert %Font.CIDFont{
                font_name: :"LibreBodoni-Regular",
-               descriptor: %{},
+               descriptor: Indirect.Ref.new(666) |> Indirect.Object.new(%{}),
                type: :CIDFontType0
              }
              |> Object.from()
@@ -121,6 +137,11 @@ defmodule Mudbrick.FontTest do
                <</Type /Font
                  /Subtype /CIDFontType0
                  /BaseFont /LibreBodoni-Regular
+                 /CIDSystemInfo <</Ordering (Identity)
+                 /Registry (Adobe)
+                 /Supplement 0
+               >>
+                 /FontDescriptor 666 0 R
                >>\
                """
     end
