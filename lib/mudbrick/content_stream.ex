@@ -9,7 +9,7 @@ defmodule Mudbrick.ContentStream do
 
     defimpl Mudbrick.Object do
       def from(tf) do
-        [Mudbrick.Object.from(tf.font), " ", to_string(tf.size), " Tf"]
+        [Mudbrick.Object.from(tf.font.resource_identifier), " ", to_string(tf.size), " Tf"]
       end
     end
   end
@@ -28,8 +28,33 @@ defmodule Mudbrick.ContentStream do
     defstruct [:text]
 
     defimpl Mudbrick.Object do
-      def from(td) do
-        [Mudbrick.Object.from(td.text), " Tj"]
+      def from(tj) do
+        [Mudbrick.Object.from(tj.text), " Tj"]
+      end
+    end
+  end
+
+  defmodule TJ do
+    defstruct [:font, :text]
+
+    defimpl Mudbrick.Object do
+      def from(tj) do
+        data = tj.font.descendant.value.descriptor.value.file.value.data
+
+        {glyph_ids_decimal, _positions} =
+          OpenType.new()
+          |> OpenType.parse(data)
+          |> OpenType.layout_text(tj.text)
+
+        glyph_ids_hex =
+          glyph_ids_decimal
+          |> Enum.map(fn id ->
+            id
+            |> Integer.to_string(16)
+            |> String.pad_leading(4, "0")
+          end)
+
+        ["[<", glyph_ids_hex, ">] TJ"]
       end
     end
   end

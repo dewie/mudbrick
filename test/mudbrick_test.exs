@@ -11,14 +11,15 @@ defmodule MudbrickTest do
              size: :letter,
              fonts: %{
                bodoni: [
-                 file: data
+                 file: data,
+                 encoding: :"Identity-H"
                ]
              }
            )
            |> contents()
-           |> font(:bodoni, size: 12)
+           |> font(:bodoni, size: 13)
            |> text_position(0, 700)
-           |> text("!")
+           |> text("CO₂ is Carbon Dioxide and HNO₃ is Nitric Acid")
            |> render()
            |> output()
   end

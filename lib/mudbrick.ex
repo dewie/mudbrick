@@ -52,7 +52,7 @@ defmodule Mudbrick do
           Keyword.put(
             opts,
             :font,
-            font.value.resource_identifier
+            font.value
           )
         )
 
@@ -66,7 +66,28 @@ defmodule Mudbrick do
   end
 
   def text(context, text) do
-    ContentStream.add(context, ContentStream.Tj, text: text)
+    {_doc, content_stream} = context
+
+    latest_font_setting =
+      Enum.find(content_stream.value.operations, fn
+        %ContentStream.Tf{} -> true
+        _ -> false
+      end)
+
+    if latest_font_setting.font.descendant do
+      ContentStream.add(
+        context,
+        ContentStream.TJ,
+        font: latest_font_setting.font,
+        text: text
+      )
+    else
+      ContentStream.add(
+        context,
+        ContentStream.Tj,
+        text: text
+      )
+    end
   end
 
   def render({doc, _page}) do
