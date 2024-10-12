@@ -3,6 +3,26 @@ defmodule MudbrickTest do
 
   import Mudbrick
 
+  test "playground" do
+    data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
+
+    assert new()
+           |> page(
+             size: :letter,
+             fonts: %{
+               bodoni: [
+                 file: data
+               ]
+             }
+           )
+           |> contents()
+           |> font(:bodoni, size: 12)
+           |> text_position(0, 700)
+           |> text("!")
+           |> render()
+           |> output()
+  end
+
   test "can serialise with multiple pages" do
     assert new()
            |> page(
@@ -29,6 +49,7 @@ defmodule MudbrickTest do
            |> text("a new line!")
            |> page(size: :a4)
            |> render()
+           |> output
            |> to_string() ==
              """
              %PDF-2.0
