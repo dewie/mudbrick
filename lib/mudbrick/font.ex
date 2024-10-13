@@ -71,7 +71,8 @@ defmodule Mudbrick.Font do
       :file,
       :flags,
       :font_name,
-      :italic_angle
+      :italic_angle,
+      :stem_vertical
     ]
     defstruct [
       :ascent,
@@ -81,7 +82,8 @@ defmodule Mudbrick.Font do
       :file,
       :flags,
       :font_name,
-      :italic_angle
+      :italic_angle,
+      :stem_vertical
     ]
 
     def new(opts) do
@@ -99,6 +101,7 @@ defmodule Mudbrick.Font do
           FontFile3: descriptor.file.ref,
           FontName: descriptor.font_name,
           ItalicAngle: descriptor.italic_angle,
+          StemV: descriptor.stem_vertical,
           Type: :FontDescriptor
         })
       end
