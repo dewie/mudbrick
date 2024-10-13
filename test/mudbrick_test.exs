@@ -50,7 +50,6 @@ defmodule MudbrickTest do
            |> text("a new line!")
            |> page(size: :a4)
            |> render()
-           |> output
            |> to_string() ==
              """
              %PDF-2.0
