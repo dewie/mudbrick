@@ -153,7 +153,8 @@ defmodule Mudbrick.FontTest do
                bounding_box: [1, 1, 1, 1],
                font_name: :"LibreBodoni-Regular",
                flags: 4,
-               file: Indirect.Ref.new(99) |> Indirect.Object.new(%{})
+               file: Indirect.Ref.new(99) |> Indirect.Object.new(%{}),
+               italic_angle: 0.0
              }
              |> Object.from()
              |> to_string() ==
@@ -163,6 +164,7 @@ defmodule Mudbrick.FontTest do
                  /FontBBox [1 1 1 1]
                  /FontFile3 99 0 R
                  /FontName /LibreBodoni-Regular
+                 /ItalicAngle 0.0
                >>\
                """
     end

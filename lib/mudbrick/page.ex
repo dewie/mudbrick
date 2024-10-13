@@ -55,7 +55,8 @@ defmodule Mudbrick.Page do
                         file: &1,
                         flags: opentype.flags,
                         font_name: font_name,
-                        bounding_box: opentype.bbox
+                        bounding_box: opentype.bbox,
+                        italic_angle: opentype.italicAngle
                       )
                     )
                     |> Document.add(
