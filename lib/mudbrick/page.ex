@@ -69,7 +69,8 @@ defmodule Mudbrick.Page do
                         Keyword.merge(font_opts,
                           descendant: &1,
                           name: font_name,
-                          type: Font.type!(font_type)
+                          type: Font.type!(font_type),
+                          parsed: f
                         )
                       )
                     )

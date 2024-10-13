@@ -61,44 +61,27 @@ defmodule Mudbrick.ContentStreamTest do
 
   describe "serialisation" do
     test "converts TJ text to the current font's glyph IDs in hex" do
-      font_name = :"LibreBodoni-Regular"
-
-      text_show_operator =
-        %ContentStream.TJ{
-          text: "CO₂",
-          font: %Font{
-            name: font_name,
-            type: :Type0,
-            encoding: :"Identity-H",
-            first_char: nil,
-            resource_identifier: :F1,
-            descendant:
-              obj(1, %Font.CIDFont{
-                font_name: font_name,
-                type: :CIDFontType0,
-                descriptor:
-                  obj(2, %Font.Descriptor{
-                    font_name: font_name,
-                    flags: 4,
-                    file:
-                      obj(3, %Stream{
-                        data: @font_data,
-                        additional_entries: %{Length1: 42_952, Subtype: :OpenType}
-                      })
-                  })
-              })
+      {_doc, content_stream} =
+        new()
+        |> page(
+          size: :letter,
+          fonts: %{
+            bodoni: [
+              file: @font_data,
+              encoding: :"Identity-H"
+            ]
           }
-        }
+        )
+        |> contents()
+        |> font(:bodoni, size: 24)
+        |> text_position(0, 700)
+        |> text("CO₂")
 
-      assert Object.from(text_show_operator) |> to_string() == """
+      [show_text_operation | _] = content_stream.value.operations
+
+      assert Object.from(show_text_operation) |> to_string() == """
              [<001100550174>] TJ\
              """
-    end
-
-    defp obj(ref_number, obj) do
-      ref_number
-      |> Indirect.Ref.new()
-      |> Indirect.Object.new(obj)
     end
   end
 end

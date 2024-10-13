@@ -11,7 +11,8 @@ defmodule Mudbrick.Font do
     :first_char,
     :name,
     :resource_identifier,
-    :type
+    :type,
+    :parsed
   ]
 
   def type!(s),

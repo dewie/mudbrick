@@ -39,11 +39,8 @@ defmodule Mudbrick.ContentStream do
 
     defimpl Mudbrick.Object do
       def from(tj) do
-        data = tj.font.descendant.value.descriptor.value.file.value.data
-
         {glyph_ids_decimal, _positions} =
-          OpenType.new()
-          |> OpenType.parse(data)
+          tj.font.parsed
           |> OpenType.layout_text(tj.text)
 
         glyph_ids_hex =
