@@ -51,8 +51,8 @@ defmodule Mudbrick.Font do
   end
 
   defmodule Descriptor do
-    @enforce_keys [:file, :font_name]
-    defstruct [:file, :font_name]
+    @enforce_keys [:file, :flags, :font_name]
+    defstruct [:file, :flags, :font_name]
 
     def new(opts) do
       struct!(Descriptor, opts)
@@ -62,6 +62,7 @@ defmodule Mudbrick.Font do
       def from(descriptor) do
         Mudbrick.Object.from(%{
           Type: :FontDescriptor,
+          Flags: descriptor.flags,
           FontName: descriptor.font_name,
           FontFile3: descriptor.file.ref
         })

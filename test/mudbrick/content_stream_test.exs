@@ -79,6 +79,7 @@ defmodule Mudbrick.ContentStreamTest do
                 descriptor:
                   obj(2, %Font.Descriptor{
                     font_name: font_name,
+                    flags: 4,
                     file:
                       obj(3, %Stream{
                         data: @font_data,

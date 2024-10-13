@@ -38,7 +38,8 @@ defmodule Mudbrick.FontTest do
 
     assert %Font.Descriptor{
              file: file,
-             font_name: :"LibreBodoni-Regular"
+             font_name: :"LibreBodoni-Regular",
+             flags: 4
            } = descriptor.value
 
     assert %Mudbrick.Stream{
@@ -149,12 +150,14 @@ defmodule Mudbrick.FontTest do
     test "descriptor" do
       assert %Font.Descriptor{
                font_name: :"LibreBodoni-Regular",
+               flags: 4,
                file: Indirect.Ref.new(99) |> Indirect.Object.new(%{})
              }
              |> Object.from()
              |> to_string() ==
                """
                <</Type /FontDescriptor
+                 /Flags 4
                  /FontFile3 99 0 R
                  /FontName /LibreBodoni-Regular
                >>\

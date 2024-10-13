@@ -53,6 +53,7 @@ defmodule Mudbrick.Page do
                     |> Document.add(
                       &Font.Descriptor.new(
                         file: &1,
+                        flags: f.flags,
                         font_name: font_name
                       )
                     )
