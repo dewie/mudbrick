@@ -53,6 +53,7 @@ defmodule Mudbrick.Page do
                     |> Document.add(
                       &Font.Descriptor.new(
                         ascent: opentype.ascent,
+                        descent: opentype.descent,
                         file: &1,
                         flags: opentype.flags,
                         font_name: font_name,

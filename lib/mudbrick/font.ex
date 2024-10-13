@@ -66,6 +66,7 @@ defmodule Mudbrick.Font do
     @enforce_keys [
       :ascent,
       :bounding_box,
+      :descent,
       :file,
       :flags,
       :font_name,
@@ -74,6 +75,7 @@ defmodule Mudbrick.Font do
     defstruct [
       :ascent,
       :bounding_box,
+      :descent,
       :file,
       :flags,
       :font_name,
@@ -88,6 +90,7 @@ defmodule Mudbrick.Font do
       def from(descriptor) do
         Mudbrick.Object.from(%{
           Ascent: descriptor.ascent,
+          Descent: descriptor.descent,
           Flags: descriptor.flags,
           FontBBox: descriptor.bounding_box,
           FontFile3: descriptor.file.ref,

@@ -152,6 +152,7 @@ defmodule Mudbrick.FontTest do
       assert %Font.Descriptor{
                ascent: 928,
                bounding_box: [1, 1, 1, 1],
+               descent: 111,
                font_name: :"LibreBodoni-Regular",
                flags: 4,
                file: Indirect.Ref.new(99) |> Indirect.Object.new(%{}),
@@ -162,6 +163,7 @@ defmodule Mudbrick.FontTest do
                """
                <</Type /FontDescriptor
                  /Ascent 928
+                 /Descent 111
                  /Flags 4
                  /FontBBox [1 1 1 1]
                  /FontFile3 99 0 R
