@@ -53,6 +53,7 @@ defmodule Mudbrick.Page do
                     |> Document.add(
                       &Font.Descriptor.new(
                         ascent: opentype.ascent,
+                        cap_height: opentype.capHeight,
                         descent: opentype.descent,
                         file: &1,
                         flags: opentype.flags,
