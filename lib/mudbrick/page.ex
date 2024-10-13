@@ -34,11 +34,11 @@ defmodule Mudbrick.Page do
                     Document.add(doc, Font.new(font_opts))
 
                   {file_contents, font_opts} ->
-                    f = OpenType.new() |> OpenType.parse(file_contents)
+                    opentype =
+                      OpenType.new()
+                      |> OpenType.parse(file_contents)
 
-                    {:name, font_type} = f["SubType"]
-
-                    font_name = String.to_atom(f.name)
+                    font_name = String.to_atom(opentype.name)
 
                     doc
                     |> Document.add(
@@ -53,7 +53,7 @@ defmodule Mudbrick.Page do
                     |> Document.add(
                       &Font.Descriptor.new(
                         file: &1,
-                        flags: f.flags,
+                        flags: opentype.flags,
                         font_name: font_name
                       )
                     )
@@ -69,8 +69,7 @@ defmodule Mudbrick.Page do
                         Keyword.merge(font_opts,
                           descendant: &1,
                           name: font_name,
-                          type: Font.type!(font_type),
-                          parsed: f
+                          parsed: opentype
                         )
                       )
                     )

@@ -15,6 +15,17 @@ defmodule Mudbrick.Font do
     :parsed
   ]
 
+  def new(opts) do
+    case Keyword.fetch(opts, :parsed) do
+      {:ok, parsed} ->
+        {:name, font_type} = Map.fetch!(parsed, "SubType")
+        struct!(Mudbrick.Font, Keyword.put(opts, :type, type!(font_type)))
+
+      :error ->
+        struct!(Mudbrick.Font, opts)
+    end
+  end
+
   def type!(s),
     do:
       %{
@@ -69,10 +80,6 @@ defmodule Mudbrick.Font do
         })
       end
     end
-  end
-
-  def new(opts) do
-    struct!(Mudbrick.Font, opts)
   end
 
   defimpl Mudbrick.Object do
