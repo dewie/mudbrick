@@ -5,6 +5,9 @@ defmodule Mudbrick.ContentStreamTest do
 
   alias Mudbrick.ContentStream
   alias Mudbrick.Font
+  alias Mudbrick.Indirect
+  alias Mudbrick.Object
+  alias Mudbrick.Stream
 
   @font_data System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
 
@@ -32,67 +35,69 @@ defmodule Mudbrick.ContentStreamTest do
              font: %Font{
                name: :"LibreBodoni-Regular",
                type: :Type0,
-               descendant: %Mudbrick.Indirect.Object{
-                 value: %Mudbrick.Font.CIDFont{
-                   font_name: :"LibreBodoni-Regular",
-                   descriptor: %Mudbrick.Indirect.Object{
-                     value: %Mudbrick.Font.Descriptor{
-                       file: %Mudbrick.Indirect.Object{
-                         value: %Mudbrick.Stream{
-                           data: @font_data,
-                           additional_entries: %{Length1: 42952, Subtype: :OpenType}
-                         },
-                         ref: %Mudbrick.Indirect.Ref{number: 3}
-                       },
-                       font_name: :"LibreBodoni-Regular"
-                     },
-                     ref: %Mudbrick.Indirect.Ref{number: 4}
-                   },
-                   type: :CIDFontType0
-                 },
-                 ref: %Mudbrick.Indirect.Ref{number: 5}
-               },
                encoding: :"Identity-H",
                first_char: nil,
-               resource_identifier: :F1
+               resource_identifier: :F1,
+               descendant: %Indirect.Object{
+                 value: %Font.CIDFont{
+                   font_name: :"LibreBodoni-Regular",
+                   type: :CIDFontType0,
+                   descriptor: %Indirect.Object{
+                     value: %Font.Descriptor{
+                       font_name: :"LibreBodoni-Regular",
+                       file: %Indirect.Object{
+                         value: %Stream{
+                           data: @font_data,
+                           additional_entries: %{Length1: 42_952, Subtype: :OpenType}
+                         }
+                       }
+                     }
+                   }
+                 }
+               }
              }
            } = show_text_operation
   end
 
   describe "serialisation" do
     test "converts TJ text to the current font's glyph IDs in hex" do
+      font_name = :"LibreBodoni-Regular"
+
       text_show_operator =
         %ContentStream.TJ{
           text: "CO₂",
           font: %Font{
-            name: :"LibreBodoni-Regular",
+            name: font_name,
             type: :Type0,
-            descendant: %Mudbrick.Indirect.Object{
-              value: %Mudbrick.Font.CIDFont{
-                font_name: :"LibreBodoni-Regular",
-                descriptor: %Mudbrick.Indirect.Object{
-                  value: %Mudbrick.Font.Descriptor{
-                    file: %Mudbrick.Indirect.Object{
-                      value: %Mudbrick.Stream{
-                        data: @font_data,
-                        additional_entries: %{Length1: 42952, Subtype: :OpenType}
-                      }
-                    },
-                    font_name: :"LibreBodoni-Regular"
-                  }
-                },
-                type: :CIDFontType0
-              }
-            },
             encoding: :"Identity-H",
             first_char: nil,
-            resource_identifier: :F1
+            resource_identifier: :F1,
+            descendant:
+              obj(1, %Font.CIDFont{
+                font_name: font_name,
+                type: :CIDFontType0,
+                descriptor:
+                  obj(2, %Font.Descriptor{
+                    font_name: font_name,
+                    file:
+                      obj(3, %Stream{
+                        data: @font_data,
+                        additional_entries: %{Length1: 42_952, Subtype: :OpenType}
+                      })
+                  })
+              })
           }
         }
 
-      assert Mudbrick.Object.from(text_show_operator) |> to_string() == """
+      assert Object.from(text_show_operator) |> to_string() == """
              [<001100550174>] TJ\
              """
+    end
+
+    defp obj(ref_number, obj) do
+      ref_number
+      |> Indirect.Ref.new()
+      |> Indirect.Object.new(obj)
     end
   end
 end
