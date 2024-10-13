@@ -150,6 +150,7 @@ defmodule Mudbrick.FontTest do
 
     test "descriptor" do
       assert %Font.Descriptor{
+               ascent: 928,
                bounding_box: [1, 1, 1, 1],
                font_name: :"LibreBodoni-Regular",
                flags: 4,
@@ -160,6 +161,7 @@ defmodule Mudbrick.FontTest do
              |> to_string() ==
                """
                <</Type /FontDescriptor
+                 /Ascent 928
                  /Flags 4
                  /FontBBox [1 1 1 1]
                  /FontFile3 99 0 R
