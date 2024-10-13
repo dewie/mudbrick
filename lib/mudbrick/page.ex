@@ -54,7 +54,8 @@ defmodule Mudbrick.Page do
                       &Font.Descriptor.new(
                         file: &1,
                         flags: opentype.flags,
-                        font_name: font_name
+                        font_name: font_name,
+                        bounding_box: opentype.bbox
                       )
                     )
                     |> Document.add(
