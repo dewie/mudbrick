@@ -54,9 +54,9 @@ defmodule Mudbrick.ContentStream do
               |> String.pad_leading(4, "0")
             end)
 
-          ["<", glyph_ids_hex, "> #{tj.operator}"]
+          ["<", glyph_ids_hex, "> ", tj.operator]
         else
-          [Mudbrick.Object.from(tj.text), " #{tj.operator}"]
+          [Mudbrick.Object.from(tj.text), " ", tj.operator]
         end
       end
     end
