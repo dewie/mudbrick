@@ -48,7 +48,7 @@ defmodule Mudbrick.ContentStream do
 
   defimpl Mudbrick.Object, for: [Tj, Apostrophe] do
     def from(op) do
-      if op.font do
+      if op.font.descendant do
         {glyph_ids_decimal, _positions} =
           op.font.parsed
           |> OpenType.layout_text(op.text)

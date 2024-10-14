@@ -10,7 +10,37 @@ defmodule Mudbrick.ContentStreamTest do
 
   @font_data System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
 
-  test "linebreaks are converted to the ' operator" do
+  test "built-in font linebreaks are converted to the ' operator" do
+    {_doc, content_stream} =
+      new()
+      |> page(
+        size: :letter,
+        fonts: %{
+          helvetica: [
+            name: :Helvetica,
+            type: :TrueType,
+            encoding: :PDFDocEncoding
+          ]
+        }
+      )
+      |> contents()
+      |> font(:helvetica, size: 10)
+      |> text_position(0, 700)
+      |> text("""
+      a
+      b\
+      """)
+
+    assert content_stream.value.operations
+           |> render(3) ==
+             """
+             12.0 TL
+             (a) Tj
+             (b) '\
+             """
+  end
+
+  test "CID font linebreaks are converted to the ' operator" do
     {_doc, content_stream} =
       new()
       |> page(

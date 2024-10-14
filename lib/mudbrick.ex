@@ -81,32 +81,24 @@ defmodule Mudbrick do
         leading: latest_font_setting.size * 1.2
       )
 
-    if latest_font_setting.font.descendant do
-      [first_part | parts] = String.split(text, "\n")
+    [first_part | parts] = String.split(text, "\n")
 
-      context =
-        ContentStream.add(
-          context,
-          ContentStream.Tj,
-          font: latest_font_setting.font,
-          text: first_part
-        )
-
-      for part <- parts, reduce: context do
-        acc ->
-          ContentStream.add(
-            acc,
-            ContentStream.Apostrophe,
-            font: latest_font_setting.font,
-            text: part
-          )
-      end
-    else
+    context =
       ContentStream.add(
         context,
         ContentStream.Tj,
-        text: text
+        font: latest_font_setting.font,
+        text: first_part
       )
+
+    for part <- parts, reduce: context do
+      acc ->
+        ContentStream.add(
+          acc,
+          ContentStream.Apostrophe,
+          font: latest_font_setting.font,
+          text: part
+        )
     end
   end
 
