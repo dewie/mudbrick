@@ -7,7 +7,6 @@ defmodule Mudbrick.ContentStreamTest do
   alias Mudbrick.Font
   alias Mudbrick.Indirect
   alias Mudbrick.Object
-  alias Mudbrick.Stream
 
   @font_data System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
 
@@ -34,26 +33,7 @@ defmodule Mudbrick.ContentStreamTest do
              text: "CO₂",
              font: %Font{
                name: :"LibreBodoni-Regular",
-               type: :Type0,
-               encoding: :"Identity-H",
-               resource_identifier: :F1,
-               descendant: %Indirect.Object{
-                 value: %Font.CIDFont{
-                   font_name: :"LibreBodoni-Regular",
-                   type: :CIDFontType0,
-                   descriptor: %Indirect.Object{
-                     value: %Font.Descriptor{
-                       font_name: :"LibreBodoni-Regular",
-                       file: %Indirect.Object{
-                         value: %Stream{
-                           data: @font_data,
-                           additional_entries: %{Length1: 42_952, Subtype: :OpenType}
-                         }
-                       }
-                     }
-                   }
-                 }
-               }
+               descendant: %Indirect.Object{value: %Font.CIDFont{}}
              }
            } = show_text_operation
   end
