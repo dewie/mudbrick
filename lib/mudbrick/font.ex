@@ -15,6 +15,10 @@ defmodule Mudbrick.Font do
     :parsed
   ]
 
+  defmodule NotSet do
+    defexception [:message]
+  end
+
   defmodule Unregistered do
     defexception [:message]
   end

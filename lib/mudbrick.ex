@@ -1,6 +1,7 @@
 defmodule Mudbrick do
   alias Mudbrick.ContentStream
   alias Mudbrick.Document
+  alias Mudbrick.Font
   alias Mudbrick.Page
 
   @dpi 72
@@ -57,7 +58,7 @@ defmodule Mudbrick do
         )
 
       :error ->
-        raise Mudbrick.Font.Unregistered, "Unregistered font: #{user_identifier}"
+        raise Font.Unregistered, "Unregistered font: #{user_identifier}"
     end
   end
 
@@ -72,29 +73,33 @@ defmodule Mudbrick do
         &match?(%ContentStream.Tf{}, &1)
       )
 
-    [first_part | parts] = String.split(text, "\n")
+    if latest_font_setting == nil do
+      raise Font.NotSet, "No font chosen"
+    else
+      [first_part | parts] = String.split(text, "\n")
 
-    context
-    |> ContentStream.add(
-      ContentStream.TL,
-      leading: latest_font_setting.size * 1.2
-    )
-    |> ContentStream.add(
-      ContentStream.Tj,
-      font: latest_font_setting.font,
-      text: first_part
-    )
-    |> then(fn context ->
-      for part <- parts, reduce: context do
-        acc ->
-          ContentStream.add(
-            acc,
-            ContentStream.Apostrophe,
-            font: latest_font_setting.font,
-            text: part
-          )
-      end
-    end)
+      context
+      |> ContentStream.add(
+        ContentStream.TL,
+        leading: latest_font_setting.size * 1.2
+      )
+      |> ContentStream.add(
+        ContentStream.Tj,
+        font: latest_font_setting.font,
+        text: first_part
+      )
+      |> then(fn context ->
+        for part <- parts, reduce: context do
+          acc ->
+            ContentStream.add(
+              acc,
+              ContentStream.Apostrophe,
+              font: latest_font_setting.font,
+              text: part
+            )
+        end
+      end)
+    end
   end
 
   def render({doc, _page}) do
