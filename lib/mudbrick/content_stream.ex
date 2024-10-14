@@ -38,26 +38,32 @@ defmodule Mudbrick.ContentStream do
     defstruct font: nil,
               operator: "Tj",
               text: nil
+  end
 
-    defimpl Mudbrick.Object do
-      def from(tj) do
-        if tj.font do
-          {glyph_ids_decimal, _positions} =
-            tj.font.parsed
-            |> OpenType.layout_text(tj.text)
+  defmodule Apostrophe do
+    defstruct font: nil,
+              operator: "'",
+              text: nil
+  end
 
-          glyph_ids_hex =
-            glyph_ids_decimal
-            |> Enum.map(fn id ->
-              id
-              |> Integer.to_string(16)
-              |> String.pad_leading(4, "0")
-            end)
+  defimpl Mudbrick.Object, for: [Tj, Apostrophe] do
+    def from(op) do
+      if op.font do
+        {glyph_ids_decimal, _positions} =
+          op.font.parsed
+          |> OpenType.layout_text(op.text)
 
-          ["<", glyph_ids_hex, "> ", tj.operator]
-        else
-          [Mudbrick.Object.from(tj.text), " ", tj.operator]
-        end
+        glyph_ids_hex =
+          glyph_ids_decimal
+          |> Enum.map(fn id ->
+            id
+            |> Integer.to_string(16)
+            |> String.pad_leading(4, "0")
+          end)
+
+        ["<", glyph_ids_hex, "> ", op.operator]
+      else
+        [Mudbrick.Object.from(op.text), " ", op.operator]
       end
     end
   end
