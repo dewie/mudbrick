@@ -66,39 +66,51 @@ defmodule Mudbrick do
     ContentStream.add(context, ContentStream.Td, tx: x, ty: y)
   end
 
+  defp latest_font_operation(content_stream) do
+    Enum.find(
+      content_stream.value.operations,
+      &match?(%ContentStream.Tf{}, &1)
+    )
+  end
+
+  def text({_doc, content_stream} = context, text, colour: {r, g, b}) do
+    context
+    |> ContentStream.add(ContentStream.QPush, [])
+    |> ContentStream.add(ContentStream.Rg, r: r, g: g, b: b)
+    |> text(text)
+    |> ContentStream.add(ContentStream.QPop, [])
+    |> ContentStream.add(latest_font_operation(content_stream))
+  end
+
   def text({_doc, content_stream} = context, text) do
-    latest_font_setting =
-      Enum.find(
-        content_stream.value.operations,
-        &match?(%ContentStream.Tf{}, &1)
-      )
+    case latest_font_operation(content_stream) do
+      %ContentStream.Tf{size: font_size, font: font} ->
+        [first_part | parts] = String.split(text, "\n")
 
-    if latest_font_setting == nil do
-      raise Font.NotSet, "No font chosen"
-    else
-      [first_part | parts] = String.split(text, "\n")
+        context
+        |> ContentStream.add(
+          ContentStream.TL,
+          leading: font_size * 1.2
+        )
+        |> ContentStream.add(
+          ContentStream.Tj,
+          font: font,
+          text: first_part
+        )
+        |> then(fn context ->
+          for part <- parts, reduce: context do
+            acc ->
+              ContentStream.add(
+                acc,
+                ContentStream.Apostrophe,
+                font: font,
+                text: part
+              )
+          end
+        end)
 
-      context
-      |> ContentStream.add(
-        ContentStream.TL,
-        leading: latest_font_setting.size * 1.2
-      )
-      |> ContentStream.add(
-        ContentStream.Tj,
-        font: latest_font_setting.font,
-        text: first_part
-      )
-      |> then(fn context ->
-        for part <- parts, reduce: context do
-          acc ->
-            ContentStream.add(
-              acc,
-              ContentStream.Apostrophe,
-              font: latest_font_setting.font,
-              text: part
-            )
-        end
-      end)
+      nil ->
+        raise Font.NotSet, "No font chosen"
     end
   end
 

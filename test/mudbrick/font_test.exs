@@ -6,6 +6,48 @@ defmodule Mudbrick.FontTest do
   alias Mudbrick.Indirect
   alias Mudbrick.Object
 
+  test "can set colour on a piece of text" do
+    import Mudbrick
+
+    {_doc, content_stream} =
+      new()
+      |> page(
+        fonts: %{
+          helvetica: [
+            name: :Helvetica,
+            type: :TrueType,
+            encoding: :PDFDocEncoding
+          ]
+        }
+      )
+      |> contents()
+      |> font(:helvetica, size: 10)
+      |> text("black and ")
+      |> text(
+        """
+        red
+        text\
+        """,
+        colour: {1.0, 0.0, 0.0}
+      )
+
+    assert content_stream |> Object.from() |> to_string() =~
+             """
+             BT
+             /F1 10 Tf
+             12.0 TL
+             (black and ) Tj
+             q
+             1.0 0.0 0.0 rg
+             12.0 TL
+             (red) Tj
+             (text) '
+             Q
+             /F1 10 Tf
+             ET
+             """
+  end
+
   test "embedded OTF fonts have a glyph-unicode mapping to enable copy+paste" do
     data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
 

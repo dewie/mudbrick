@@ -4,6 +4,32 @@ defmodule Mudbrick.ContentStream do
 
   alias Mudbrick.Document
 
+  defmodule Rg do
+    defstruct [:r, :g, :b]
+
+    defimpl Mudbrick.Object do
+      def from(%Rg{r: r, g: g, b: b}) do
+        [[r, g, b] |> Enum.map_join(" ", &to_string/1), " rg"]
+      end
+    end
+  end
+
+  defmodule QPush do
+    defstruct []
+
+    defimpl Mudbrick.Object do
+      def from(_), do: ["q"]
+    end
+  end
+
+  defmodule QPop do
+    defstruct []
+
+    defimpl Mudbrick.Object do
+      def from(_), do: ["Q"]
+    end
+  end
+
   defmodule Tf do
     defstruct [:font, :size]
 
@@ -70,6 +96,14 @@ defmodule Mudbrick.ContentStream do
 
   def new(opts \\ []) do
     struct!(__MODULE__, opts)
+  end
+
+  def add({doc, contents_obj}, operation) do
+    Document.update(doc, contents_obj, fn contents ->
+      Map.update!(contents, :operations, fn operations ->
+        [operation | operations]
+      end)
+    end)
   end
 
   def add({doc, contents_obj}, mod, opts) do
