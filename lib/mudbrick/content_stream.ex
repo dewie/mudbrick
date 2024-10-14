@@ -24,8 +24,20 @@ defmodule Mudbrick.ContentStream do
     end
   end
 
+  defmodule TL do
+    defstruct [:leading]
+
+    defimpl Mudbrick.Object do
+      def from(tl) do
+        [to_string(tl.leading), " TL"]
+      end
+    end
+  end
+
   defmodule Tj do
-    defstruct [:font, :text]
+    defstruct font: nil,
+              operator: "Tj",
+              text: nil
 
     defimpl Mudbrick.Object do
       def from(tj) do
@@ -42,9 +54,9 @@ defmodule Mudbrick.ContentStream do
               |> String.pad_leading(4, "0")
             end)
 
-          ["<", glyph_ids_hex, "> Tj"]
+          ["<", glyph_ids_hex, "> #{tj.operator}"]
         else
-          [Mudbrick.Object.from(tj.text), " Tj"]
+          [Mudbrick.Object.from(tj.text), " #{tj.operator}"]
         end
       end
     end

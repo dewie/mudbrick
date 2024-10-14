@@ -74,13 +74,39 @@ defmodule Mudbrick do
         _ -> false
       end)
 
-    if latest_font_setting.font.descendant do
+    context =
       ContentStream.add(
         context,
-        ContentStream.Tj,
-        font: latest_font_setting.font,
-        text: text
+        ContentStream.TL,
+        leading: latest_font_setting.size * 1.2
       )
+
+    if latest_font_setting.font.descendant do
+      text_parts = String.split(text, "\n")
+
+      {_, context} =
+        for part <- text_parts, reduce: {true, context} do
+          {true, acc} ->
+            {false,
+             ContentStream.add(
+               acc,
+               ContentStream.Tj,
+               font: latest_font_setting.font,
+               text: part
+             )}
+
+          {false, acc} ->
+            {false,
+             ContentStream.add(
+               acc,
+               ContentStream.Tj,
+               font: latest_font_setting.font,
+               operator: "'",
+               text: part
+             )}
+        end
+
+      context
     else
       ContentStream.add(
         context,

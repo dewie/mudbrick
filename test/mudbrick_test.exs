@@ -37,10 +37,10 @@ defmodule MudbrickTest do
              }
            )
            |> contents()
-           |> font(:helvetica, size: 24)
+           |> font(:helvetica, size: 100)
            |> text_position(300, 400)
            |> text("hello, world!")
-           |> font(:courier, size: 12)
+           |> font(:courier, size: 10)
            |> text_position(0, -24)
            |> text("a new line!")
            |> page(size: :a4)
@@ -86,15 +86,17 @@ defmodule MudbrickTest do
              >>
              endobj
              6 0 obj
-             <</Length 81
+             <</Length 99
              >>
              stream
              BT
-             /F2 24 Tf
+             /F2 100 Tf
              300 400 Td
+             120.0 TL
              (hello, world!) Tj
-             /F1 12 Tf
+             /F1 10 Tf
              0 -24 Td
+             12.0 TL
              (a new line!) Tj
              ET
              endstream
@@ -114,13 +116,13 @@ defmodule MudbrickTest do
              0000000241 00000 n 
              0000000345 00000 n 
              0000000490 00000 n 
-             0000000620 00000 n 
+             0000000638 00000 n 
              trailer
              <</Root 2 0 R
                /Size 8
              >>
              startxref
-             698
+             716
              %%EOF\
              """
   end
