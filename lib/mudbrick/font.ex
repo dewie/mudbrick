@@ -8,7 +8,6 @@ defmodule Mudbrick.Font do
   defstruct [
     :descendant,
     :encoding,
-    :first_char,
     :name,
     :resource_identifier,
     :type,

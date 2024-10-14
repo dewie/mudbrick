@@ -36,7 +36,6 @@ defmodule Mudbrick.ContentStreamTest do
                name: :"LibreBodoni-Regular",
                type: :Type0,
                encoding: :"Identity-H",
-               first_char: nil,
                resource_identifier: :F1,
                descendant: %Indirect.Object{
                  value: %Font.CIDFont{
