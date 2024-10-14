@@ -14,7 +14,10 @@ defmodule MudbrickTest do
            |> contents()
            |> font(:bodoni, size: 13)
            |> text_position(0, 700)
-           |> text("CO₂ is Carbon Dioxide and HNO₃ is Nitric Acid")
+           |> text("""
+           CO₂ is Carbon Dioxide
+           and HNO₃ is Nitric Acid\
+           """)
            |> render()
            |> output()
   end
