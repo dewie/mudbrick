@@ -6,7 +6,6 @@ defmodule Mudbrick.ContentStreamTest do
   alias Mudbrick.ContentStream.Tj
   alias Mudbrick.Font
   alias Mudbrick.Indirect
-  alias Mudbrick.Object
 
   @font_data System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
 
@@ -110,8 +109,7 @@ defmodule Mudbrick.ContentStreamTest do
     ops
     |> Enum.take(n)
     |> Enum.reverse()
-    |> Enum.map_join("\n", fn op ->
-      Object.from(op) |> to_string()
-    end)
+    |> Mudbrick.join("\n")
+    |> to_string()
   end
 end

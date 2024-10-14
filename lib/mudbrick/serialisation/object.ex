@@ -66,13 +66,7 @@ end
 
 defimpl Mudbrick.Object, for: List do
   def from(list) do
-    [
-      ?[,
-      list
-      |> Enum.map(&Mudbrick.Object.from(&1))
-      |> Enum.intersperse(?\s),
-      ?]
-    ]
+    [?[, Mudbrick.join(list), ?]]
   end
 end
 
@@ -94,12 +88,6 @@ defimpl Mudbrick.Object, for: Map do
   end
 
   defp format_kvs(kvs) do
-    kvs
-    |> Enum.map(fn {k, v} -> pair(k, v) end)
-    |> Enum.intersperse("\n  ")
-  end
-
-  defp pair(k, v) do
-    [Mudbrick.Object.from(k), ?\s, Mudbrick.Object.from(v)]
+    Enum.map_join(kvs, "\n  ", &Mudbrick.join/1)
   end
 end

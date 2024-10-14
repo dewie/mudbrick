@@ -115,4 +115,16 @@ defmodule Mudbrick do
     |> Integer.to_string(16)
     |> String.pad_leading(4, "0")
   end
+
+  def join(a, separator \\ " ")
+
+  def join(tuple, separator) when is_tuple(tuple) do
+    tuple
+    |> Tuple.to_list()
+    |> join(separator)
+  end
+
+  def join(list, separator) do
+    Enum.map_join(list, separator, &Mudbrick.Object.from/1)
+  end
 end

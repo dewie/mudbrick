@@ -20,9 +20,9 @@ defmodule Mudbrick.Font.CMap do
         12 dict begin
         begincmap
         /CIDSystemInfo
-        << /Registry (Adobe)
-           /Ordering (UCS)
-           /Supplement 0
+        <</Registry (Adobe)
+          /Ordering (UCS)
+          /Supplement 0
         >> def
         /CMapName /Adobe-Identity-UCS def
         /CMapType 2 def

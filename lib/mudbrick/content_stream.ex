@@ -121,7 +121,7 @@ defmodule Mudbrick.ContentStream do
           "BT\n",
           content_stream.operations
           |> Enum.reverse()
-          |> Enum.map_join("\n", &Mudbrick.Object.from/1),
+          |> Mudbrick.join("\n"),
           "\nET"
         ]
       )
