@@ -32,9 +32,8 @@ defmodule Mudbrick.ContentStreamTest do
       """)
 
     assert content_stream.value.operations
-           |> render(3) ==
+           |> render(2) ==
              """
-             12.0 TL
              (a) Tj
              (b) '\
              """
@@ -56,9 +55,8 @@ defmodule Mudbrick.ContentStreamTest do
       """)
 
     assert content_stream.value.operations
-           |> render(3) ==
+           |> render(2) ==
              """
-             12.0 TL
              <00A5> Tj
              <00B4> '\
              """

@@ -45,10 +45,12 @@ defmodule Mudbrick do
   end
 
   def font({_document, content_stream_object} = context, user_identifier, opts) do
+    import ContentStream
+
     case Map.fetch(content_stream_object.value.page.fonts, user_identifier) do
       {:ok, font} ->
-        ContentStream.add(
-          context,
+        context
+        |> add(
           ContentStream.Tf,
           Keyword.put(
             opts,
@@ -56,6 +58,7 @@ defmodule Mudbrick do
             font.value
           )
         )
+        |> add(ContentStream.TL, leading: Keyword.fetch!(opts, :size) * 1.2)
 
       :error ->
         raise Font.Unregistered, "Unregistered font: #{user_identifier}"
@@ -90,7 +93,6 @@ defmodule Mudbrick do
     [first_part | parts] = String.split(text, "\n")
 
     context
-    |> add(ContentStream.TL, leading: tf.size * 1.2)
     |> add(ContentStream.Tj, font: tf.font, text: first_part)
     |> then(fn context ->
       for part <- parts, reduce: context do

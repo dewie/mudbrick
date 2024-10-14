@@ -95,12 +95,12 @@ defmodule MudbrickTest do
              stream
              BT
              /F2 100 Tf
-             300 400 Td
              120.0 TL
+             300 400 Td
              (hello, world!) Tj
              /F1 10 Tf
-             0 -24 Td
              12.0 TL
+             0 -24 Td
              (a new line!) Tj
              ET
              endstream
