@@ -21,7 +21,7 @@ defmodule Mudbrick.Font do
 
   alias Mudbrick.Document
   alias Mudbrick.Font
-  alias Mudbrick.Stream
+  alias Mudbrick.Font.CMap
 
   def new(opts) do
     case Keyword.fetch(opts, :parsed) do
@@ -111,57 +111,6 @@ defmodule Mudbrick.Font do
     )
   end
 
-  defmodule CMap do
-    defstruct [:parsed]
-
-    def new(opts) do
-      struct!(CMap, opts)
-    end
-
-    defimpl Mudbrick.Object do
-      def from(cmap) do
-        pairs =
-          cmap.parsed.gid2cid
-          |> Enum.map(fn {gid, cid} ->
-            ["<", Mudbrick.to_hex(gid), "> <", Mudbrick.to_hex(cid), ">\n"]
-          end)
-          |> Enum.sort()
-
-        data = [
-          """
-          /CIDInit /ProcSet findresource begin
-          12 dict begin
-          begincmap
-          /CIDSystemInfo
-          << /Registry (Adobe)
-             /Ordering (UCS)
-             /Supplement 0
-          >> def
-          /CMapName /Adobe-Identity-UCS def
-          /CMapType 2 def
-          1 begincodespacerange
-          <0000> <ffff>
-          endcodespacerange
-          """,
-          pairs |> length() |> to_string(),
-          """
-           beginbfchar
-          """,
-          pairs,
-          """
-          endbfchar
-          endcmap
-          CMapName currentdict /CMap defineresource pop
-          end
-          end\
-          """
-        ]
-
-        Mudbrick.Object.from(Stream.new(data: data))
-      end
-    end
-  end
-
   defp add_font({doc, cid_font}, opentype, font_name, font_opts) do
     doc
     |> Document.add(CMap.new(parsed: opentype))
@@ -176,91 +125,6 @@ defmodule Mudbrick.Font do
         )
       )
     end)
-  end
-
-  defmodule CIDFont do
-    @enforce_keys [
-      :default_width,
-      :descriptor,
-      :font_name,
-      :type,
-      :widths
-    ]
-    defstruct [
-      :default_width,
-      :descriptor,
-      :font_name,
-      :type,
-      :widths
-    ]
-
-    def new(opts) do
-      struct!(__MODULE__, opts)
-    end
-
-    defimpl Mudbrick.Object do
-      def from(cid_font) do
-        Mudbrick.Object.from(%{
-          Type: :Font,
-          Subtype: cid_font.type,
-          BaseFont: cid_font.font_name,
-          CIDSystemInfo: %{
-            Registry: "Adobe",
-            Ordering: "Identity",
-            Supplement: 0
-          },
-          FontDescriptor: cid_font.descriptor.ref,
-          DW: cid_font.default_width,
-          W: [0, cid_font.widths]
-        })
-      end
-    end
-  end
-
-  defmodule Descriptor do
-    @enforce_keys [
-      :ascent,
-      :bounding_box,
-      :cap_height,
-      :descent,
-      :file,
-      :flags,
-      :font_name,
-      :italic_angle,
-      :stem_vertical
-    ]
-    defstruct [
-      :ascent,
-      :bounding_box,
-      :cap_height,
-      :descent,
-      :file,
-      :flags,
-      :font_name,
-      :italic_angle,
-      :stem_vertical
-    ]
-
-    def new(opts) do
-      struct!(Descriptor, opts)
-    end
-
-    defimpl Mudbrick.Object do
-      def from(descriptor) do
-        Mudbrick.Object.from(%{
-          Ascent: descriptor.ascent,
-          CapHeight: descriptor.cap_height,
-          Descent: descriptor.descent,
-          Flags: descriptor.flags,
-          FontBBox: descriptor.bounding_box,
-          FontFile3: descriptor.file.ref,
-          FontName: descriptor.font_name,
-          ItalicAngle: descriptor.italic_angle,
-          StemV: descriptor.stem_vertical,
-          Type: :FontDescriptor
-        })
-      end
-    end
   end
 
   defimpl Mudbrick.Object do
