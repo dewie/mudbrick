@@ -70,14 +70,6 @@ defmodule Mudbrick.ContentStream do
     struct!(Mudbrick.ContentStream, opts)
   end
 
-  def add({doc, contents_obj}, Tj, opts) do
-    Document.update(doc, contents_obj, fn contents ->
-      Map.update!(contents, :operations, fn ops ->
-        [%Tj{text: opts[:text]} | ops]
-      end)
-    end)
-  end
-
   def add({doc, contents_obj}, mod, opts) do
     Document.update(doc, contents_obj, fn contents ->
       Map.update!(contents, :operations, fn ops ->
