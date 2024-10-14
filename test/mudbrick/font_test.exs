@@ -11,14 +11,7 @@ defmodule Mudbrick.FontTest do
 
     {doc, _} =
       Mudbrick.new()
-      |> Mudbrick.page(
-        fonts: %{
-          bodoni: [
-            encoding: :"Identity-H",
-            file: data
-          ]
-        }
-      )
+      |> Mudbrick.page(fonts: %{bodoni: [file: data]})
 
     [_, font | _] = doc.objects
 

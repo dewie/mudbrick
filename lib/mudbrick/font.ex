@@ -116,6 +116,7 @@ defmodule Mudbrick.Font do
       &Font.new(
         Keyword.merge(font_opts,
           descendant: &1,
+          encoding: :"Identity-H",
           name: font_name,
           parsed: opentype
         )

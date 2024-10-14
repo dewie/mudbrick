@@ -9,12 +9,7 @@ defmodule MudbrickTest do
     assert new()
            |> page(
              size: :letter,
-             fonts: %{
-               bodoni: [
-                 file: data,
-                 encoding: :"Identity-H"
-               ]
-             }
+             fonts: %{bodoni: [file: data]}
            )
            |> contents()
            |> font(:bodoni, size: 13)
