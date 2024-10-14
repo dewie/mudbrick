@@ -26,12 +26,7 @@ defmodule Mudbrick.Font do
     end
   end
 
-  def type!(s),
-    do:
-      %{
-        "Type0" => :Type0
-      }
-      |> Map.fetch!(s)
+  def type!(s), do: Map.fetch!(%{"Type0" => :Type0}, s)
 
   defmodule Unregistered do
     defexception [:message]
