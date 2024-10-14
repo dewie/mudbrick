@@ -65,9 +65,11 @@ defmodule Mudbrick.Page do
                     )
                     |> Document.add(
                       &Font.CIDFont.new(
+                        default_width: opentype.defaultWidth,
                         descriptor: &1,
                         type: :CIDFontType0,
-                        font_name: font_name
+                        font_name: font_name,
+                        widths: opentype.glyphWidths
                       )
                     )
                     |> Document.add(

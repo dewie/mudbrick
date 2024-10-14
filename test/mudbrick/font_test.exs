@@ -131,7 +131,9 @@ defmodule Mudbrick.FontTest do
       assert %Font.CIDFont{
                font_name: :"LibreBodoni-Regular",
                descriptor: Indirect.Ref.new(666) |> Indirect.Object.new(%{}),
-               type: :CIDFontType0
+               type: :CIDFontType0,
+               default_width: 1000,
+               widths: [0, 1, 2]
              }
              |> Object.from()
              |> to_string() ==
@@ -143,7 +145,9 @@ defmodule Mudbrick.FontTest do
                  /Registry (Adobe)
                  /Supplement 0
                >>
+                 /DW 1000
                  /FontDescriptor 666 0 R
+                 /W [0 [0 1 2]]
                >>\
                """
     end
