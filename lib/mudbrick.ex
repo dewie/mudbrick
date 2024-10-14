@@ -66,11 +66,11 @@ defmodule Mudbrick do
     ContentStream.add(context, ContentStream.Td, tx: x, ty: y)
   end
 
-  defp latest_font_operation(content_stream) do
+  defp latest_font_operation!(content_stream) do
     Enum.find(
       content_stream.value.operations,
       &match?(%ContentStream.Tf{}, &1)
-    )
+    ) || raise Font.NotSet, "No font chosen"
   end
 
   def text({_doc, content_stream} = context, text, colour: {r, g, b}) do
@@ -79,39 +79,25 @@ defmodule Mudbrick do
     |> ContentStream.add(ContentStream.Rg, r: r, g: g, b: b)
     |> text(text)
     |> ContentStream.add(ContentStream.QPop, [])
-    |> ContentStream.add(latest_font_operation(content_stream))
+    |> ContentStream.add(latest_font_operation!(content_stream))
   end
 
   def text({_doc, content_stream} = context, text) do
-    case latest_font_operation(content_stream) do
-      %ContentStream.Tf{size: font_size, font: font} ->
-        [first_part | parts] = String.split(text, "\n")
+    import ContentStream
 
-        context
-        |> ContentStream.add(
-          ContentStream.TL,
-          leading: font_size * 1.2
-        )
-        |> ContentStream.add(
-          ContentStream.Tj,
-          font: font,
-          text: first_part
-        )
-        |> then(fn context ->
-          for part <- parts, reduce: context do
-            acc ->
-              ContentStream.add(
-                acc,
-                ContentStream.Apostrophe,
-                font: font,
-                text: part
-              )
-          end
-        end)
+    tf = latest_font_operation!(content_stream)
 
-      nil ->
-        raise Font.NotSet, "No font chosen"
-    end
+    [first_part | parts] = String.split(text, "\n")
+
+    context
+    |> add(ContentStream.TL, leading: tf.size * 1.2)
+    |> add(ContentStream.Tj, font: tf.font, text: first_part)
+    |> then(fn context ->
+      for part <- parts, reduce: context do
+        acc ->
+          add(acc, ContentStream.Apostrophe, font: tf.font, text: part)
+      end
+    end)
   end
 
   def render({doc, _page}) do
