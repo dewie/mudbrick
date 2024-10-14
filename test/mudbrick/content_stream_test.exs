@@ -25,11 +25,13 @@ defmodule Mudbrick.ContentStreamTest do
       b\
       """)
 
-    [apostrophe, tj, leading | _] = content_stream.value.operations
-
-    assert Object.from(leading) |> to_string() == "12.0 TL"
-    assert Object.from(tj) |> to_string() == "<00A5> Tj"
-    assert Object.from(apostrophe) |> to_string() == "<00B4> '"
+    assert content_stream.value.operations
+           |> render(3) ==
+             """
+             12.0 TL
+             <00A5> Tj
+             <00B4> '\
+             """
   end
 
   test "font is assigned to the operator struct when font descendant present" do
@@ -68,11 +70,20 @@ defmodule Mudbrick.ContentStreamTest do
         |> text_position(0, 700)
         |> text("CO₂")
 
-      [show_text_operation | _] = content_stream.value.operations
-
-      assert Object.from(show_text_operation) |> to_string() == """
-             <001100550174> Tj\
-             """
+      assert content_stream.value.operations
+             |> render(1) ==
+               """
+               <001100550174> Tj\
+               """
     end
+  end
+
+  defp render(ops, n) do
+    ops
+    |> Enum.take(n)
+    |> Enum.reverse()
+    |> Enum.map_join("\n", fn op ->
+      Object.from(op) |> to_string()
+    end)
   end
 end
