@@ -10,17 +10,12 @@ defmodule Mudbrick.ContentStreamTest do
 
   @font_data System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
 
-  test "text becomes a TJ when font descendant present" do
+  test "font is assigned to the operator struct when font descendant present" do
     {_doc, content_stream} =
       new()
       |> page(
         size: :letter,
-        fonts: %{
-          bodoni: [
-            file: @font_data,
-            encoding: :"Identity-H"
-          ]
-        }
+        fonts: %{bodoni: [file: @font_data]}
       )
       |> contents()
       |> font(:bodoni, size: 24)
@@ -29,7 +24,7 @@ defmodule Mudbrick.ContentStreamTest do
 
     [show_text_operation | _] = content_stream.value.operations
 
-    assert %ContentStream.TJ{
+    assert %ContentStream.Tj{
              text: "CO₂",
              font: %Font{
                name: :"LibreBodoni-Regular",
@@ -39,17 +34,12 @@ defmodule Mudbrick.ContentStreamTest do
   end
 
   describe "serialisation" do
-    test "converts TJ text to the current font's glyph IDs in hex" do
+    test "converts Tj text to the assigned font's glyph IDs in hex" do
       {_doc, content_stream} =
         new()
         |> page(
           size: :letter,
-          fonts: %{
-            bodoni: [
-              file: @font_data,
-              encoding: :"Identity-H"
-            ]
-          }
+          fonts: %{bodoni: [file: @font_data]}
         )
         |> contents()
         |> font(:bodoni, size: 24)
@@ -59,7 +49,7 @@ defmodule Mudbrick.ContentStreamTest do
       [show_text_operation | _] = content_stream.value.operations
 
       assert Object.from(show_text_operation) |> to_string() == """
-             [<001100550174>] TJ\
+             <001100550174> Tj\
              """
     end
   end

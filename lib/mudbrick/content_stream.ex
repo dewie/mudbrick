@@ -25,33 +25,27 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule Tj do
-    defstruct [:text]
-
-    defimpl Mudbrick.Object do
-      def from(tj) do
-        [Mudbrick.Object.from(tj.text), " Tj"]
-      end
-    end
-  end
-
-  defmodule TJ do
     defstruct [:font, :text]
 
     defimpl Mudbrick.Object do
       def from(tj) do
-        {glyph_ids_decimal, _positions} =
-          tj.font.parsed
-          |> OpenType.layout_text(tj.text)
+        if tj.font do
+          {glyph_ids_decimal, _positions} =
+            tj.font.parsed
+            |> OpenType.layout_text(tj.text)
 
-        glyph_ids_hex =
-          glyph_ids_decimal
-          |> Enum.map(fn id ->
-            id
-            |> Integer.to_string(16)
-            |> String.pad_leading(4, "0")
-          end)
+          glyph_ids_hex =
+            glyph_ids_decimal
+            |> Enum.map(fn id ->
+              id
+              |> Integer.to_string(16)
+              |> String.pad_leading(4, "0")
+            end)
 
-        ["[<", glyph_ids_hex, ">] TJ"]
+          ["<", glyph_ids_hex, "> Tj"]
+        else
+          [Mudbrick.Object.from(tj.text), " Tj"]
+        end
       end
     end
   end

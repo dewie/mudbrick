@@ -77,7 +77,7 @@ defmodule Mudbrick do
     if latest_font_setting.font.descendant do
       ContentStream.add(
         context,
-        ContentStream.TJ,
+        ContentStream.Tj,
         font: latest_font_setting.font,
         text: text
       )
