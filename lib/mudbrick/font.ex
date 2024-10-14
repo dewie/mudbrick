@@ -19,18 +19,20 @@ defmodule Mudbrick.Font do
     defexception [:message]
   end
 
+  alias __MODULE__
   alias Mudbrick.Document
-  alias Mudbrick.Font
   alias Mudbrick.Font.CMap
+  alias Mudbrick.Object
+  alias Mudbrick.Stream
 
   def new(opts) do
     case Keyword.fetch(opts, :parsed) do
       {:ok, parsed} ->
         {:name, font_type} = Map.fetch!(parsed, "SubType")
-        struct!(Mudbrick.Font, Keyword.put(opts, :type, type!(font_type)))
+        struct!(Font, Keyword.put(opts, :type, type!(font_type)))
 
       :error ->
-        struct!(Mudbrick.Font, opts)
+        struct!(Font, opts)
     end
   end
 
@@ -71,7 +73,7 @@ defmodule Mudbrick.Font do
   defp add_font_file(doc, contents) do
     doc
     |> Document.add(
-      Mudbrick.Stream.new(
+      Stream.new(
         data: contents,
         additional_entries: %{
           Length1: byte_size(contents),
@@ -129,7 +131,7 @@ defmodule Mudbrick.Font do
 
   defimpl Mudbrick.Object do
     def from(font) do
-      Mudbrick.Object.from(
+      Object.from(
         %{
           Type: :Font,
           BaseFont: font.name,

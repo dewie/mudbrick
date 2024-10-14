@@ -7,7 +7,7 @@ defmodule Mudbrick.Indirect do
     end
 
     defimpl Mudbrick.Object do
-      def from(%Mudbrick.Indirect.Ref{number: number}) do
+      def from(%Ref{number: number}) do
         [to_string(number), " 0 R"]
       end
     end
@@ -21,7 +21,7 @@ defmodule Mudbrick.Indirect do
     end
 
     defimpl Mudbrick.Object do
-      def from(%Mudbrick.Indirect.Object{value: value, ref: ref}) do
+      def from(%Object{value: value, ref: ref}) do
         [to_string(ref.number), " 0 obj\n", Mudbrick.Object.from(value), "\nendobj"]
       end
     end

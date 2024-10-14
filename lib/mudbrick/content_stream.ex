@@ -9,7 +9,12 @@ defmodule Mudbrick.ContentStream do
 
     defimpl Mudbrick.Object do
       def from(tf) do
-        [Mudbrick.Object.from(tf.font.resource_identifier), " ", to_string(tf.size), " Tf"]
+        [
+          Mudbrick.Object.from(tf.font.resource_identifier),
+          " ",
+          to_string(tf.size),
+          " Tf"
+        ]
       end
     end
   end
@@ -19,7 +24,9 @@ defmodule Mudbrick.ContentStream do
 
     defimpl Mudbrick.Object do
       def from(td) do
-        [td.tx, td.ty, "Td"] |> Enum.map(&to_string/1) |> Enum.intersperse(" ")
+        [td.tx, td.ty, "Td"]
+        |> Enum.map(&to_string/1)
+        |> Enum.intersperse(" ")
       end
     end
   end
@@ -50,8 +57,7 @@ defmodule Mudbrick.ContentStream do
     def from(op) do
       if op.font.descendant do
         {glyph_ids_decimal, _positions} =
-          op.font.parsed
-          |> OpenType.layout_text(op.text)
+          OpenType.layout_text(op.font.parsed, op.text)
 
         glyph_ids_hex = Enum.map(glyph_ids_decimal, &Mudbrick.to_hex/1)
 
@@ -62,42 +68,30 @@ defmodule Mudbrick.ContentStream do
     end
   end
 
-  defmodule Ts do
-    defstruct [:rise]
-
-    defimpl Mudbrick.Object do
-      def from(ts) do
-        [Mudbrick.Object.from(ts.rise), " Ts"]
-      end
-    end
-  end
-
   def new(opts \\ []) do
-    struct!(Mudbrick.ContentStream, opts)
+    struct!(__MODULE__, opts)
   end
 
   def add({doc, contents_obj}, mod, opts) do
     Document.update(doc, contents_obj, fn contents ->
-      Map.update!(contents, :operations, fn ops ->
-        [struct(mod, opts) | ops]
+      Map.update!(contents, :operations, fn operations ->
+        [struct!(mod, opts) | operations]
       end)
     end)
   end
 
   defimpl Mudbrick.Object do
-    def from(stream) do
-      inner = [
-        "BT\n",
-        Enum.map_join(Enum.reverse(stream.operations), "\n", &Mudbrick.Object.from/1),
-        "\nET"
-      ]
-
-      [
-        Mudbrick.Object.from(%{Length: :erlang.iolist_size(inner)}),
-        "\nstream\n",
-        inner,
-        "\nendstream"
-      ]
+    def from(content_stream) do
+      Mudbrick.Stream.new(
+        data: [
+          "BT\n",
+          content_stream.operations
+          |> Enum.reverse()
+          |> Enum.map_join("\n", &Mudbrick.Object.from/1),
+          "\nET"
+        ]
+      )
+      |> Mudbrick.Object.from()
     end
   end
 end

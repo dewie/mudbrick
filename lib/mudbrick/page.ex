@@ -1,14 +1,14 @@
 defmodule Mudbrick.Page do
   defstruct contents: nil,
             fonts: %{},
-            size: nil,
-            parent: nil
+            parent: nil,
+            size: nil
 
   alias Mudbrick.Document
   alias Mudbrick.Font
 
   def new(opts \\ []) do
-    struct!(Mudbrick.Page, opts)
+    struct!(__MODULE__, opts)
   end
 
   def add(doc, opts) do
@@ -60,7 +60,10 @@ defmodule Mudbrick.Page do
               %{}
 
             contents ->
-              %{Contents: contents.ref, Resources: %{Font: font_dictionary(page.fonts)}}
+              %{
+                Contents: contents.ref,
+                Resources: %{Font: font_dictionary(page.fonts)}
+              }
           end
         )
       )

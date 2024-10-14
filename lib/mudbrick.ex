@@ -65,47 +65,36 @@ defmodule Mudbrick do
     ContentStream.add(context, ContentStream.Td, tx: x, ty: y)
   end
 
-  def text(context, text) do
-    {_doc, content_stream} = context
-
+  def text({_doc, content_stream} = context, text) do
     latest_font_setting =
-      Enum.find(content_stream.value.operations, fn
-        %ContentStream.Tf{} -> true
-        _ -> false
-      end)
-
-    context =
-      ContentStream.add(
-        context,
-        ContentStream.TL,
-        leading: latest_font_setting.size * 1.2
+      Enum.find(
+        content_stream.value.operations,
+        &match?(%ContentStream.Tf{}, &1)
       )
 
     [first_part | parts] = String.split(text, "\n")
 
-    context =
-      ContentStream.add(
-        context,
-        ContentStream.Tj,
-        font: latest_font_setting.font,
-        text: first_part
-      )
-
-    for part <- parts, reduce: context do
-      acc ->
-        ContentStream.add(
-          acc,
-          ContentStream.Apostrophe,
-          font: latest_font_setting.font,
-          text: part
-        )
-    end
-  end
-
-  def to_hex(n) do
-    n
-    |> Integer.to_string(16)
-    |> String.pad_leading(4, "0")
+    context
+    |> ContentStream.add(
+      ContentStream.TL,
+      leading: latest_font_setting.size * 1.2
+    )
+    |> ContentStream.add(
+      ContentStream.Tj,
+      font: latest_font_setting.font,
+      text: first_part
+    )
+    |> then(fn context ->
+      for part <- parts, reduce: context do
+        acc ->
+          ContentStream.add(
+            acc,
+            ContentStream.Apostrophe,
+            font: latest_font_setting.font,
+            text: part
+          )
+      end
+    end)
   end
 
   def render({doc, _page}) do
@@ -114,5 +103,11 @@ defmodule Mudbrick do
 
   def render(doc) do
     Mudbrick.Object.from(doc)
+  end
+
+  def to_hex(n) do
+    n
+    |> Integer.to_string(16)
+    |> String.pad_leading(4, "0")
   end
 end

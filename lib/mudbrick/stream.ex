@@ -3,7 +3,7 @@ defmodule Mudbrick.Stream do
             additional_entries: %{}
 
   def new(opts) do
-    struct!(Mudbrick.Stream, opts)
+    struct!(__MODULE__, opts)
   end
 
   defimpl Mudbrick.Object do

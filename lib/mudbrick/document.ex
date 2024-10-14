@@ -9,9 +9,7 @@ defmodule Mudbrick.Document do
   def new do
     %Document{}
     |> add(PageTree.new())
-    |> add(fn page_tree ->
-      Catalog.new(page_tree: page_tree.ref)
-    end)
+    |> add(&Catalog.new(page_tree: &1.ref))
     |> finish()
   end
 
@@ -70,8 +68,8 @@ defmodule Mudbrick.Document do
 
   defp put(doc, updated_object) do
     {
-      Map.update!(doc, :objects, fn objs ->
-        List.replace_at(objs, -updated_object.ref.number, updated_object)
+      Map.update!(doc, :objects, fn objects ->
+        List.replace_at(objects, -updated_object.ref.number, updated_object)
       end),
       updated_object
     }
