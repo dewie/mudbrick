@@ -17,7 +17,7 @@ defmodule Mudbrick.Stream do
       [
         Mudbrick.Object.from(
           %{
-            Length: byte_size(stream.data)
+            Length: :erlang.iolist_size(stream.data)
             # Filter: [:FlateDecode]
           }
           |> Map.merge(stream.additional_entries)

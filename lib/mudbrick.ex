@@ -102,6 +102,12 @@ defmodule Mudbrick do
     end
   end
 
+  def to_hex(n) do
+    n
+    |> Integer.to_string(16)
+    |> String.pad_leading(4, "0")
+  end
+
   def render({doc, _page}) do
     render(doc)
   end

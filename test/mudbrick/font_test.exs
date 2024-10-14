@@ -6,6 +6,44 @@ defmodule Mudbrick.FontTest do
   alias Mudbrick.Indirect
   alias Mudbrick.Object
 
+  test "embedded OTF fonts have a glyph-unicode mapping to enable copy+paste" do
+    data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
+
+    {doc, _} =
+      Mudbrick.new()
+      |> Mudbrick.page(fonts: %{bodoni: [file: data]})
+
+    [_, font | _] = doc.objects
+
+    assert %Font{to_unicode: mapping} = font.value
+    assert Document.object_with_ref(doc, mapping.ref)
+
+    assert font.value |> Object.from() |> to_string() =~ ~r"/ToUnicode [0-9] 0 R"
+
+    assert %Mudbrick.Font.CMap{} = mapping.value
+  end
+
+  test "serialised CMaps conform to standard" do
+    data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
+    parsed = OpenType.new() |> OpenType.parse(data)
+
+    lines =
+      Mudbrick.Font.CMap.new(parsed: parsed)
+      |> Object.from()
+      |> to_string()
+      |> String.split("\n")
+
+    assert [
+             <<"<</Length ", _::binary>>,
+             ">>",
+             "stream",
+             "/CIDInit /ProcSet findresource begin"
+             | _
+           ] = lines
+
+    assert "497 beginbfchar" in lines
+  end
+
   test "embedded OTF fonts create descendant, descriptor and file objects" do
     data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
 
@@ -106,7 +144,8 @@ defmodule Mudbrick.FontTest do
                type: :Type0,
                encoding: :"Identity-H",
                descendant: Indirect.Ref.new(22) |> Indirect.Object.new(%{}),
-               resource_identifier: :F1
+               resource_identifier: :F1,
+               to_unicode: Indirect.Ref.new(23) |> Indirect.Object.new(%{})
              }
              |> Object.from()
              |> to_string() ==
@@ -116,6 +155,7 @@ defmodule Mudbrick.FontTest do
                  /BaseFont /LibreBodoni-Regular
                  /DescendantFonts [22 0 R]
                  /Encoding /Identity-H
+                 /ToUnicode 23 0 R
                >>\
                """
     end

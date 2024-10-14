@@ -10,6 +10,7 @@ defmodule Mudbrick.Font do
     :encoding,
     :name,
     :resource_identifier,
+    :to_unicode,
     :type,
     :parsed
   ]
@@ -20,6 +21,7 @@ defmodule Mudbrick.Font do
 
   alias Mudbrick.Document
   alias Mudbrick.Font
+  alias Mudbrick.Stream
 
   def new(opts) do
     case Keyword.fetch(opts, :parsed) do
@@ -109,18 +111,71 @@ defmodule Mudbrick.Font do
     )
   end
 
-  defp add_font(doc, opentype, font_name, font_opts) do
+  defmodule CMap do
+    defstruct [:parsed]
+
+    def new(opts) do
+      struct!(CMap, opts)
+    end
+
+    defimpl Mudbrick.Object do
+      def from(cmap) do
+        pairs =
+          cmap.parsed.gid2cid
+          |> Enum.map(fn {gid, cid} ->
+            ["<", Mudbrick.to_hex(gid), "> <", Mudbrick.to_hex(cid), ">\n"]
+          end)
+          |> Enum.sort()
+
+        data = [
+          """
+          /CIDInit /ProcSet findresource begin
+          12 dict begin
+          begincmap
+          /CIDSystemInfo
+          << /Registry (Adobe)
+             /Ordering (UCS)
+             /Supplement 0
+          >> def
+          /CMapName /Adobe-Identity-UCS def
+          /CMapType 2 def
+          1 begincodespacerange
+          <0000> <ffff>
+          endcodespacerange
+          """,
+          pairs |> length() |> to_string(),
+          """
+           beginbfchar
+          """,
+          pairs,
+          """
+          endbfchar
+          endcmap
+          CMapName currentdict /CMap defineresource pop
+          end
+          end\
+          """
+        ]
+
+        Mudbrick.Object.from(Stream.new(data: data))
+      end
+    end
+  end
+
+  defp add_font({doc, cid_font}, opentype, font_name, font_opts) do
     doc
-    |> Document.add(
-      &Font.new(
+    |> Document.add(CMap.new(parsed: opentype))
+    |> Document.add(fn cmap ->
+      Font.new(
         Keyword.merge(font_opts,
-          descendant: &1,
+          descendant: cid_font,
           encoding: :"Identity-H",
           name: font_name,
-          parsed: opentype
+          parsed: opentype,
+          to_unicode: cmap
         )
       )
-    )
+    end)
   end
 
   defmodule CIDFont do
@@ -219,7 +274,10 @@ defmodule Mudbrick.Font do
         |> optional(:Encoding, font.encoding)
         |> Map.merge(
           if font.descendant,
-            do: %{DescendantFonts: [font.descendant.ref]},
+            do: %{
+              DescendantFonts: [font.descendant.ref],
+              ToUnicode: font.to_unicode.ref
+            },
             else: %{}
         )
       )

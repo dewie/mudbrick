@@ -53,13 +53,7 @@ defmodule Mudbrick.ContentStream do
           op.font.parsed
           |> OpenType.layout_text(op.text)
 
-        glyph_ids_hex =
-          glyph_ids_decimal
-          |> Enum.map(fn id ->
-            id
-            |> Integer.to_string(16)
-            |> String.pad_leading(4, "0")
-          end)
+        glyph_ids_hex = Enum.map(glyph_ids_decimal, &Mudbrick.to_hex/1)
 
         ["<", glyph_ids_hex, "> ", op.operator]
       else
