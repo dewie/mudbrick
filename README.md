@@ -1,6 +1,15 @@
 # Mudbrick
 
-**TODO: Add description**
+Early-stages PDF generator, beelining for:
+
+- PDF 2.0 support.
+- In-process, pure functional approach.
+- OpenType support.
+- Special characters, like ₛᵤ₆ₛ꜀ᵣᵢₚₜₛ for chemical compounds etc.
+
+Future plans:
+
+- Font subsetting.
 
 ## Installation
 
