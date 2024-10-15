@@ -1,5 +1,6 @@
 defmodule Mudbrick do
   alias Mudbrick.ContentStream
+  alias Mudbrick.ContentStream.TextObject
   alias Mudbrick.Document
   alias Mudbrick.Font
   alias Mudbrick.Page
@@ -51,14 +52,14 @@ defmodule Mudbrick do
       {:ok, font} ->
         context
         |> add(
-          ContentStream.Tf,
+          TextObject.Tf,
           Keyword.put(
             opts,
             :font,
             font.value
           )
         )
-        |> add(ContentStream.TL, leading: Keyword.fetch!(opts, :size) * 1.2)
+        |> add(TextObject.TL, leading: Keyword.fetch!(opts, :size) * 1.2)
 
       :error ->
         raise Font.Unregistered, "Unregistered font: #{user_identifier}"
@@ -66,7 +67,7 @@ defmodule Mudbrick do
   end
 
   def text_position(context, x, y) do
-    ContentStream.add(context, ContentStream.Td, tx: x, ty: y)
+    ContentStream.add(context, TextObject.Td, tx: x, ty: y)
   end
 
   def text(context, text, colour: {r, g, b}) do
@@ -113,19 +114,24 @@ defmodule Mudbrick do
     [first_part | parts] = String.split(text, "\n")
 
     context
-    |> add(ContentStream.Tj, font: tf.font, text: first_part)
+    |> add(TextObject.Tj, font: tf.font, text: first_part)
     |> then(fn context ->
       for part <- parts, reduce: context do
         acc ->
-          add(acc, ContentStream.Apostrophe, font: tf.font, text: part)
+          add(acc, TextObject.Apostrophe, font: tf.font, text: part)
       end
     end)
   end
 
   defp latest_font_operation!(content_stream) do
-    Enum.find(
-      content_stream.value.operations,
-      &match?(%ContentStream.Tf{}, &1)
+    Enum.find_value(
+      content_stream.value.text_objects,
+      fn text_object ->
+        Enum.find(
+          text_object.operations,
+          &match?(%TextObject.Tf{}, &1)
+        )
+      end
     ) || raise Font.NotSet, "No font chosen"
   end
 end
