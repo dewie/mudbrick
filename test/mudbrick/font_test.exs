@@ -36,13 +36,11 @@ defmodule Mudbrick.FontTest do
              BT
              /F1 10 Tf
              12.0 TL
+             0.0 0.0 0.0 rg
              (black and ) Tj
-             q
              1.0 0.0 0.0 rg
              (red) Tj
              (text) '
-             Q
-             /F1 10 Tf
              ET
              """
   end

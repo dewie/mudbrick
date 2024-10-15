@@ -69,37 +69,14 @@ defmodule Mudbrick do
     ContentStream.add(context, ContentStream.Td, tx: x, ty: y)
   end
 
-  defp latest_font_operation!(content_stream) do
-    Enum.find(
-      content_stream.value.operations,
-      &match?(%ContentStream.Tf{}, &1)
-    ) || raise Font.NotSet, "No font chosen"
-  end
-
-  def text({_doc, content_stream} = context, text, colour: {r, g, b}) do
+  def text(context, text, colour: {r, g, b}) do
     context
-    |> ContentStream.add(ContentStream.QPush, [])
     |> ContentStream.add(ContentStream.Rg, r: r, g: g, b: b)
-    |> text(text)
-    |> ContentStream.add(ContentStream.QPop, [])
-    |> ContentStream.add(latest_font_operation!(content_stream))
+    |> write_text(text)
   end
 
-  def text({_doc, content_stream} = context, text) do
-    import ContentStream
-
-    tf = latest_font_operation!(content_stream)
-
-    [first_part | parts] = String.split(text, "\n")
-
-    context
-    |> add(ContentStream.Tj, font: tf.font, text: first_part)
-    |> then(fn context ->
-      for part <- parts, reduce: context do
-        acc ->
-          add(acc, ContentStream.Apostrophe, font: tf.font, text: part)
-      end
-    end)
+  def text(context, text) do
+    text(context, text, colour: {0.0, 0.0, 0.0})
   end
 
   def render({doc, _page}) do
@@ -126,5 +103,29 @@ defmodule Mudbrick do
 
   def join(list, separator) do
     Enum.map_join(list, separator, &Mudbrick.Object.from/1)
+  end
+
+  defp write_text({_doc, content_stream} = context, text) do
+    import ContentStream
+
+    tf = latest_font_operation!(content_stream)
+
+    [first_part | parts] = String.split(text, "\n")
+
+    context
+    |> add(ContentStream.Tj, font: tf.font, text: first_part)
+    |> then(fn context ->
+      for part <- parts, reduce: context do
+        acc ->
+          add(acc, ContentStream.Apostrophe, font: tf.font, text: part)
+      end
+    end)
+  end
+
+  defp latest_font_operation!(content_stream) do
+    Enum.find(
+      content_stream.value.operations,
+      &match?(%ContentStream.Tf{}, &1)
+    ) || raise Font.NotSet, "No font chosen"
   end
 end

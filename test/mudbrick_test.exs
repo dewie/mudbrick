@@ -90,17 +90,19 @@ defmodule MudbrickTest do
              >>
              endobj
              6 0 obj
-             <</Length 99
+             <</Length 129
              >>
              stream
              BT
              /F2 100 Tf
              120.0 TL
              300 400 Td
+             0.0 0.0 0.0 rg
              (hello, world!) Tj
              /F1 10 Tf
              12.0 TL
              0 -24 Td
+             0.0 0.0 0.0 rg
              (a new line!) Tj
              ET
              endstream
@@ -120,13 +122,13 @@ defmodule MudbrickTest do
              0000000241 00000 n 
              0000000345 00000 n 
              0000000490 00000 n 
-             0000000638 00000 n 
+             0000000669 00000 n 
              trailer
              <</Root 2 0 R
                /Size 8
              >>
              startxref
-             716
+             747
              %%EOF\
              """
   end
