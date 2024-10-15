@@ -1,10 +1,11 @@
 defmodule Mudbrick.FontTest do
   use ExUnit.Case, async: true
 
+  import TestHelper
+
   alias Mudbrick.Document
   alias Mudbrick.Font
   alias Mudbrick.Indirect
-  alias Mudbrick.Object
 
   test "can set colour on a piece of text" do
     import Mudbrick
@@ -31,7 +32,7 @@ defmodule Mudbrick.FontTest do
         colour: {1.0, 0.0, 0.0}
       )
 
-    assert content_stream |> Object.from() |> to_string() =~
+    assert show(content_stream) =~
              """
              BT
              /F1 10 Tf
@@ -57,7 +58,7 @@ defmodule Mudbrick.FontTest do
     assert %Font{to_unicode: mapping} = font.value
     assert Document.object_with_ref(doc, mapping.ref)
 
-    assert font.value |> Object.from() |> to_string() =~ ~r"/ToUnicode [0-9] 0 R"
+    assert show(font.value) =~ ~r"/ToUnicode [0-9] 0 R"
 
     assert %Mudbrick.Font.CMap{} = mapping.value
   end
@@ -68,8 +69,7 @@ defmodule Mudbrick.FontTest do
 
     lines =
       Mudbrick.Font.CMap.new(parsed: parsed)
-      |> Object.from()
-      |> to_string()
+      |> show()
       |> String.split("\n")
 
     assert [
@@ -173,8 +173,7 @@ defmodule Mudbrick.FontTest do
                type: :TrueType,
                resource_identifier: :F1
              }
-             |> Object.from()
-             |> to_string() ==
+             |> show() ==
                """
                <</Type /Font
                  /Subtype /TrueType
@@ -190,8 +189,7 @@ defmodule Mudbrick.FontTest do
                encoding: :PDFDocEncoding,
                resource_identifier: :F1
              }
-             |> Object.from()
-             |> to_string() ==
+             |> show() ==
                """
                <</Type /Font
                  /Subtype /TrueType
@@ -210,8 +208,7 @@ defmodule Mudbrick.FontTest do
                resource_identifier: :F1,
                to_unicode: Indirect.Ref.new(23) |> Indirect.Object.new(%{})
              }
-             |> Object.from()
-             |> to_string() ==
+             |> show() ==
                """
                <</Type /Font
                  /Subtype /Type0
@@ -231,8 +228,7 @@ defmodule Mudbrick.FontTest do
                default_width: 1000,
                widths: [0, 1, 2]
              }
-             |> Object.from()
-             |> to_string() ==
+             |> show() ==
                """
                <</Type /Font
                  /Subtype /CIDFontType0
@@ -260,8 +256,7 @@ defmodule Mudbrick.FontTest do
                italic_angle: 0.0,
                stem_vertical: 80
              }
-             |> Object.from()
-             |> to_string() ==
+             |> show() ==
                """
                <</Type /FontDescriptor
                  /Ascent 928

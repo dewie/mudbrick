@@ -2,7 +2,7 @@ defmodule Mudbrick.ObjectTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
-  alias Mudbrick.Object
+  import TestHelper
 
   describe "dictionary (map)" do
     test "is enclosed in double angle brackets" do
@@ -17,7 +17,7 @@ defmodule Mudbrick.ObjectTest do
           AString: "hi there"
         }
 
-      assert example |> as_string() ==
+      assert show(example) ==
                """
                <</Type /Example
                  /AString (hi there)
@@ -34,22 +34,22 @@ defmodule Mudbrick.ObjectTest do
 
   describe "names (atoms)" do
     test "are prefixed with a solidus" do
-      assert as_string(:Name1) == "/Name1"
-      assert as_string(:ASomewhatLongerName) == "/ASomewhatLongerName"
+      assert show(:Name1) == "/Name1"
+      assert show(:ASomewhatLongerName) == "/ASomewhatLongerName"
 
-      assert as_string(:"A;Name_With-Various***Characters?") ==
+      assert show(:"A;Name_With-Various***Characters?") ==
                "/A;Name_With-Various***Characters?"
 
-      assert as_string(:"1.2") == "/1.2"
+      assert show(:"1.2") == "/1.2"
     end
 
     test "literal whitespace is escaped as hex" do
-      assert as_string(:"hi there") == "/hi#20there"
+      assert show(:"hi there") == "/hi#20there"
     end
 
     property "characters outside of ! to ~ don't appear as literals" do
       check all s <- string([0..(?! - 1), (?~ + 1)..999], min_length: 1) do
-        rendered = as_string(:"#{s}")
+        rendered = show(:"#{s}")
         refute rendered =~ s
         assert rendered =~ "#"
       end
@@ -58,19 +58,17 @@ defmodule Mudbrick.ObjectTest do
 
   describe "lists" do
     test "become PDF arrays, elements separated by space" do
-      assert as_string([]) == "[]"
+      assert show([]) == "[]"
 
-      assert as_string([549, 3.14, false, "Ralph", :SomeName]) ==
+      assert show([549, 3.14, false, "Ralph", :SomeName]) ==
                "[549 3.14 false (Ralph) /SomeName]"
     end
   end
 
   describe "strings" do
     test "escape certain characters" do
-      assert as_string("\n \r \t \b \f ) ( \\ #{[0xDDD]}") ==
+      assert show("\n \r \t \b \f ) ( \\ #{[0xDDD]}") ==
                "(\\n \\r \\t \\b \\f \\) \\( \\ \\ddd)"
     end
   end
-
-  defp as_string(l), do: l |> Object.from() |> to_string()
 end
