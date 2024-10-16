@@ -3,7 +3,7 @@ defmodule Mudbrick.ContentStreamTest do
 
   import Mudbrick
 
-  alias Mudbrick.ContentStream.TextObject.Tj
+  alias Mudbrick.ContentStream.Tj
   alias Mudbrick.Font
   alias Mudbrick.Indirect
 
@@ -30,7 +30,7 @@ defmodule Mudbrick.ContentStreamTest do
       b\
       """)
 
-    assert List.last(content_stream.value.text_objects).operations
+    assert content_stream.value.operations
            |> render(2) ==
              """
              (a) Tj
@@ -53,7 +53,7 @@ defmodule Mudbrick.ContentStreamTest do
       b\
       """)
 
-    assert List.last(content_stream.value.text_objects).operations
+    assert content_stream.value.operations
            |> render(2) ==
              """
              <00A5> Tj
@@ -73,7 +73,7 @@ defmodule Mudbrick.ContentStreamTest do
       |> text_position(0, 700)
       |> text("CO₂")
 
-    [show_text_operation | _] = List.last(content_stream.value.text_objects).operations
+    [show_text_operation | _] = content_stream.value.operations
 
     assert %Tj{
              text: "CO₂",
@@ -97,7 +97,7 @@ defmodule Mudbrick.ContentStreamTest do
         |> text_position(0, 700)
         |> text("CO₂")
 
-      assert List.last(content_stream.value.text_objects).operations
+      assert content_stream.value.operations
              |> render(1) ==
                """
                <001100550174> Tj\
