@@ -103,6 +103,17 @@ defmodule Mudbrick.ContentStreamTest do
                <001100550174> Tj\
                """
     end
+
+    test "copes with trailing newlines in CID font text" do
+      data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
+
+      assert new()
+             |> page(size: :letter, fonts: %{bodoni: [file: data]})
+             |> contents()
+             |> font(:bodoni, size: 13)
+             |> text("\n")
+             |> render()
+    end
   end
 
   defp render(ops, n) do
