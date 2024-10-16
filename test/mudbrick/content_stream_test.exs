@@ -117,6 +117,5 @@ defmodule Mudbrick.ContentStreamTest do
     |> Enum.take(n)
     |> Enum.reverse()
     |> Mudbrick.join("\n")
-    |> to_string()
   end
 end
