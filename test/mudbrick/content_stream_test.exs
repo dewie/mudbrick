@@ -7,8 +7,6 @@ defmodule Mudbrick.ContentStreamTest do
   alias Mudbrick.Font
   alias Mudbrick.Indirect
 
-  @font_data System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
-
   test "built-in font linebreaks are converted to the ' operator" do
     {_doc, content_stream} =
       new()
@@ -43,7 +41,7 @@ defmodule Mudbrick.ContentStreamTest do
       new()
       |> page(
         size: :letter,
-        fonts: %{bodoni: [file: @font_data]}
+        fonts: %{bodoni: [file: TestHelper.bodoni()]}
       )
       |> contents()
       |> font(:bodoni, size: 10)
@@ -66,7 +64,7 @@ defmodule Mudbrick.ContentStreamTest do
       new()
       |> page(
         size: :letter,
-        fonts: %{bodoni: [file: @font_data]}
+        fonts: %{bodoni: [file: TestHelper.bodoni()]}
       )
       |> contents()
       |> font(:bodoni, size: 24)
@@ -90,7 +88,7 @@ defmodule Mudbrick.ContentStreamTest do
         new()
         |> page(
           size: :letter,
-          fonts: %{bodoni: [file: @font_data]}
+          fonts: %{bodoni: [file: TestHelper.bodoni()]}
         )
         |> contents()
         |> font(:bodoni, size: 24)
@@ -105,10 +103,8 @@ defmodule Mudbrick.ContentStreamTest do
     end
 
     test "copes with trailing newlines in CID font text" do
-      data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
-
       assert new()
-             |> page(size: :letter, fonts: %{bodoni: [file: data]})
+             |> page(size: :letter, fonts: %{bodoni: [file: TestHelper.bodoni()]})
              |> contents()
              |> font(:bodoni, size: 13)
              |> text("\n")

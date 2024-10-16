@@ -4,10 +4,8 @@ defmodule Mudbrick.StreamTest do
   import TestHelper
 
   test "includes length and stream markers when serialised" do
-    data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
-
     serialised =
-      Mudbrick.Stream.new(data: data)
+      Mudbrick.Stream.new(data: bodoni())
       |> Mudbrick.Object.from()
       |> :erlang.iolist_to_binary()
 

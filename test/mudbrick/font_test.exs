@@ -47,11 +47,9 @@ defmodule Mudbrick.FontTest do
   end
 
   test "embedded OTF fonts have a glyph-unicode mapping to enable copy+paste" do
-    data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
-
     {doc, _} =
       Mudbrick.new()
-      |> Mudbrick.page(fonts: %{bodoni: [file: data]})
+      |> Mudbrick.page(fonts: %{bodoni: [file: bodoni()]})
 
     [_, font | _] = doc.objects
 
@@ -64,8 +62,7 @@ defmodule Mudbrick.FontTest do
   end
 
   test "serialised CMaps conform to standard" do
-    data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
-    parsed = OpenType.new() |> OpenType.parse(data)
+    parsed = OpenType.new() |> OpenType.parse(bodoni())
 
     lines =
       Mudbrick.Font.CMap.new(parsed: parsed)
@@ -84,7 +81,7 @@ defmodule Mudbrick.FontTest do
   end
 
   test "embedded OTF fonts create descendant, descriptor and file objects" do
-    data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
+    data = bodoni()
 
     {doc, _} =
       Mudbrick.new()

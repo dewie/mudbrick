@@ -4,12 +4,10 @@ defmodule MudbrickTest do
   import Mudbrick
 
   test "playground" do
-    data = System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
-
     assert new()
            |> page(
              size: :letter,
-             fonts: %{bodoni: [file: data]}
+             fonts: %{bodoni: [file: TestHelper.bodoni()]}
            )
            |> contents()
            |> font(:bodoni, size: 13)
