@@ -31,17 +31,7 @@ defmodule Mudbrick do
         &Map.fetch!(@page_sizes, &1)
       )
     )
-  end
-
-  def contents({doc, page}) do
-    import Document
-
-    doc
-    |> add(ContentStream.new(page: page.value))
-    |> update(page, fn contents, %Page{} = p ->
-      %{p | contents: contents}
-    end)
-    |> finish(& &1.value.contents)
+    |> contents()
   end
 
   def font({_document, content_stream_object} = context, user_identifier, opts) do
@@ -106,5 +96,16 @@ defmodule Mudbrick do
 
   def join(list, separator) do
     Enum.map_join(list, separator, &Mudbrick.Object.from/1)
+  end
+
+  defp contents({doc, page}) do
+    import Document
+
+    doc
+    |> add(ContentStream.new(page: page.value))
+    |> update(page, fn contents, %Page{} = p ->
+      %{p | contents: contents}
+    end)
+    |> finish(& &1.value.contents)
   end
 end

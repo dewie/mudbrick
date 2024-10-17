@@ -9,7 +9,6 @@ defmodule MudbrickTest do
              size: :letter,
              fonts: %{bodoni: [file: TestHelper.bodoni()]}
            )
-           |> contents()
            |> font(:bodoni, size: 14)
            |> text_position(200, 700)
            |> text("CO₂ ", colour: {1, 0, 0}, align: :right)
@@ -59,7 +58,6 @@ defmodule MudbrickTest do
                ]
              }
            )
-           |> contents()
            |> font(:helvetica, size: 100)
            |> text_position(300, 400)
            |> text("hello, world!")
@@ -126,12 +124,25 @@ defmodule MudbrickTest do
              endobj
              7 0 obj
              <</Type /Page
+               /Contents 8 0 R
                /MediaBox [0 0 597.6 842.4]
                /Parent 1 0 R
+               /Resources <</Font <<
+             >>
+             >>
              >>
              endobj
+             8 0 obj
+             <</Length 6
+             >>
+             stream
+             BT
+
+             ET
+             endstream
+             endobj
              xref
-             0 8
+             0 9
              0000000000 65535 f 
              0000000023 00000 n 
              0000000089 00000 n 
@@ -140,12 +151,13 @@ defmodule MudbrickTest do
              0000000345 00000 n 
              0000000490 00000 n 
              0000000637 00000 n 
+             0000000763 00000 n 
              trailer
              <</Root 2 0 R
-               /Size 8
+               /Size 9
              >>
              startxref
-             715
+             817
              %%EOF\
              """
   end
@@ -154,6 +166,7 @@ defmodule MudbrickTest do
     assert new()
            |> page()
            |> render()
+           |> output
            |> to_string() ==
              """
              %PDF-2.0
@@ -171,22 +184,36 @@ defmodule MudbrickTest do
              endobj
              3 0 obj
              <</Type /Page
+               /Contents 4 0 R
                /MediaBox [0 0 597.6 842.4]
                /Parent 1 0 R
+               /Resources <</Font <<
+             >>
+             >>
              >>
              endobj
+             4 0 obj
+             <</Length 6
+             >>
+             stream
+             BT
+
+             ET
+             endstream
+             endobj
              xref
-             0 4
+             0 5
              0000000000 65535 f 
              0000000023 00000 n 
              0000000083 00000 n 
              0000000133 00000 n 
+             0000000259 00000 n 
              trailer
              <</Root 2 0 R
-               /Size 4
+               /Size 5
              >>
              startxref
-             211
+             313
              %%EOF\
              """
   end

@@ -21,7 +21,6 @@ defmodule Mudbrick.FontTest do
           ]
         }
       )
-      |> contents()
       |> font(:helvetica, size: 10)
       |> text("black and ")
       |> text(
@@ -50,7 +49,7 @@ defmodule Mudbrick.FontTest do
       Mudbrick.new()
       |> Mudbrick.page(fonts: %{bodoni: [file: bodoni()]})
 
-    [_, font | _] = doc.objects
+    [_, _page, font | _] = doc.objects
 
     assert %Font{to_unicode: mapping} = font.value
     assert Document.object_with_ref(doc, mapping.ref)
@@ -86,7 +85,7 @@ defmodule Mudbrick.FontTest do
       Mudbrick.new()
       |> Mudbrick.page(fonts: %{bodoni: [file: data]})
 
-    [_, font | _] = doc.objects
+    [_, _page, font | _] = doc.objects
 
     assert %Font{
              name: :"LibreBodoni-Regular",
@@ -136,7 +135,6 @@ defmodule Mudbrick.FontTest do
           ]
         }
       )
-      |> contents()
 
     e =
       assert_raise Font.NotSet, fn ->
@@ -152,7 +150,6 @@ defmodule Mudbrick.FontTest do
     chain =
       new()
       |> page(fonts: %{})
-      |> contents()
 
     e =
       assert_raise Font.Unregistered, fn ->

@@ -16,7 +16,6 @@ defmodule Mudbrick.ContentStreamTest do
           size: :letter,
           fonts: %{bodoni: [file: TestHelper.bodoni()]}
         )
-        |> contents()
         |> font(:bodoni, size: 10)
         |> text_position(400, 0)
         |> text("a", align: :right)
@@ -47,7 +46,6 @@ defmodule Mudbrick.ContentStreamTest do
           size: :letter,
           fonts: %{bodoni: [file: TestHelper.bodoni()]}
         )
-        |> contents()
         |> font(:bodoni, size: 10)
         |> text_position(400, 0)
         |> text("a", align: :right)
@@ -78,7 +76,6 @@ defmodule Mudbrick.ContentStreamTest do
           size: :letter,
           fonts: %{bodoni: [file: TestHelper.bodoni()]}
         )
-        |> contents()
         |> font(:bodoni, size: 10)
         |> text_position(400, 0)
         |> text("a")
@@ -116,7 +113,6 @@ defmodule Mudbrick.ContentStreamTest do
           size: :letter,
           fonts: %{bodoni: [file: TestHelper.bodoni()]}
         )
-        |> contents()
         |> font(:bodoni, size: 14)
         |> text_position(200, 700)
         |> text("z", align: :right)
@@ -168,7 +164,6 @@ defmodule Mudbrick.ContentStreamTest do
             ]
           }
         )
-        |> contents()
         |> font(:helvetica, size: 10)
         |> text("hi", align: :right)
       end)
@@ -188,7 +183,6 @@ defmodule Mudbrick.ContentStreamTest do
           ]
         }
       )
-      |> contents()
       |> font(:helvetica, size: 10)
       |> text_position(0, 700)
       |> text("""
@@ -211,7 +205,6 @@ defmodule Mudbrick.ContentStreamTest do
         size: :letter,
         fonts: %{bodoni: [file: TestHelper.bodoni()]}
       )
-      |> contents()
       |> font(:bodoni, size: 10)
       |> text_position(0, 700)
       |> text("""
@@ -234,7 +227,6 @@ defmodule Mudbrick.ContentStreamTest do
         size: :letter,
         fonts: %{bodoni: [file: TestHelper.bodoni()]}
       )
-      |> contents()
       |> font(:bodoni, size: 24)
       |> text_position(0, 700)
       |> text("CO₂")
@@ -258,7 +250,6 @@ defmodule Mudbrick.ContentStreamTest do
           size: :letter,
           fonts: %{bodoni: [file: TestHelper.bodoni()]}
         )
-        |> contents()
         |> font(:bodoni, size: 24)
         |> text_position(0, 700)
         |> text("CO₂")
@@ -273,7 +264,6 @@ defmodule Mudbrick.ContentStreamTest do
     test "copes with trailing newlines in CID font text" do
       assert new()
              |> page(size: :letter, fonts: %{bodoni: [file: TestHelper.bodoni()]})
-             |> contents()
              |> font(:bodoni, size: 13)
              |> text("\n")
              |> render()
