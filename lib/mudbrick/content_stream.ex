@@ -127,16 +127,14 @@ defmodule Mudbrick.ContentStream do
         context
 
       text ->
-        context
-        |> align(text, old_alignment, new_alignment, fn ->
+        align(context, text, old_alignment, new_alignment, fn ->
           %Tj{font: tf.font, text: text}
         end)
     end
     |> then(fn context ->
       for part <- parts, reduce: context do
         acc ->
-          acc
-          |> align(part, new_alignment, fn ->
+          align(acc, part, old_alignment, new_alignment, fn ->
             %Apostrophe{font: tf.font, text: part}
           end)
       end
@@ -166,34 +164,15 @@ defmodule Mudbrick.ContentStream do
 
       {_, :right} ->
         tf = Tf.latest!(content_stream)
-        width = Font.width(tf.font, tf.size, text)
 
-        context
-        |> add(Td, tx: -width, ty: 0, purpose: :align_right)
-        |> put(current_alignment: :right)
-    end
-    |> add(f.())
-    |> negate_right_alignment()
-  end
+        case Font.width(tf.font, tf.size, text) do
+          0 ->
+            context
 
-  defp align(context, _text, :left, f) do
-    context
-    |> put(current_alignment: :left)
-    |> add(f.())
-    |> negate_right_alignment()
-  end
-
-  defp align({_doc, content_stream} = context, text, :right, f) do
-    tf = Tf.latest!(content_stream)
-
-    case Font.width(tf.font, tf.size, text) do
-      0 ->
-        context
-        |> put(current_alignment: :right)
-
-      width ->
-        context
-        |> add(Td, tx: -width, ty: 0, purpose: :align_right)
+          width ->
+            context
+            |> add(Td, tx: -width, ty: 0, purpose: :align_right)
+        end
         |> put(current_alignment: :right)
     end
     |> add(f.())
@@ -201,24 +180,23 @@ defmodule Mudbrick.ContentStream do
   end
 
   defp negate_right_alignment({_doc, cs} = context) do
-    if cs.value.current_width do
-      context
-      |> add(Td, tx: cs.value.current_width, purpose: :negate_align_right)
-      |> put(current_width: nil)
+    if tx = current_right_alignment(cs) do
+      add(context, %Td{tx: -tx, purpose: :negate_align_right})
     else
-      if td = current_right_alignment(cs) do
-        add(context, %{td | tx: -td.tx, purpose: :negate_align_right})
-      else
-        context
-      end
+      context
+    end
+    |> put(current_width: nil)
+  end
+
+  defp current_right_alignment(%{value: %{current_width: nil}} = content_stream) do
+    case Td.most_recent(content_stream) do
+      %Td{purpose: :align_right} = td -> td.tx
+      _ -> nil
     end
   end
 
-  defp current_right_alignment(content_stream) do
-    case Td.most_recent(content_stream) do
-      %Td{purpose: :align_right} = td -> td
-      _ -> nil
-    end
+  defp current_right_alignment(%{value: %{current_width: current_width}}) do
+    -current_width
   end
 
   defp put({doc, contents_obj}, fields) do
