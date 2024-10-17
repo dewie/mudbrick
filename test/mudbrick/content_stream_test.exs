@@ -154,6 +154,25 @@ defmodule Mudbrick.ContentStreamTest do
                |> Enum.reverse()
                |> Enum.map(&show/1)
     end
+
+    test "is unsupported for built-in fonts right now" do
+      assert_raise(Font.NotMeasured, fn ->
+        new()
+        |> page(
+          size: :letter,
+          fonts: %{
+            helvetica: [
+              name: :Helvetica,
+              type: :TrueType,
+              encoding: :PDFDocEncoding
+            ]
+          }
+        )
+        |> contents()
+        |> font(:helvetica, size: 10)
+        |> text("hi", align: :right)
+      end)
+    end
   end
 
   test "built-in font linebreaks are converted to the ' operator" do

@@ -15,6 +15,10 @@ defmodule Mudbrick.Font do
     :parsed
   ]
 
+  defmodule NotMeasured do
+    defexception [:message]
+  end
+
   defmodule NotSet do
     defexception [:message]
   end
@@ -131,6 +135,10 @@ defmodule Mudbrick.Font do
         )
       )
     end)
+  end
+
+  def width(%Font{parsed: nil}, _size, _text) do
+    raise Font.NotMeasured, "Built-in fonts aren't alignable yet"
   end
 
   def width(font, size, text) do
