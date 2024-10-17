@@ -3,6 +3,7 @@ defmodule Mudbrick.ContentStream do
   defstruct page: nil, operations: []
 
   alias Mudbrick.Document
+  alias Mudbrick.Font
 
   defmodule Rg do
     defstruct [:r, :g, :b]
@@ -16,6 +17,13 @@ defmodule Mudbrick.ContentStream do
 
   defmodule Tf do
     defstruct [:font, :size]
+
+    def latest!(content_stream) do
+      Enum.find(
+        content_stream.value.operations,
+        &match?(%Tf{}, &1)
+      ) || raise Mudbrick.Font.NotSet, "No font chosen"
+    end
 
     defimpl Mudbrick.Object do
       def from(tf) do
@@ -31,6 +39,10 @@ defmodule Mudbrick.ContentStream do
 
   defmodule Td do
     defstruct [:tx, :ty, :purpose]
+
+    def most_recent(content_stream) do
+      Enum.find(content_stream.value.operations, &match?(%Td{}, &1))
+    end
 
     defimpl Mudbrick.Object do
       def from(td) do
@@ -96,6 +108,75 @@ defmodule Mudbrick.ContentStream do
         [struct!(mod, opts) | operations]
       end)
     end)
+  end
+
+  def write_text({_doc, content_stream} = context, text, opts) do
+    tf = Tf.latest!(content_stream)
+    old_alignment = current_alignment(content_stream)
+
+    [first_part | parts] = String.split(text, "\n")
+
+    context = align(context, first_part, opts)
+
+    case {first_part, old_alignment} do
+      {"", _} ->
+        context
+
+      {text, :left} ->
+        add(context, Tj, font: tf.font, text: text)
+
+      {text, :right} ->
+        add(context, Apostrophe, font: tf.font, text: text)
+    end
+    |> negate_right_alignment()
+    |> then(fn context ->
+      for part <- parts, reduce: context do
+        acc ->
+          acc
+          |> align(part, opts)
+          |> add(Apostrophe, font: tf.font, text: part)
+          |> negate_right_alignment()
+      end
+    end)
+  end
+
+  defp align(context, "", _opts) when not is_nil(context) do
+    context
+  end
+
+  defp align({_doc, content_stream} = context, text, opts) do
+    case Keyword.get(opts, :align, :left) do
+      :left ->
+        context
+
+      :right ->
+        tf = Tf.latest!(content_stream)
+        width = Font.width(tf.font, tf.size, text)
+        add(context, Td, tx: -width, ty: 0, purpose: :align_right)
+    end
+  end
+
+  defp negate_right_alignment({_doc, cs} = context) do
+    if td = current_right_alignment(cs) do
+      add(context, %{td | tx: -td.tx, purpose: :negate_align_right})
+    else
+      context
+    end
+  end
+
+  defp current_alignment(content_stream) do
+    case Td.most_recent(content_stream) do
+      %Td{purpose: :align_right} -> :right
+      %Td{purpose: :negate_align_right} -> :right
+      _ -> :left
+    end
+  end
+
+  defp current_right_alignment(content_stream) do
+    case Td.most_recent(content_stream) do
+      %Td{purpose: :align_right} = td -> td
+      _ -> nil
+    end
   end
 
   defimpl Mudbrick.Object do

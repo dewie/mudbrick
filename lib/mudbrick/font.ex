@@ -133,6 +133,18 @@ defmodule Mudbrick.Font do
     end)
   end
 
+  def width(font, size, text) do
+    {glyph_ids, _positions} = OpenType.layout_text(font.parsed, text)
+
+    for id <- glyph_ids, reduce: 0 do
+      acc ->
+        glyph_width = Enum.at(font.parsed.glyphWidths, id)
+        width_in_points = glyph_width / 1000 * size
+
+        acc + width_in_points
+    end
+  end
+
   defimpl Mudbrick.Object do
     def from(font) do
       Object.from(
