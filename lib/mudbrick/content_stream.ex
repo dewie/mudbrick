@@ -1,6 +1,8 @@
 defmodule Mudbrick.ContentStream do
   @enforce_keys [:page]
-  defstruct page: nil, operations: []
+  defstruct current_alignment: nil,
+            operations: [],
+            page: nil
 
   alias Mudbrick.Document
   alias Mudbrick.Font
@@ -112,21 +114,22 @@ defmodule Mudbrick.ContentStream do
 
   def write_text({_doc, content_stream} = context, text, opts) do
     tf = Tf.latest!(content_stream)
-    old_alignment = current_alignment(content_stream)
+    old_alignment = content_stream.value.current_alignment
+    new_alignment = Keyword.get(opts, :align, :left)
 
     [first_part | parts] = String.split(text, "\n")
 
     context = align(context, first_part, opts)
 
-    case {first_part, old_alignment} do
-      {"", _} ->
+    case {first_part, old_alignment, new_alignment} do
+      {"", _old, _new} ->
         context
 
-      {text, :left} ->
-        add(context, Tj, font: tf.font, text: text)
-
-      {text, :right} ->
+      {text, same, same} ->
         add(context, Apostrophe, font: tf.font, text: text)
+
+      {text, _old, _new} ->
+        add(context, Tj, font: tf.font, text: text)
     end
     |> negate_right_alignment()
     |> then(fn context ->
@@ -148,11 +151,15 @@ defmodule Mudbrick.ContentStream do
     case Keyword.get(opts, :align, :left) do
       :left ->
         context
+        |> put(current_alignment: :left)
 
       :right ->
         tf = Tf.latest!(content_stream)
         width = Font.width(tf.font, tf.size, text)
-        add(context, Td, tx: -width, ty: 0, purpose: :align_right)
+
+        context
+        |> add(Td, tx: -width, ty: 0, purpose: :align_right)
+        |> put(current_alignment: :right)
     end
   end
 
@@ -164,19 +171,17 @@ defmodule Mudbrick.ContentStream do
     end
   end
 
-  defp current_alignment(content_stream) do
-    case Td.most_recent(content_stream) do
-      %Td{purpose: :align_right} -> :right
-      %Td{purpose: :negate_align_right} -> :right
-      _ -> :left
-    end
-  end
-
   defp current_right_alignment(content_stream) do
     case Td.most_recent(content_stream) do
       %Td{purpose: :align_right} = td -> td
       _ -> nil
     end
+  end
+
+  defp put({doc, contents_obj}, fields) do
+    Document.update(doc, contents_obj, fn contents ->
+      struct!(contents, fields)
+    end)
   end
 
   defimpl Mudbrick.Object do

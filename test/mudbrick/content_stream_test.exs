@@ -8,8 +8,8 @@ defmodule Mudbrick.ContentStreamTest do
   alias Mudbrick.Font
   alias Mudbrick.Indirect
 
-  describe "right-aligned text" do
-    test "can switch between left and right alignments" do
+  describe "aligned text" do
+    test "can switch between left and right" do
       {_doc, content_stream} =
         new()
         |> page(
@@ -33,7 +33,38 @@ defmodule Mudbrick.ContentStreamTest do
                # reset a
                "5.0600000000000005 0 Td",
                # b
-               "<00B4> '"
+               "<00B4> Tj"
+             ] =
+               content_stream.value.operations
+               |> Enum.reverse()
+               |> Enum.map(&show/1)
+    end
+
+    test "when it changes, start fresh Tj, to keep same line" do
+      {_doc, content_stream} =
+        new()
+        |> page(
+          size: :letter,
+          fonts: %{bodoni: [file: TestHelper.bodoni()]}
+        )
+        |> contents()
+        |> font(:bodoni, size: 10)
+        |> text_position(400, 0)
+        |> text("a", align: :right)
+        |> text("b")
+
+      assert [
+               _font,
+               _leading,
+               _initial_position,
+               # offset for a
+               "-5.0600000000000005 0 Td",
+               # a
+               "<00A5> Tj",
+               # reset a's offset
+               "5.0600000000000005 0 Td",
+               # b
+               "<00B4> Tj"
              ] =
                content_stream.value.operations
                |> Enum.reverse()
@@ -60,13 +91,13 @@ defmodule Mudbrick.ContentStreamTest do
                _initial_position,
                # a
                "<00A5> Tj",
-               # offset for b
+               # offset for right-aligned b
                "-5.699999999999999 0 Td",
                # b
                "<00B4> '",
                # reset b's offset
                "5.699999999999999 0 Td",
-               # offset for c
+               # offset for right-aligned c
                "-5.05 0 Td",
                # c
                "<00B5> '",
