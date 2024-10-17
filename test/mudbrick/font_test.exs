@@ -63,7 +63,7 @@ defmodule Mudbrick.FontTest do
     parsed = OpenType.new() |> OpenType.parse(bodoni())
 
     lines =
-      Mudbrick.Font.CMap.new(parsed: parsed)
+      Font.CMap.new(parsed: parsed)
       |> show()
       |> String.split("\n")
 
