@@ -141,6 +141,10 @@ defmodule Mudbrick.Font do
     raise Font.NotMeasured, "Built-in fonts aren't alignable yet"
   end
 
+  def width(_font, _size, "") do
+    0
+  end
+
   def width(font, size, text) do
     {glyph_ids, _positions} = OpenType.layout_text(font.parsed, text)
 

@@ -38,7 +38,7 @@ defmodule Mudbrick.FontTest do
              12.0 TL
              (black and ) Tj
              1.0 0.0 0.0 rg
-             (red) '
+             (red) Tj
              (text) '
              ET
              """

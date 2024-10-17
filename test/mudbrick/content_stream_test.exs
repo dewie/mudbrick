@@ -39,7 +39,7 @@ defmodule Mudbrick.ContentStreamTest do
                |> Enum.map(&show/1)
     end
 
-    test "continues same-alignment text on new lines using apostrophe operator" do
+    test "continues same-alignment text on same lines unless newline found" do
       {_doc, content_stream} =
         new()
         |> page(
@@ -51,6 +51,9 @@ defmodule Mudbrick.ContentStreamTest do
         |> text("a")
         |> text("\nb", align: :right)
         |> text("c", align: :right)
+        |> text("d")
+
+      assert_in_delta 10.75 - 5.699999999999999 - 5.05, 0, 0.001
 
       assert [
                _font,
@@ -58,18 +61,18 @@ defmodule Mudbrick.ContentStreamTest do
                _initial_position,
                # a
                "<00A5> Tj",
-               # offset for right-aligned b
-               "-5.699999999999999 0 Td",
+               # offset for right-aligned b = b width + c width
+               "-10.75 0 Td",
                # b
                "<00B4> '",
-               # reset b's offset
+               # reset b's offset, putting us in the correct place for c
                "5.699999999999999 0 Td",
-               # offset for right-aligned c
-               "-5.05 0 Td",
                # c
-               "<00B5> '",
+               "<00B5> Tj",
                # reset c's offset
-               "5.05 0 Td"
+               "5.05 0 Td",
+               # d
+               "<00BB> Tj"
              ] =
                content_stream.value.operations
                |> Enum.reverse()

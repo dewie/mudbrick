@@ -1,6 +1,7 @@
 defmodule Mudbrick.ContentStream do
   @enforce_keys [:page]
   defstruct current_alignment: nil,
+            current_width: nil,
             operations: [],
             page: nil
 
@@ -40,7 +41,9 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule Td do
-    defstruct [:tx, :ty, :purpose]
+    defstruct tx: 0,
+              ty: 0,
+              purpose: nil
 
     def most_recent(content_stream) do
       Enum.find(content_stream.value.operations, &match?(%Td{}, &1))
@@ -119,41 +122,49 @@ defmodule Mudbrick.ContentStream do
 
     [first_part | parts] = String.split(text, "\n")
 
-    context = align(context, first_part, opts)
-
-    case {first_part, old_alignment, new_alignment} do
-      {"", _old, _new} ->
+    case first_part do
+      "" ->
         context
 
-      {text, same, same} ->
-        add(context, Apostrophe, font: tf.font, text: text)
-
-      {text, _old, _new} ->
-        add(context, Tj, font: tf.font, text: text)
+      text ->
+        context
+        |> align(text, old_alignment, new_alignment)
+        |> add(Tj, font: tf.font, text: text)
+        |> negate_right_alignment()
     end
-    |> negate_right_alignment()
     |> then(fn context ->
       for part <- parts, reduce: context do
         acc ->
           acc
-          |> align(part, opts)
+          |> align(part, new_alignment)
           |> add(Apostrophe, font: tf.font, text: part)
           |> negate_right_alignment()
       end
     end)
   end
 
-  defp align(context, "", _opts) when not is_nil(context) do
-    context
-  end
-
-  defp align({_doc, content_stream} = context, text, opts) do
-    case Keyword.get(opts, :align, :left) do
-      :left ->
+  defp align({_doc, content_stream} = context, text, old, new) do
+    case {old, new} do
+      {_, :left} ->
         context
         |> put(current_alignment: :left)
 
-      :right ->
+      {:right, :right} ->
+        td =
+          Enum.find(content_stream.value.operations, &match?(%Td{purpose: :align_right}, &1))
+
+        tf = Tf.latest!(content_stream)
+
+        current_text_width = Font.width(tf.font, tf.size, text)
+        new_offset_for_previous = td.tx - current_text_width
+
+        context
+        # existing negation puts us in correct place
+        |> update_latest_align(td, new_offset_for_previous)
+        |> put(current_alignment: :right)
+        |> put(current_width: current_text_width)
+
+      {_, :right} ->
         tf = Tf.latest!(content_stream)
         width = Font.width(tf.font, tf.size, text)
 
@@ -163,11 +174,39 @@ defmodule Mudbrick.ContentStream do
     end
   end
 
+  defp align({_doc, content_stream} = context, text, new) do
+    case new do
+      :left ->
+        context
+        |> put(current_alignment: :left)
+
+      :right ->
+        tf = Tf.latest!(content_stream)
+
+        case Font.width(tf.font, tf.size, text) do
+          0 ->
+            context
+            |> put(current_alignment: :right)
+
+          width ->
+            context
+            |> add(Td, tx: -width, ty: 0, purpose: :align_right)
+            |> put(current_alignment: :right)
+        end
+    end
+  end
+
   defp negate_right_alignment({_doc, cs} = context) do
-    if td = current_right_alignment(cs) do
-      add(context, %{td | tx: -td.tx, purpose: :negate_align_right})
-    else
+    if cs.value.current_width do
       context
+      |> add(Td, tx: cs.value.current_width, purpose: :negate_align_right)
+      |> put(current_width: nil)
+    else
+      if td = current_right_alignment(cs) do
+        add(context, %{td | tx: -td.tx, purpose: :negate_align_right})
+      else
+        context
+      end
     end
   end
 
@@ -181,6 +220,18 @@ defmodule Mudbrick.ContentStream do
   defp put({doc, contents_obj}, fields) do
     Document.update(doc, contents_obj, fn contents ->
       struct!(contents, fields)
+    end)
+  end
+
+  defp update_latest_align({doc, contents_obj}, operator, new_offset) do
+    Document.update(doc, contents_obj, fn contents ->
+      %{
+        contents
+        | operations:
+            update_in(contents.operations, [Access.find(&(&1 == operator))], fn o ->
+              %{o | tx: new_offset}
+            end)
+      }
     end)
   end
 
