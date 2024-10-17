@@ -99,16 +99,16 @@ defmodule Mudbrick.ContentStream do
     struct!(__MODULE__, opts)
   end
 
-  def add({doc, contents_obj}, operation) do
-    Document.update(doc, contents_obj, fn contents ->
+  def add(context, operation) do
+    update(context, fn contents ->
       Map.update!(contents, :operations, fn operations ->
         [operation | operations]
       end)
     end)
   end
 
-  def add({doc, contents_obj}, mod, opts) do
-    Document.update(doc, contents_obj, fn contents ->
+  def add(context, mod, opts) do
+    update(context, fn contents ->
       Map.update!(contents, :operations, fn operations ->
         [struct!(mod, opts) | operations]
       end)
@@ -141,42 +141,41 @@ defmodule Mudbrick.ContentStream do
     end)
   end
 
-  defp align({_doc, content_stream} = context, text, old, new, f) do
+  defp align(context, text, old, new, f) do
     case {old, new} do
       {_, :left} ->
-        context
-        |> put(current_alignment: :left)
+        put(context, current_alignment: :left)
 
       {:right, :right} ->
-        td =
-          Enum.find(content_stream.value.operations, &match?(%Td{purpose: :align_right}, &1))
-
-        tf = Tf.latest!(content_stream)
-
-        current_text_width = Font.width(tf.font, tf.size, text)
-        new_offset_for_previous = td.tx - current_text_width
-
-        context
-        # existing negation puts us in correct place
-        |> update_latest_align(td, new_offset_for_previous)
-        |> put(current_alignment: :right)
-        |> put(current_width: current_text_width)
+        align_right_after_existing(context, text)
 
       {_, :right} ->
-        tf = Tf.latest!(content_stream)
-
-        case Font.width(tf.font, tf.size, text) do
-          0 ->
-            context
-
-          width ->
-            context
-            |> add(Td, tx: -width, ty: 0, purpose: :align_right)
-        end
-        |> put(current_alignment: :right)
+        align_right(context, text)
     end
     |> add(f.())
     |> negate_right_alignment()
+  end
+
+  defp align_right({_doc, content_stream} = context, text) do
+    tf = Tf.latest!(content_stream)
+
+    case Font.width(tf.font, tf.size, text) do
+      0 -> context
+      width -> add(context, Td, tx: -width, ty: 0, purpose: :align_right)
+    end
+    |> put(current_alignment: :right)
+  end
+
+  defp align_right_after_existing({_doc, content_stream} = context, text) do
+    td = Enum.find(content_stream.value.operations, &match?(%Td{purpose: :align_right}, &1))
+    tf = Tf.latest!(content_stream)
+    current_text_width = Font.width(tf.font, tf.size, text)
+    new_offset_for_previous_text = td.tx - current_text_width
+
+    context
+    # existing negation puts us in correct place
+    |> update_latest_align(td, new_offset_for_previous_text)
+    |> put(current_alignment: :right, current_width: current_text_width)
   end
 
   defp negate_right_alignment({_doc, cs} = context) do
@@ -199,14 +198,8 @@ defmodule Mudbrick.ContentStream do
     -current_width
   end
 
-  defp put({doc, contents_obj}, fields) do
-    Document.update(doc, contents_obj, fn contents ->
-      struct!(contents, fields)
-    end)
-  end
-
-  defp update_latest_align({doc, contents_obj}, operator, new_offset) do
-    Document.update(doc, contents_obj, fn contents ->
+  defp update_latest_align(context, operator, new_offset) do
+    update(context, fn contents ->
       %{
         contents
         | operations:
@@ -215,6 +208,16 @@ defmodule Mudbrick.ContentStream do
             end)
       }
     end)
+  end
+
+  defp put(context, fields) do
+    update(context, fn contents ->
+      struct!(contents, fields)
+    end)
+  end
+
+  defp update({doc, contents_obj}, f) do
+    Document.update(doc, contents_obj, f)
   end
 
   defimpl Mudbrick.Object do
