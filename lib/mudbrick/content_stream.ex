@@ -1,7 +1,6 @@
 defmodule Mudbrick.ContentStream do
   @enforce_keys [:page]
   defstruct current_alignment: nil,
-            current_width: nil,
             operations: [],
             page: nil
 
@@ -142,18 +141,21 @@ defmodule Mudbrick.ContentStream do
   end
 
   defp align(context, text, old, new, f) do
-    case {old, new} do
-      {_, :left} ->
-        put(context, current_alignment: :left)
+    {current_text_width, context} =
+      case {old, new} do
+        {_, :left} ->
+          {nil, put(context, current_alignment: :left)}
 
-      {:right, :right} ->
-        align_right_after_existing(context, text)
+        {:right, :right} ->
+          align_right_after_existing(context, text)
 
-      {_, :right} ->
-        align_right(context, text)
-    end
+        {_, :right} ->
+          {nil, align_right(context, text)}
+      end
+
+    context
     |> add(f.())
-    |> negate_right_alignment()
+    |> negate_right_alignment(current_text_width)
   end
 
   defp align_right({_doc, content_stream} = context, text) do
@@ -172,30 +174,32 @@ defmodule Mudbrick.ContentStream do
     current_text_width = Font.width(tf.font, tf.size, text)
     new_offset_for_previous_text = td.tx - current_text_width
 
-    context
-    # existing negation puts us in correct place
-    |> update_latest_align(td, new_offset_for_previous_text)
-    |> put(current_alignment: :right, current_width: current_text_width)
+    {
+      current_text_width,
+      context
+      # existing negation puts us in correct place
+      |> update_latest_align(td, new_offset_for_previous_text)
+      |> put(current_alignment: :right)
+    }
   end
 
-  defp negate_right_alignment({_doc, cs} = context) do
+  defp negate_right_alignment({_doc, cs} = context, nil) do
     if tx = current_right_alignment(cs) do
       add(context, %Td{tx: -tx, purpose: :negate_align_right})
     else
       context
     end
-    |> put(current_width: nil)
   end
 
-  defp current_right_alignment(%{value: %{current_width: nil}} = content_stream) do
+  defp negate_right_alignment(context, current_text_width) do
+    add(context, %Td{tx: current_text_width, purpose: :negate_align_right})
+  end
+
+  defp current_right_alignment(content_stream) do
     case Td.most_recent(content_stream) do
       %Td{purpose: :align_right} = td -> td.tx
       _ -> nil
     end
-  end
-
-  defp current_right_alignment(%{value: %{current_width: current_width}}) do
-    -current_width
   end
 
   defp update_latest_align(context, operator, new_offset) do
