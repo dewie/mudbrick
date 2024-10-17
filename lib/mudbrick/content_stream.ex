@@ -128,22 +128,22 @@ defmodule Mudbrick.ContentStream do
 
       text ->
         context
-        |> align(text, old_alignment, new_alignment)
-        |> add(Tj, font: tf.font, text: text)
-        |> negate_right_alignment()
+        |> align(text, old_alignment, new_alignment, fn ->
+          %Tj{font: tf.font, text: text}
+        end)
     end
     |> then(fn context ->
       for part <- parts, reduce: context do
         acc ->
           acc
-          |> align(part, new_alignment)
-          |> add(Apostrophe, font: tf.font, text: part)
-          |> negate_right_alignment()
+          |> align(part, new_alignment, fn ->
+            %Apostrophe{font: tf.font, text: part}
+          end)
       end
     end)
   end
 
-  defp align({_doc, content_stream} = context, text, old, new) do
+  defp align({_doc, content_stream} = context, text, old, new, f) do
     case {old, new} do
       {_, :left} ->
         context
@@ -172,28 +172,32 @@ defmodule Mudbrick.ContentStream do
         |> add(Td, tx: -width, ty: 0, purpose: :align_right)
         |> put(current_alignment: :right)
     end
+    |> add(f.())
+    |> negate_right_alignment()
   end
 
-  defp align({_doc, content_stream} = context, text, new) do
-    case new do
-      :left ->
+  defp align(context, _text, :left, f) do
+    context
+    |> put(current_alignment: :left)
+    |> add(f.())
+    |> negate_right_alignment()
+  end
+
+  defp align({_doc, content_stream} = context, text, :right, f) do
+    tf = Tf.latest!(content_stream)
+
+    case Font.width(tf.font, tf.size, text) do
+      0 ->
         context
-        |> put(current_alignment: :left)
+        |> put(current_alignment: :right)
 
-      :right ->
-        tf = Tf.latest!(content_stream)
-
-        case Font.width(tf.font, tf.size, text) do
-          0 ->
-            context
-            |> put(current_alignment: :right)
-
-          width ->
-            context
-            |> add(Td, tx: -width, ty: 0, purpose: :align_right)
-            |> put(current_alignment: :right)
-        end
+      width ->
+        context
+        |> add(Td, tx: -width, ty: 0, purpose: :align_right)
+        |> put(current_alignment: :right)
     end
+    |> add(f.())
+    |> negate_right_alignment()
   end
 
   defp negate_right_alignment({_doc, cs} = context) do
