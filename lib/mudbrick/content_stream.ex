@@ -14,22 +14,6 @@ defmodule Mudbrick.ContentStream do
     end
   end
 
-  defmodule QPush do
-    defstruct []
-
-    defimpl Mudbrick.Object do
-      def from(_), do: ["q"]
-    end
-  end
-
-  defmodule QPop do
-    defstruct []
-
-    defimpl Mudbrick.Object do
-      def from(_), do: ["Q"]
-    end
-  end
-
   defmodule Tf do
     defstruct [:font, :size]
 
