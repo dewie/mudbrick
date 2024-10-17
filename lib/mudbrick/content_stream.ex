@@ -30,7 +30,7 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule Td do
-    defstruct [:tx, :ty]
+    defstruct [:tx, :ty, :purpose]
 
     defimpl Mudbrick.Object do
       def from(td) do

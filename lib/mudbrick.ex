@@ -69,14 +69,17 @@ defmodule Mudbrick do
     ContentStream.add(context, ContentStream.Td, tx: x, ty: y)
   end
 
-  def text(context, text, colour: {r, g, b}) do
-    context
-    |> ContentStream.add(ContentStream.Rg, r: r, g: g, b: b)
-    |> write_text(text)
-  end
+  def text(context, text, opts \\ []) do
+    context =
+      case Keyword.get(opts, :colour) do
+        {r, g, b} ->
+          ContentStream.add(context, ContentStream.Rg, r: r, g: g, b: b)
 
-  def text(context, text) do
-    text(context, text, colour: {0.0, 0.0, 0.0})
+        _ ->
+          context
+      end
+
+    write_text(context, text, opts)
   end
 
   def render({doc, _page}) do
@@ -105,21 +108,106 @@ defmodule Mudbrick do
     Enum.map_join(list, separator, &Mudbrick.Object.from/1)
   end
 
-  defp write_text({_doc, content_stream} = context, text) do
+  defp align(context, "", _opts) when not is_nil(context) do
+    context
+  end
+
+  defp align({_doc, content_stream} = context, text, opts) do
+    case Keyword.get(opts, :align, :left) do
+      :left ->
+        context
+
+      :right ->
+        tf = latest_font_operation!(content_stream)
+
+        {glyph_ids, _positions} = OpenType.layout_text(tf.font.parsed, text)
+
+        width =
+          for id <- glyph_ids, reduce: 0 do
+            acc ->
+              glyph_width = Enum.at(tf.font.parsed.glyphWidths, id)
+              width_in_points = glyph_width / 1000 * tf.size
+
+              acc + width_in_points
+          end
+
+        ContentStream.add(context, ContentStream.Td, tx: -width, ty: 0, purpose: :align_right)
+    end
+  end
+
+  defp negate_right_alignment({_doc, cs} = context) do
+    if td = current_right_alignment(cs) do
+      ContentStream.add(context, %{td | tx: -td.tx, purpose: :negate_align_right})
+    else
+      context
+    end
+  end
+
+  defp write_text({_doc, content_stream} = context, text, opts) do
     import ContentStream
 
     tf = latest_font_operation!(content_stream)
+    old_alignment = if currently_right_aligned?(content_stream), do: :right, else: :left
+    new_alignment = Keyword.get(opts, :align, :left)
 
     [first_part | parts] = String.split(text, "\n")
 
-    context
-    |> add(ContentStream.Tj, font: tf.font, text: first_part)
+    context = align(context, first_part, opts)
+
+    case {first_part, old_alignment, new_alignment} do
+      {"", _, _} ->
+        context
+
+      {text, :left, _} ->
+        context
+        |> add(ContentStream.Tj, font: tf.font, text: text)
+        |> negate_right_alignment()
+
+      {text, :right, :right} ->
+        context
+        |> add(ContentStream.Apostrophe, font: tf.font, text: text)
+        |> negate_right_alignment()
+
+      {text, :right, :left} ->
+        add(context, ContentStream.Apostrophe, font: tf.font, text: text)
+    end
     |> then(fn context ->
       for part <- parts, reduce: context do
         acc ->
-          add(acc, ContentStream.Apostrophe, font: tf.font, text: part)
+          context =
+            acc
+            |> align(part, opts)
+            |> add(ContentStream.Apostrophe, font: tf.font, text: part)
+
+          if new_alignment == :right do
+            context
+            |> negate_right_alignment()
+          else
+            context
+          end
       end
     end)
+  end
+
+  defp currently_right_aligned?(content_stream) do
+    case Enum.find(
+           content_stream.value.operations,
+           &match?(%ContentStream.Td{}, &1)
+         ) do
+      %ContentStream.Td{purpose: :align_right} -> true
+      %ContentStream.Td{purpose: :negate_align_right} -> true
+      _ -> false
+    end
+  end
+
+  defp current_right_alignment(content_stream) do
+    case Enum.find(
+           content_stream.value.operations,
+           &match?(%ContentStream.Td{}, &1)
+         ) do
+      %ContentStream.Td{purpose: :align_right} = td -> td
+      _ -> nil
+    end
   end
 
   defp latest_font_operation!(content_stream) do

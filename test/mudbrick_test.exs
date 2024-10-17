@@ -10,12 +10,33 @@ defmodule MudbrickTest do
              fonts: %{bodoni: [file: TestHelper.bodoni()]}
            )
            |> contents()
-           |> font(:bodoni, size: 13)
-           |> text_position(0, 700)
+           |> font(:bodoni, size: 14)
+           |> text_position(200, 700)
            |> text("CO₂ ", colour: {1, 0, 0})
+           |> text(
+             """
+             is Carbon Dioxide
+             and HNO₃ is Nitric Acid
+             """,
+             colour: {0, 0, 0}
+           )
+           |> text("wide stuff", align: :right)
+           |> text("wider stuff", align: :right)
+           |> text("z", align: :right)
            |> text("""
-           is Carbon Dioxide
-           and HNO₃ is Nitric Acid\
+           I am left again
+
+           """)
+           |> text(
+             """
+             I am right again
+             I am right again
+             """,
+             align: :right
+           )
+           |> text("""
+           I am left again
+
            """)
            |> render()
            |> output()
@@ -88,19 +109,17 @@ defmodule MudbrickTest do
              >>
              endobj
              6 0 obj
-             <</Length 129
+             <</Length 99
              >>
              stream
              BT
              /F2 100 Tf
              120.0 TL
              300 400 Td
-             0.0 0.0 0.0 rg
              (hello, world!) Tj
              /F1 10 Tf
              12.0 TL
              0 -24 Td
-             0.0 0.0 0.0 rg
              (a new line!) Tj
              ET
              endstream
@@ -120,13 +139,13 @@ defmodule MudbrickTest do
              0000000241 00000 n 
              0000000345 00000 n 
              0000000490 00000 n 
-             0000000669 00000 n 
+             0000000638 00000 n 
              trailer
              <</Root 2 0 R
                /Size 8
              >>
              startxref
-             747
+             716
              %%EOF\
              """
   end

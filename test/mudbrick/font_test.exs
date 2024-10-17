@@ -37,7 +37,6 @@ defmodule Mudbrick.FontTest do
              BT
              /F1 10 Tf
              12.0 TL
-             0.0 0.0 0.0 rg
              (black and ) Tj
              1.0 0.0 0.0 rg
              (red) Tj
