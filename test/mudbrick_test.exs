@@ -166,7 +166,6 @@ defmodule MudbrickTest do
     assert new()
            |> page()
            |> render()
-           |> output
            |> to_string() ==
              """
              %PDF-2.0

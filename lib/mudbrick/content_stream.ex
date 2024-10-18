@@ -126,21 +126,29 @@ defmodule Mudbrick.ContentStream do
         context
 
       text ->
-        align(context, text, old_alignment, new_alignment, fn ->
+        align(
+          context,
+          text,
+          old_alignment,
+          new_alignment,
           %Tj{font: tf.font, text: text}
-        end)
+        )
     end
     |> then(fn context ->
-      for part <- parts, reduce: context do
-        acc ->
-          align(acc, part, old_alignment, new_alignment, fn ->
-            %Apostrophe{font: tf.font, text: part}
-          end)
+      for text <- parts, reduce: context do
+        context ->
+          align(
+            context,
+            text,
+            old_alignment,
+            new_alignment,
+            %Apostrophe{font: tf.font, text: text}
+          )
       end
     end)
   end
 
-  defp align(context, text, old, new, f) do
+  defp align(context, text, old, new, operator) do
     {current_text_width, context} =
       case {old, new} do
         {_, :left} ->
@@ -154,7 +162,7 @@ defmodule Mudbrick.ContentStream do
       end
 
     context
-    |> add(f.())
+    |> add(operator)
     |> negate_right_alignment(current_text_width)
   end
 
