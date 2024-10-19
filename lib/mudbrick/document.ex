@@ -42,29 +42,29 @@ defmodule Mudbrick.Document do
     doc
   end
 
-  def root_page_tree(%Document{objects: objects}) do
-    Enum.find(objects, &page_tree?/1)
+  def root_page_tree(doc) do
+    find_object(doc, &match?(%PageTree{}, &1))
   end
 
   def update_root_page_tree(doc, fun) do
     Map.update!(doc, :objects, fn objects ->
-      update_in(objects, [Access.find(&page_tree?/1)], &fun.(&1))
+      update_in(objects, [Access.find(&match?(%PageTree{}, &1.value))], &fun.(&1))
     end)
   end
 
-  def catalog(%Document{objects: objects}) do
-    Enum.find(objects, &catalog?/1)
+  def catalog(doc) do
+    find_object(doc, &match?(%Catalog{}, &1))
   end
 
   def object_with_ref(doc, ref) do
     Enum.at(doc.objects, -ref.number)
   end
 
-  defp catalog?(%Indirect.Object{value: %Catalog{}}), do: true
-  defp catalog?(_), do: false
-
-  defp page_tree?(%Indirect.Object{value: %PageTree{}}), do: true
-  defp page_tree?(_), do: false
+  def find_object(%Document{objects: objects}, f) do
+    Enum.find(objects, fn object ->
+      f.(object.value)
+    end)
+  end
 
   defp put(doc, updated_object) do
     {
