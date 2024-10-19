@@ -23,13 +23,11 @@ defmodule Mudbrick.FontTest do
       )
       |> font(:helvetica, size: 10)
       |> text("black and ")
-      |> text(
-        """
-        red
-        text\
-        """,
-        colour: {1.0, 0.0, 0.0}
-      )
+      |> colour({1.0, 0.0, 0.0})
+      |> text("""
+      red
+      text\
+      """)
 
     assert show(content_stream) =~
              """

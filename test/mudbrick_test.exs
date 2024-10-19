@@ -11,14 +11,13 @@ defmodule MudbrickTest do
            )
            |> text_position(200, 700)
            |> font(:bodoni, size: 14)
-           |> text("CO₂ ", colour: {1, 0, 0}, align: :right)
-           |> text(
-             """
-             is Carbon Dioxide
-             and HNO₃ is Nitric Acid
-             """,
-             colour: {0, 0, 0}
-           )
+           |> colour({1, 0, 0})
+           |> text("CO₂ ", align: :right)
+           |> colour({0, 0, 0})
+           |> text("""
+           is Carbon Dioxide
+           and HNO₃ is Nitric Acid
+           """)
            |> text("wide stuff", align: :right)
            |> text("wider stuff", align: :right)
            |> text("z", align: :right)

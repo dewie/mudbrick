@@ -68,16 +68,11 @@ defmodule Mudbrick do
     |> ContentStream.add(ContentStream.Td, tx: x, ty: y)
   end
 
+  def colour(context, {r, g, b}) do
+    ContentStream.add(context, ContentStream.Rg, r: r, g: g, b: b)
+  end
+
   def text(context, text, opts \\ []) do
-    context =
-      case Keyword.get(opts, :colour) do
-        {r, g, b} ->
-          ContentStream.add(context, ContentStream.Rg, r: r, g: g, b: b)
-
-        _ ->
-          context
-      end
-
     ContentStream.write_text(context, text, opts)
   end
 
