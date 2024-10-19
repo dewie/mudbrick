@@ -76,17 +76,6 @@ defmodule Mudbrick.TextTest do
 
   describe "aligned text" do
     test "when it changes, starts fresh Tj, to keep same line" do
-      {_doc, content_stream} =
-        new()
-        |> page(
-          size: :letter,
-          fonts: %{bodoni: [file: TestHelper.bodoni()]}
-        )
-        |> text_position(400, 0)
-        |> font(:bodoni, size: 10)
-        |> text("a", align: :right)
-        |> text("b")
-
       assert [
                _initial_position,
                _font,
@@ -100,25 +89,19 @@ defmodule Mudbrick.TextTest do
                # b
                "<00B4> Tj"
              ] =
-               content_stream.value.operations
-               |> Enum.reverse()
-               |> Enum.map(&show/1)
+               new()
+               |> page(
+                 size: :letter,
+                 fonts: %{bodoni: [file: TestHelper.bodoni()]}
+               )
+               |> text_position(400, 0)
+               |> font(:bodoni, size: 10)
+               |> text("a", align: :right)
+               |> text("b")
+               |> operations()
     end
 
     test "continues same-alignment text on same lines unless newline found" do
-      {_doc, content_stream} =
-        new()
-        |> page(
-          size: :letter,
-          fonts: %{bodoni: [file: TestHelper.bodoni()]}
-        )
-        |> text_position(400, 0)
-        |> font(:bodoni, size: 10)
-        |> text("a")
-        |> text("\nb", align: :right)
-        |> text("c", align: :right)
-        |> text("d")
-
       assert_in_delta 10.75 - 5.699999999999999 - 5.05, 0, 0.001
 
       assert [
@@ -140,34 +123,21 @@ defmodule Mudbrick.TextTest do
                # d
                "<00BB> Tj"
              ] =
-               content_stream.value.operations
-               |> Enum.reverse()
-               |> Enum.map(&show/1)
+               new()
+               |> page(
+                 size: :letter,
+                 fonts: %{bodoni: [file: TestHelper.bodoni()]}
+               )
+               |> text_position(400, 0)
+               |> font(:bodoni, size: 10)
+               |> text("a")
+               |> text("\nb", align: :right)
+               |> text("c", align: :right)
+               |> text("d")
+               |> operations()
     end
 
     test "can switch between alignments" do
-      {_doc, content_stream} =
-        new()
-        |> page(
-          size: :letter,
-          fonts: %{bodoni: [file: TestHelper.bodoni()]}
-        )
-        |> text_position(200, 700)
-        |> font(:bodoni, size: 14)
-        |> text("z", align: :right)
-        |> text("""
-        I am left again
-
-
-        """)
-        |> text(
-          """
-          I am right again
-          """,
-          align: :right
-        )
-        |> text("left again!")
-
       assert [
                "200 700 Td",
                "/F1 14 Tf",
@@ -185,9 +155,27 @@ defmodule Mudbrick.TextTest do
                "() '",
                _left_again
              ] =
-               content_stream.value.operations
-               |> Enum.reverse()
-               |> Enum.map(&show/1)
+               new()
+               |> page(
+                 size: :letter,
+                 fonts: %{bodoni: [file: TestHelper.bodoni()]}
+               )
+               |> text_position(200, 700)
+               |> font(:bodoni, size: 14)
+               |> text("z", align: :right)
+               |> text("""
+               I am left again
+
+
+               """)
+               |> text(
+                 """
+                 I am right again
+                 """,
+                 align: :right
+               )
+               |> text("left again!")
+               |> operations()
     end
 
     test "is unsupported for built-in fonts right now" do
@@ -210,31 +198,26 @@ defmodule Mudbrick.TextTest do
   end
 
   test "built-in font linebreaks are converted to the ' operator" do
-    {_doc, content_stream} =
-      new()
-      |> page(
-        size: :letter,
-        fonts: %{
-          helvetica: [
-            name: :Helvetica,
-            type: :TrueType,
-            encoding: :PDFDocEncoding
-          ]
-        }
-      )
-      |> font(:helvetica, size: 10)
-      |> text_position(0, 700)
-      |> text("""
-      a
-      b\
-      """)
-
-    assert content_stream.value.operations
-           |> render(2) ==
-             """
-             (a) Tj
-             (b) '\
-             """
+    assert new()
+           |> page(
+             size: :letter,
+             fonts: %{
+               helvetica: [
+                 name: :Helvetica,
+                 type: :TrueType,
+                 encoding: :PDFDocEncoding
+               ]
+             }
+           )
+           |> font(:helvetica, size: 10)
+           |> text_position(0, 700)
+           |> text("""
+           a
+           b\
+           """)
+           |> operations()
+           |> Enum.take(-2) ==
+             ["(a) Tj", "(b) '"]
   end
 
   test "CID font linebreaks are converted to the ' operator" do
