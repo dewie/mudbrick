@@ -7,6 +7,22 @@ defmodule Mudbrick.ContentStream do
   alias Mudbrick.Document
   alias Mudbrick.Font
 
+  defmodule BT do
+    defstruct []
+
+    defimpl Mudbrick.Object do
+      def from(_), do: ["BT"]
+    end
+  end
+
+  defmodule ET do
+    defstruct []
+
+    defimpl Mudbrick.Object do
+      def from(_), do: ["ET"]
+    end
+  end
+
   defmodule Rg do
     defstruct [:r, :g, :b]
 

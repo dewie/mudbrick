@@ -8,23 +8,54 @@ defmodule Mudbrick.ContentStreamTest do
   alias Mudbrick.Font
   alias Mudbrick.Indirect
 
+  describe "positioning text" do
+    test "starts a new text object" do
+      assert [
+               _font,
+               _leading,
+               _text,
+               "ET",
+               "BT",
+               "200 700 Td",
+               _text2
+             ] =
+               new()
+               |> page(size: :letter, fonts: %{bodoni: [file: TestHelper.bodoni()]})
+               |> font(:bodoni, size: 14)
+               |> text("hi")
+               |> text_position(200, 700)
+               |> text("there")
+               |> operations()
+    end
+
+    test "doesn't produce empty objects" do
+      assert [
+               "200 700 Td"
+             ] =
+               new()
+               |> page(size: :letter, fonts: %{bodoni: [file: TestHelper.bodoni()]})
+               |> text_position(200, 700)
+               |> operations()
+    end
+  end
+
   describe "aligned text" do
-    test "when it changes, start fresh Tj, to keep same line" do
+    test "when it changes, starts fresh Tj, to keep same line" do
       {_doc, content_stream} =
         new()
         |> page(
           size: :letter,
           fonts: %{bodoni: [file: TestHelper.bodoni()]}
         )
-        |> font(:bodoni, size: 10)
         |> text_position(400, 0)
+        |> font(:bodoni, size: 10)
         |> text("a", align: :right)
         |> text("b")
 
       assert [
+               _initial_position,
                _font,
                _leading,
-               _initial_position,
                # offset for a
                "-5.0600000000000005 0 Td",
                # a
@@ -46,8 +77,8 @@ defmodule Mudbrick.ContentStreamTest do
           size: :letter,
           fonts: %{bodoni: [file: TestHelper.bodoni()]}
         )
-        |> font(:bodoni, size: 10)
         |> text_position(400, 0)
+        |> font(:bodoni, size: 10)
         |> text("a")
         |> text("\nb", align: :right)
         |> text("c", align: :right)
@@ -56,9 +87,9 @@ defmodule Mudbrick.ContentStreamTest do
       assert_in_delta 10.75 - 5.699999999999999 - 5.05, 0, 0.001
 
       assert [
+               _initial_position,
                _font,
                _leading,
-               _initial_position,
                # a
                "<00A5> Tj",
                # offset for right-aligned b = b width + c width
@@ -86,8 +117,8 @@ defmodule Mudbrick.ContentStreamTest do
           size: :letter,
           fonts: %{bodoni: [file: TestHelper.bodoni()]}
         )
-        |> font(:bodoni, size: 14)
         |> text_position(200, 700)
+        |> font(:bodoni, size: 14)
         |> text("z", align: :right)
         |> text("""
         I am left again
@@ -103,9 +134,9 @@ defmodule Mudbrick.ContentStreamTest do
         |> text("left again!")
 
       assert [
+               "200 700 Td",
                "/F1 14 Tf",
                "16.8 TL",
-               "200 700 Td",
                "-6.72 0 Td",
                _z,
                "6.72 0 Td",
@@ -241,6 +272,12 @@ defmodule Mudbrick.ContentStreamTest do
              |> text("\n")
              |> render()
     end
+  end
+
+  defp operations({_doc, content_stream}) do
+    content_stream.value.operations
+    |> Enum.reverse()
+    |> Enum.map(&show/1)
   end
 
   defp render(ops, n) do

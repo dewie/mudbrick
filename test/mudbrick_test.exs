@@ -9,8 +9,8 @@ defmodule MudbrickTest do
              size: :letter,
              fonts: %{bodoni: [file: TestHelper.bodoni()]}
            )
-           |> font(:bodoni, size: 14)
            |> text_position(200, 700)
+           |> font(:bodoni, size: 14)
            |> text("CO₂ ", colour: {1, 0, 0}, align: :right)
            |> text(
              """
@@ -22,6 +22,7 @@ defmodule MudbrickTest do
            |> text("wide stuff", align: :right)
            |> text("wider stuff", align: :right)
            |> text("z", align: :right)
+           |> text_position(400, 600)
            |> text("""
            I am left again
 
@@ -58,14 +59,17 @@ defmodule MudbrickTest do
                ]
              }
            )
-           |> font(:helvetica, size: 100)
            |> text_position(300, 400)
+           |> font(:helvetica, size: 100)
            |> text("hello, world!")
            |> font(:courier, size: 10)
-           |> text_position(0, -24)
-           |> text("a new line!")
+           |> text("""
+
+           a new line!\
+           """)
            |> page(size: :a4)
            |> render()
+           |> output()
            |> to_string() ==
              """
              %PDF-2.0
@@ -107,18 +111,17 @@ defmodule MudbrickTest do
              >>
              endobj
              6 0 obj
-             <</Length 99
+             <</Length 89
              >>
              stream
              BT
+             300 400 Td
              /F2 100 Tf
              120.0 TL
-             300 400 Td
              (hello, world!) Tj
              /F1 10 Tf
              12.0 TL
-             0 -24 Td
-             (a new line!) Tj
+             (a new line!) '
              ET
              endstream
              endobj
@@ -150,14 +153,14 @@ defmodule MudbrickTest do
              0000000241 00000 n 
              0000000345 00000 n 
              0000000490 00000 n 
-             0000000638 00000 n 
-             0000000764 00000 n 
+             0000000628 00000 n 
+             0000000754 00000 n 
              trailer
              <</Root 2 0 R
                /Size 9
              >>
              startxref
-             818
+             808
              %%EOF\
              """
   end

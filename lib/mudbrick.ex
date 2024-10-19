@@ -55,8 +55,17 @@ defmodule Mudbrick do
     end
   end
 
-  def text_position(context, x, y) do
-    ContentStream.add(context, ContentStream.Td, tx: x, ty: y)
+  def text_position({_doc, content_stream_obj} = context, x, y) do
+    case content_stream_obj.value.operations do
+      [] ->
+        context
+
+      _ ->
+        context
+        |> ContentStream.add(%ContentStream.ET{})
+        |> ContentStream.add(%ContentStream.BT{})
+    end
+    |> ContentStream.add(ContentStream.Td, tx: x, ty: y)
   end
 
   def text(context, text, opts \\ []) do
