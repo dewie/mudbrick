@@ -9,8 +9,6 @@ defmodule Mudbrick.TextTest do
   alias Mudbrick.Indirect
 
   test "can set colour on a piece of text" do
-    import Mudbrick
-
     {_doc, content_stream} =
       new()
       |> page(
