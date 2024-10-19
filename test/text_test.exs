@@ -198,48 +198,46 @@ defmodule Mudbrick.TextTest do
   end
 
   test "built-in font linebreaks are converted to the ' operator" do
-    assert new()
-           |> page(
-             size: :letter,
-             fonts: %{
-               helvetica: [
-                 name: :Helvetica,
-                 type: :TrueType,
-                 encoding: :PDFDocEncoding
-               ]
-             }
-           )
-           |> font(:helvetica, size: 10)
-           |> text_position(0, 700)
-           |> text("""
-           a
-           b\
-           """)
-           |> operations()
-           |> Enum.take(-2) ==
-             ["(a) Tj", "(b) '"]
+    assert ["(a) Tj", "(b) '"] =
+             new()
+             |> page(
+               size: :letter,
+               fonts: %{
+                 helvetica: [
+                   name: :Helvetica,
+                   type: :TrueType,
+                   encoding: :PDFDocEncoding
+                 ]
+               }
+             )
+             |> font(:helvetica, size: 10)
+             |> text_position(0, 700)
+             |> text("""
+             a
+             b\
+             """)
+             |> operations()
+             |> Enum.take(-2)
   end
 
   test "CID font linebreaks are converted to the ' operator" do
-    {_doc, content_stream} =
-      new()
-      |> page(
-        size: :letter,
-        fonts: %{bodoni: [file: TestHelper.bodoni()]}
-      )
-      |> font(:bodoni, size: 10)
-      |> text_position(0, 700)
-      |> text("""
-      a
-      b\
-      """)
-
-    assert content_stream.value.operations
-           |> render(2) ==
-             """
-             <00A5> Tj
-             <00B4> '\
-             """
+    assert [
+             "<00A5> Tj",
+             "<00B4> '"
+           ] =
+             new()
+             |> page(
+               size: :letter,
+               fonts: %{bodoni: [file: TestHelper.bodoni()]}
+             )
+             |> font(:bodoni, size: 10)
+             |> text_position(0, 700)
+             |> text("""
+             a
+             b\
+             """)
+             |> operations()
+             |> Enum.take(-2)
   end
 
   test "font is assigned to the operator struct when font descendant present" do
@@ -266,21 +264,17 @@ defmodule Mudbrick.TextTest do
 
   describe "serialisation" do
     test "converts Tj text to the assigned font's glyph IDs in hex" do
-      {_doc, content_stream} =
-        new()
-        |> page(
-          size: :letter,
-          fonts: %{bodoni: [file: TestHelper.bodoni()]}
-        )
-        |> font(:bodoni, size: 24)
-        |> text_position(0, 700)
-        |> text("CO₂")
-
-      assert content_stream.value.operations
-             |> render(1) ==
-               """
-               <001100550174> Tj\
-               """
+      assert ["<001100550174> Tj"] =
+               new()
+               |> page(
+                 size: :letter,
+                 fonts: %{bodoni: [file: TestHelper.bodoni()]}
+               )
+               |> font(:bodoni, size: 24)
+               |> text_position(0, 700)
+               |> text("CO₂")
+               |> operations()
+               |> Enum.take(-1)
     end
 
     test "copes with trailing newlines in CID font text" do
@@ -296,12 +290,5 @@ defmodule Mudbrick.TextTest do
     content_stream.value.operations
     |> Enum.reverse()
     |> Enum.map(&show/1)
-  end
-
-  defp render(ops, n) do
-    ops
-    |> Enum.take(n)
-    |> Enum.reverse()
-    |> Mudbrick.join("\n")
   end
 end
