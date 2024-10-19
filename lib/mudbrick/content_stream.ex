@@ -252,11 +252,9 @@ defmodule Mudbrick.ContentStream do
     def from(content_stream) do
       Mudbrick.Stream.new(
         data: [
-          "BT\n",
-          content_stream.operations
+          [%ET{} | content_stream.operations ++ [%BT{}]]
           |> Enum.reverse()
-          |> Mudbrick.join("\n"),
-          "\nET"
+          |> Mudbrick.join("\n")
         ]
       )
       |> Mudbrick.Object.from()

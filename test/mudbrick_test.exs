@@ -136,11 +136,10 @@ defmodule MudbrickTest do
              >>
              endobj
              8 0 obj
-             <</Length 6
+             <</Length 5
              >>
              stream
              BT
-
              ET
              endstream
              endobj
@@ -160,7 +159,7 @@ defmodule MudbrickTest do
                /Size 9
              >>
              startxref
-             808
+             807
              %%EOF\
              """
   end
@@ -195,11 +194,10 @@ defmodule MudbrickTest do
              >>
              endobj
              4 0 obj
-             <</Length 6
+             <</Length 5
              >>
              stream
              BT
-
              ET
              endstream
              endobj
@@ -215,7 +213,7 @@ defmodule MudbrickTest do
                /Size 5
              >>
              startxref
-             313
+             312
              %%EOF\
              """
   end
