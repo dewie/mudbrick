@@ -1,4 +1,4 @@
-defmodule Mudbrick.ContentStreamTest do
+defmodule Mudbrick.TextTest do
   use ExUnit.Case, async: true
 
   import Mudbrick
@@ -7,6 +7,41 @@ defmodule Mudbrick.ContentStreamTest do
   alias Mudbrick.ContentStream.Tj
   alias Mudbrick.Font
   alias Mudbrick.Indirect
+
+  test "can set colour on a piece of text" do
+    import Mudbrick
+
+    {_doc, content_stream} =
+      new()
+      |> page(
+        fonts: %{
+          helvetica: [
+            name: :Helvetica,
+            type: :TrueType,
+            encoding: :PDFDocEncoding
+          ]
+        }
+      )
+      |> font(:helvetica, size: 10)
+      |> text("black and ")
+      |> colour({1.0, 0.0, 0.0})
+      |> text("""
+      red
+      text\
+      """)
+
+    assert show(content_stream) =~
+             """
+             BT
+             /F1 10 Tf
+             12.0 TL
+             (black and ) Tj
+             1.0 0.0 0.0 rg
+             (red) Tj
+             (text) '
+             ET
+             """
+  end
 
   describe "positioning text" do
     test "starts a new text object" do
