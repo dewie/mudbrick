@@ -5,10 +5,19 @@ Early-stages PDF generator, beelining for:
 - PDF 2.0 support.
 - In-process, pure functional approach.
 - OpenType support.
-- Special characters, like ₛᵤ₆ₛ꜀ᵣᵢₚₜₛ for chemical compounds etc.
+- Special characters and ligatures, like ₛᵤ₆ₛ꜀ᵣᵢₚₜₛ for chemical compounds etc.
 
-Future plans:
+Currently working:
 
+- OpenType fonts with ligatures and special characters.
+- Text positioning.
+- Right alignment.
+- Coloured text.
+
+To do:
+
+- Graphics.
+- Compression.
 - Font subsetting.
 
 ## Installation
