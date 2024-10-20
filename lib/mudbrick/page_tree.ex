@@ -1,5 +1,6 @@
 defmodule Mudbrick.PageTree do
   defstruct fonts: %{},
+            images: %{},
             kids: []
 
   def new(opts \\ []) do

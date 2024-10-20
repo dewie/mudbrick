@@ -37,10 +37,10 @@ defmodule Mudbrick.Font do
     case Keyword.fetch(opts, :parsed) do
       {:ok, parsed} ->
         {:name, font_type} = Map.fetch!(parsed, "SubType")
-        struct!(Font, Keyword.put(opts, :type, type!(font_type)))
+        struct!(__MODULE__, Keyword.put(opts, :type, type!(font_type)))
 
       :error ->
-        struct!(Font, opts)
+        struct!(__MODULE__, opts)
     end
   end
 

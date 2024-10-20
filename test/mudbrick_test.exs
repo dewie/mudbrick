@@ -4,7 +4,10 @@ defmodule MudbrickTest do
   import Mudbrick
 
   test "playground" do
-    assert new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
+    assert new(
+             fonts: %{bodoni: [file: TestHelper.bodoni()]},
+             images: %{flower: [file: TestHelper.flower()]}
+           )
            |> page(size: :letter)
            |> text_position(200, 700)
            |> font(:bodoni, size: 14)
