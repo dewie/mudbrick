@@ -14,18 +14,19 @@ defmodule Mudbrick.Image do
     defexception [:message]
   end
 
+  defmodule NotSupported do
+    defexception [:message]
+  end
+
   alias Mudbrick.Document
   alias Mudbrick.Stream
 
   def new(opts) do
-    {"image/jpeg", width, height, _variant} = ExImageInfo.info(opts[:file])
-
     struct!(
       __MODULE__,
       Keyword.merge(
         opts,
-        width: width,
-        height: height
+        file_dependent_opts(ExImageInfo.info(opts[:file]))
       )
     )
   end
@@ -49,6 +50,19 @@ defmodule Mudbrick.Image do
     {doc, image_objects}
   end
 
+  defp file_dependent_opts({"image/jpeg", width, height, _variant}) do
+    [
+      width: width,
+      height: height,
+      filter: :DCTDecode,
+      bits_per_component: 8
+    ]
+  end
+
+  defp file_dependent_opts({"image/png", _width, _height, _variant}) do
+    raise NotSupported, "PNGs are currently not supported"
+  end
+
   defimpl Mudbrick.Object do
     def from(image) do
       Stream.new(
@@ -58,9 +72,9 @@ defmodule Mudbrick.Image do
           Subtype: :Image,
           Width: image.width,
           Height: image.height,
-          BitsPerComponent: 8,
+          BitsPerComponent: image.bits_per_component,
           ColorSpace: :DeviceRGB,
-          Filter: :DCTDecode
+          Filter: image.filter
         }
       )
       |> Mudbrick.Object.from()

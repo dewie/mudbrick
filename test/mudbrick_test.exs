@@ -6,7 +6,9 @@ defmodule MudbrickTest do
   test "playground" do
     assert new(
              fonts: %{bodoni: [file: TestHelper.bodoni()]},
-             images: %{flower: [file: TestHelper.flower()]}
+             images: %{
+               flower: [file: TestHelper.flower()]
+             }
            )
            |> page(size: :letter)
            |> text_position(200, 700)
@@ -68,7 +70,6 @@ defmodule MudbrickTest do
            """)
            |> page(size: :a4)
            |> render()
-           |> output()
            |> to_string() ==
              """
              %PDF-2.0

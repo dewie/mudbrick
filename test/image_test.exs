@@ -15,11 +15,19 @@ defmodule Mudbrick.ImageTest do
       file: data,
       resource_identifier: :I1,
       width: 500,
-      height: 477
+      height: 477,
+      filter: :DCTDecode,
+      bits_per_component: 8
     }
 
     assert Document.find_object(doc, &(&1 == expected_image))
     assert Document.root_page_tree(doc).value.images[:flower].value == expected_image
+  end
+
+  test "PNGs are currently not supported" do
+    assert_raise Image.NotSupported, fn ->
+      new(images: %{my_png: [file: example_png()]})
+    end
   end
 
   test "asking for a registered image produces an isolated cm/Do operation" do
@@ -49,7 +57,7 @@ defmodule Mudbrick.ImageTest do
   end
 
   describe "serialisation" do
-    test "is an XObject stream" do
+    test "produces a JPEG XObject stream" do
       [dictionary, _stream] =
         Image.new(file: flower(), resource_identifier: :I1)
         |> Mudbrick.Object.from()
