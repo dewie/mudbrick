@@ -10,13 +10,13 @@ defmodule Mudbrick.ContentStream do
   defmodule Cm do
     defstruct scale: {0, 0},
               skew: {0, 0},
-              translate: {0, 0}
+              position: {0, 0}
 
     defimpl Mudbrick.Object do
       def from(%Cm{
             scale: {x_scale, y_scale},
             skew: {x_skew, y_skew},
-            translate: {x_translate, y_translate}
+            position: {x_translate, y_translate}
           }) do
         [
           Mudbrick.join([x_scale, x_skew, y_skew, y_scale, x_translate, y_translate]),

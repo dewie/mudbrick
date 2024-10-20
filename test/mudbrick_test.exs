@@ -20,7 +20,11 @@ defmodule MudbrickTest do
            is Carbon Dioxide
            and HNO₃ is Nitric Acid
            """)
-           |> image(:flower)
+           |> image(
+             :flower,
+             scale: {200, 200},
+             position: {45, 550}
+           )
            |> text("wide stuff", align: :right)
            |> text("wider stuff", align: :right)
            |> text("z", align: :right)

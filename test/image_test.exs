@@ -39,7 +39,11 @@ defmodule Mudbrick.ImageTest do
            ] =
              new(images: %{flower: [file: flower()]})
              |> page()
-             |> image(:flower)
+             |> image(
+               :flower,
+               position: {45, 550},
+               scale: {100, 100}
+             )
              |> operations()
   end
 

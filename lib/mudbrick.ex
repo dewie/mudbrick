@@ -56,18 +56,14 @@ defmodule Mudbrick do
     end
   end
 
-  def image({doc, _content_stream_obj} = context, user_identifier) do
+  def image({doc, _content_stream_obj} = context, user_identifier, opts \\ []) do
     import ContentStream
 
     case Map.fetch(Document.root_page_tree(doc).value.images, user_identifier) do
       {:ok, image} ->
         context
         |> add(%ContentStream.QPush{})
-        |> add(%ContentStream.Cm{
-          scale: {100, 100},
-          skew: {0, 0},
-          translate: {45, 550}
-        })
+        |> add(ContentStream.Cm, opts)
         |> add(%ContentStream.Do{image: image.value})
         |> add(%ContentStream.QPop{})
 
