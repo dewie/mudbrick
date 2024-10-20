@@ -11,8 +11,8 @@ defmodule Mudbrick do
     letter: {8.5 * @dpi, 11 * @dpi}
   }
 
-  def new do
-    Document.new()
+  def new(opts \\ []) do
+    Document.new(opts)
   end
 
   def page(a, opts \\ [])
@@ -34,10 +34,10 @@ defmodule Mudbrick do
     |> contents()
   end
 
-  def font({_document, content_stream_object} = context, user_identifier, opts) do
+  def font({doc, _content_stream_obj} = context, user_identifier, opts) do
     import ContentStream
 
-    case Map.fetch(content_stream_object.value.page.fonts, user_identifier) do
+    case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
       {:ok, font} ->
         context
         |> add(

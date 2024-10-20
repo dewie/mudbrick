@@ -4,11 +4,8 @@ defmodule MudbrickTest do
   import Mudbrick
 
   test "playground" do
-    assert new()
-           |> page(
-             size: :letter,
-             fonts: %{bodoni: [file: TestHelper.bodoni()]}
-           )
+    assert new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
+           |> page(size: :letter)
            |> text_position(200, 700)
            |> font(:bodoni, size: 14)
            |> colour({1, 0, 0})
@@ -42,9 +39,7 @@ defmodule MudbrickTest do
   end
 
   test "can serialise with multiple pages" do
-    assert new()
-           |> page(
-             size: :letter,
+    assert new(
              fonts: %{
                helvetica: [
                  name: :Helvetica,
@@ -58,6 +53,7 @@ defmodule MudbrickTest do
                ]
              }
            )
+           |> page(size: :letter)
            |> text_position(300, 400)
            |> font(:helvetica, size: 100)
            |> text("hello, world!")
@@ -74,39 +70,39 @@ defmodule MudbrickTest do
              %PDF-2.0
              %����
              1 0 obj
-             <</Type /Pages
-               /Count 2
-               /Kids [5 0 R 7 0 R]
-             >>
-             endobj
-             2 0 obj
-             <</Type /Catalog
-               /Pages 1 0 R
-             >>
-             endobj
-             3 0 obj
              <</Type /Font
                /Subtype /TrueType
                /BaseFont /Courier
                /Encoding /PDFDocEncoding
              >>
              endobj
-             4 0 obj
+             2 0 obj
              <</Type /Font
                /Subtype /TrueType
                /BaseFont /Helvetica
                /Encoding /PDFDocEncoding
              >>
              endobj
+             3 0 obj
+             <</Type /Pages
+               /Count 2
+               /Kids [5 0 R 7 0 R]
+               /Resources <</Font <</F1 1 0 R
+               /F2 2 0 R
+             >>
+             >>
+             >>
+             endobj
+             4 0 obj
+             <</Type /Catalog
+               /Pages 3 0 R
+             >>
+             endobj
              5 0 obj
              <</Type /Page
                /Contents 6 0 R
                /MediaBox [0 0 612.0 792]
-               /Parent 1 0 R
-               /Resources <</Font <</F1 3 0 R
-               /F2 4 0 R
-             >>
-             >>
+               /Parent 3 0 R
              >>
              endobj
              6 0 obj
@@ -128,10 +124,7 @@ defmodule MudbrickTest do
              <</Type /Page
                /Contents 8 0 R
                /MediaBox [0 0 597.6 842.4]
-               /Parent 1 0 R
-               /Resources <</Font <<
-             >>
-             >>
+               /Parent 3 0 R
              >>
              endobj
              8 0 obj
@@ -146,19 +139,19 @@ defmodule MudbrickTest do
              0 9
              0000000000 65535 f 
              0000000023 00000 n 
-             0000000089 00000 n 
-             0000000139 00000 n 
-             0000000241 00000 n 
-             0000000345 00000 n 
+             0000000125 00000 n 
+             0000000229 00000 n 
+             0000000346 00000 n 
+             0000000396 00000 n 
              0000000490 00000 n 
              0000000628 00000 n 
-             0000000754 00000 n 
+             0000000724 00000 n 
              trailer
-             <</Root 2 0 R
+             <</Root 4 0 R
                /Size 9
              >>
              startxref
-             807
+             777
              %%EOF\
              """
   end
@@ -175,6 +168,9 @@ defmodule MudbrickTest do
              <</Type /Pages
                /Count 1
                /Kids [3 0 R]
+               /Resources <</Font <<
+             >>
+             >>
              >>
              endobj
              2 0 obj
@@ -187,9 +183,6 @@ defmodule MudbrickTest do
                /Contents 4 0 R
                /MediaBox [0 0 597.6 842.4]
                /Parent 1 0 R
-               /Resources <</Font <<
-             >>
-             >>
              >>
              endobj
              4 0 obj
@@ -204,8 +197,8 @@ defmodule MudbrickTest do
              0 5
              0000000000 65535 f 
              0000000023 00000 n 
-             0000000083 00000 n 
-             0000000133 00000 n 
+             0000000113 00000 n 
+             0000000163 00000 n 
              0000000259 00000 n 
              trailer
              <</Root 2 0 R
@@ -228,6 +221,9 @@ defmodule MudbrickTest do
              <</Type /Pages
                /Count 0
                /Kids []
+               /Resources <</Font <<
+             >>
+             >>
              >>
              endobj
              2 0 obj
@@ -239,13 +235,13 @@ defmodule MudbrickTest do
              0 3
              0000000000 65535 f 
              0000000023 00000 n 
-             0000000078 00000 n 
+             0000000108 00000 n 
              trailer
              <</Root 2 0 R
                /Size 3
              >>
              startxref
-             128
+             158
              %%EOF\
              """
   end

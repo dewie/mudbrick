@@ -3,12 +3,16 @@ defmodule Mudbrick.Document do
 
   alias Mudbrick.Catalog
   alias Mudbrick.Document
+  alias Mudbrick.Font
   alias Mudbrick.Indirect
   alias Mudbrick.PageTree
 
-  def new do
-    %Document{}
-    |> add(PageTree.new())
+  def new(opts) do
+    {doc, font_objects} =
+      Font.add_objects(%Document{}, Keyword.get(opts, :fonts, []))
+
+    doc
+    |> add(PageTree.new(fonts: font_objects))
     |> add(&Catalog.new(page_tree: &1.ref))
     |> finish()
   end

@@ -8,11 +8,9 @@ defmodule Mudbrick.FontTest do
   alias Mudbrick.Indirect
 
   test "embedded OTF fonts have a glyph-unicode mapping to enable copy+paste" do
-    {doc, _} =
-      Mudbrick.new()
-      |> Mudbrick.page(fonts: %{bodoni: [file: bodoni()]})
+    doc = Mudbrick.new(fonts: %{bodoni: [file: bodoni()]})
 
-    [_, _page, font | _] = doc.objects
+    font = Document.find_object(doc, &match?(%Font{}, &1))
 
     assert %Font{to_unicode: mapping} = font.value
     assert Document.object_with_ref(doc, mapping.ref)
@@ -43,12 +41,8 @@ defmodule Mudbrick.FontTest do
 
   test "embedded OTF fonts create descendant, descriptor and file objects" do
     data = bodoni()
-
-    {doc, _} =
-      Mudbrick.new()
-      |> Mudbrick.page(fonts: %{bodoni: [file: data]})
-
-    [_, _page, font | _] = doc.objects
+    doc = Mudbrick.new(fonts: %{bodoni: [file: data]})
+    font = Document.find_object(doc, &match?(%Font{}, &1))
 
     assert %Font{
              name: :"LibreBodoni-Regular",
@@ -88,8 +82,7 @@ defmodule Mudbrick.FontTest do
     import Mudbrick
 
     chain =
-      new()
-      |> page(
+      new(
         fonts: %{
           helvetica: [
             name: :Helvetica,
@@ -98,6 +91,7 @@ defmodule Mudbrick.FontTest do
           ]
         }
       )
+      |> page()
 
     e =
       assert_raise Font.NotSet, fn ->
@@ -111,8 +105,8 @@ defmodule Mudbrick.FontTest do
     import Mudbrick
 
     chain =
-      new()
-      |> page(fonts: %{})
+      new(fonts: %{})
+      |> page()
 
     e =
       assert_raise Font.Unregistered, fn ->

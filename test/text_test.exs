@@ -10,8 +10,7 @@ defmodule Mudbrick.TextTest do
 
   test "can set colour on a piece of text" do
     {_doc, content_stream} =
-      new()
-      |> page(
+      new(
         fonts: %{
           helvetica: [
             name: :Helvetica,
@@ -20,6 +19,7 @@ defmodule Mudbrick.TextTest do
           ]
         }
       )
+      |> page()
       |> font(:helvetica, size: 10)
       |> text("black and ")
       |> colour({1.0, 0.0, 0.0})
@@ -52,8 +52,8 @@ defmodule Mudbrick.TextTest do
                "200 700 Td",
                _text2
              ] =
-               new()
-               |> page(size: :letter, fonts: %{bodoni: [file: TestHelper.bodoni()]})
+               new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
+               |> page(size: :letter)
                |> font(:bodoni, size: 14)
                |> text("hi")
                |> text_position(200, 700)
@@ -65,8 +65,8 @@ defmodule Mudbrick.TextTest do
       assert [
                "200 700 Td"
              ] =
-               new()
-               |> page(size: :letter, fonts: %{bodoni: [file: TestHelper.bodoni()]})
+               new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
+               |> page(size: :letter)
                |> text_position(200, 700)
                |> operations()
     end
@@ -87,11 +87,8 @@ defmodule Mudbrick.TextTest do
                # b
                "<00B4> Tj"
              ] =
-               new()
-               |> page(
-                 size: :letter,
-                 fonts: %{bodoni: [file: TestHelper.bodoni()]}
-               )
+               new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
+               |> page(size: :letter)
                |> text_position(400, 0)
                |> font(:bodoni, size: 10)
                |> text("a", align: :right)
@@ -121,11 +118,8 @@ defmodule Mudbrick.TextTest do
                # d
                "<00BB> Tj"
              ] =
-               new()
-               |> page(
-                 size: :letter,
-                 fonts: %{bodoni: [file: TestHelper.bodoni()]}
-               )
+               new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
+               |> page(size: :letter)
                |> text_position(400, 0)
                |> font(:bodoni, size: 10)
                |> text("a")
@@ -153,11 +147,8 @@ defmodule Mudbrick.TextTest do
                "() '",
                _left_again
              ] =
-               new()
-               |> page(
-                 size: :letter,
-                 fonts: %{bodoni: [file: TestHelper.bodoni()]}
-               )
+               new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
+               |> page(size: :letter)
                |> text_position(200, 700)
                |> font(:bodoni, size: 14)
                |> text("z", align: :right)
@@ -178,9 +169,7 @@ defmodule Mudbrick.TextTest do
 
     test "is unsupported for built-in fonts right now" do
       assert_raise(Font.NotMeasured, fn ->
-        new()
-        |> page(
-          size: :letter,
+        new(
           fonts: %{
             helvetica: [
               name: :Helvetica,
@@ -189,6 +178,7 @@ defmodule Mudbrick.TextTest do
             ]
           }
         )
+        |> page(size: :letter)
         |> font(:helvetica, size: 10)
         |> text("hi", align: :right)
       end)
@@ -197,9 +187,7 @@ defmodule Mudbrick.TextTest do
 
   test "built-in font linebreaks are converted to the ' operator" do
     assert ["(a) Tj", "(b) '"] =
-             new()
-             |> page(
-               size: :letter,
+             new(
                fonts: %{
                  helvetica: [
                    name: :Helvetica,
@@ -208,6 +196,7 @@ defmodule Mudbrick.TextTest do
                  ]
                }
              )
+             |> page(size: :letter)
              |> font(:helvetica, size: 10)
              |> text_position(0, 700)
              |> text("""
@@ -223,11 +212,8 @@ defmodule Mudbrick.TextTest do
              "<00A5> Tj",
              "<00B4> '"
            ] =
-             new()
-             |> page(
-               size: :letter,
-               fonts: %{bodoni: [file: TestHelper.bodoni()]}
-             )
+             new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
+             |> page(size: :letter)
              |> font(:bodoni, size: 10)
              |> text_position(0, 700)
              |> text("""
@@ -240,11 +226,8 @@ defmodule Mudbrick.TextTest do
 
   test "font is assigned to the operator struct when font descendant present" do
     {_doc, content_stream} =
-      new()
-      |> page(
-        size: :letter,
-        fonts: %{bodoni: [file: TestHelper.bodoni()]}
-      )
+      new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
+      |> page(size: :letter)
       |> font(:bodoni, size: 24)
       |> text_position(0, 700)
       |> text("CO₂")
@@ -263,11 +246,8 @@ defmodule Mudbrick.TextTest do
   describe "serialisation" do
     test "converts Tj text to the assigned font's glyph IDs in hex" do
       assert ["<001100550174> Tj"] =
-               new()
-               |> page(
-                 size: :letter,
-                 fonts: %{bodoni: [file: TestHelper.bodoni()]}
-               )
+               new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
+               |> page(size: :letter)
                |> font(:bodoni, size: 24)
                |> text_position(0, 700)
                |> text("CO₂")
@@ -276,8 +256,8 @@ defmodule Mudbrick.TextTest do
     end
 
     test "copes with trailing newlines in CID font text" do
-      assert new()
-             |> page(size: :letter, fonts: %{bodoni: [file: TestHelper.bodoni()]})
+      assert new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
+             |> page(size: :letter)
              |> font(:bodoni, size: 13)
              |> text("\n")
              |> render()

@@ -1,6 +1,5 @@
 defmodule Mudbrick.Page do
   defstruct contents: nil,
-            fonts: %{},
             parent: nil,
             size: nil
 
@@ -56,23 +55,11 @@ defmodule Mudbrick.Page do
         }
         |> Map.merge(
           case page.contents do
-            nil ->
-              %{}
-
-            contents ->
-              %{
-                Contents: contents.ref,
-                Resources: %{Font: font_dictionary(page.fonts)}
-              }
+            nil -> %{}
+            contents -> %{Contents: contents.ref}
           end
         )
       )
-    end
-
-    defp font_dictionary(fonts) do
-      for {_human_identifier, object} <- fonts, into: %{} do
-        {object.value.resource_identifier, object.ref}
-      end
     end
   end
 end
