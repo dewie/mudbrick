@@ -5,13 +5,6 @@ defmodule Mudbrick do
   alias Mudbrick.Image
   alias Mudbrick.Page
 
-  @dpi 72
-
-  @page_sizes %{
-    a4: {8.3 * @dpi, 11.7 * @dpi},
-    letter: {8.5 * @dpi, 11 * @dpi}
-  }
-
   def new(opts \\ []) do
     Document.new(opts)
   end
@@ -28,8 +21,8 @@ defmodule Mudbrick do
       Keyword.update(
         opts,
         :size,
-        @page_sizes.a4,
-        &Map.fetch!(@page_sizes, &1)
+        Page.size(:a4),
+        &Page.size(&1)
       )
     )
     |> contents()

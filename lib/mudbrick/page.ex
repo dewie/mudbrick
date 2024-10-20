@@ -6,8 +6,19 @@ defmodule Mudbrick.Page do
   alias Mudbrick.Document
   alias Mudbrick.Font
 
+  @dpi 72
+
+  @page_sizes %{
+    a4: {8.3 * @dpi, 11.7 * @dpi},
+    letter: {8.5 * @dpi, 11 * @dpi}
+  }
+
   def new(opts \\ []) do
     struct!(__MODULE__, opts)
+  end
+
+  def size(name) do
+    @page_sizes[name]
   end
 
   def add(doc, opts) do

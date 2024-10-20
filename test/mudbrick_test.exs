@@ -22,8 +22,8 @@ defmodule MudbrickTest do
            """)
            |> image(
              :flower,
-             scale: {200, 200},
-             position: {45, 550}
+             scale: Mudbrick.Page.size(:letter),
+             position: {0, 0}
            )
            |> text("wide stuff", align: :right)
            |> text("wider stuff", align: :right)
