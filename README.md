@@ -13,12 +13,14 @@ Currently working:
 - Text positioning.
 - Right alignment.
 - Coloured text.
+- JPEG images.
 
 To do:
 
-- Graphics.
+- Other image formats.
 - Compression.
 - Font subsetting.
+- Vector graphics.
 
 ## Installation
 
