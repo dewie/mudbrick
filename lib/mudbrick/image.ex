@@ -1,5 +1,10 @@
 defmodule Mudbrick.Image do
-  defstruct [:file]
+  @enforce_keys [:file, :resource_identifier]
+  defstruct [:file, :resource_identifier]
+
+  defmodule Unregistered do
+    defexception [:message]
+  end
 
   alias Mudbrick.Document
   alias Mudbrick.Stream
@@ -16,7 +21,10 @@ defmodule Mudbrick.Image do
             Keyword.put(image_opts, :resource_identifier, :"I#{id + 1}")
 
           {doc, image} =
-            Document.add(doc, new(file: Keyword.fetch!(image_opts, :file)))
+            Document.add(
+              doc,
+              new(Keyword.put(image_opts, :file, Keyword.fetch!(image_opts, :file)))
+            )
 
           {doc, Map.put(image_objects, human_name, image), id + 1}
       end
@@ -30,7 +38,12 @@ defmodule Mudbrick.Image do
         data: image.file,
         additional_entries: %{
           Type: :XObject,
-          Subtype: :Image
+          Subtype: :Image,
+          Width: 500,
+          Height: 477,
+          BitsPerComponent: 8,
+          ColorSpace: :DeviceRGB,
+          Filter: :DCTDecode
         }
       )
       |> Mudbrick.Object.from()

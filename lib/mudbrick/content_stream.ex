@@ -7,6 +7,54 @@ defmodule Mudbrick.ContentStream do
   alias Mudbrick.Document
   alias Mudbrick.Font
 
+  defmodule Cm do
+    defstruct scale: {0, 0},
+              skew: {0, 0},
+              translate: {0, 0}
+
+    defimpl Mudbrick.Object do
+      def from(%Cm{
+            scale: {x_scale, y_scale},
+            skew: {x_skew, y_skew},
+            translate: {x_translate, y_translate}
+          }) do
+        [
+          Mudbrick.join([x_scale, x_skew, y_skew, y_scale, x_translate, y_translate]),
+          " cm"
+        ]
+      end
+    end
+  end
+
+  defmodule QPush do
+    defstruct []
+
+    defimpl Mudbrick.Object do
+      def from(_), do: ["q"]
+    end
+  end
+
+  defmodule QPop do
+    defstruct []
+
+    defimpl Mudbrick.Object do
+      def from(_), do: ["Q"]
+    end
+  end
+
+  defmodule Do do
+    defstruct [:image]
+
+    defimpl Mudbrick.Object do
+      def from(operator) do
+        [
+          Mudbrick.Object.from(operator.image.resource_identifier),
+          " Do"
+        ]
+      end
+    end
+  end
+
   defmodule BT do
     defstruct []
 

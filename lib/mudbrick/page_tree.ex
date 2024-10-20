@@ -18,13 +18,14 @@ defmodule Mudbrick.PageTree do
         Kids: page_tree.kids,
         Count: length(page_tree.kids),
         Resources: %{
-          Font: font_dictionary(page_tree.fonts)
+          Font: resource_dictionary(page_tree.fonts),
+          XObject: resource_dictionary(page_tree.images)
         }
       })
     end
 
-    defp font_dictionary(fonts) do
-      for {_human_identifier, object} <- fonts, into: %{} do
+    defp resource_dictionary(resources) do
+      for {_human_identifier, object} <- resources, into: %{} do
         {object.value.resource_identifier, object.ref}
       end
     end

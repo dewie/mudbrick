@@ -263,10 +263,4 @@ defmodule Mudbrick.TextTest do
              |> render()
     end
   end
-
-  defp operations({_doc, content_stream}) do
-    content_stream.value.operations
-    |> Enum.reverse()
-    |> Enum.map(&show/1)
-  end
 end

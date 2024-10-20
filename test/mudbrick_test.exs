@@ -18,6 +18,7 @@ defmodule MudbrickTest do
            is Carbon Dioxide
            and HNO₃ is Nitric Acid
            """)
+           |> image(:flower)
            |> text("wide stuff", align: :right)
            |> text("wider stuff", align: :right)
            |> text("z", align: :right)
@@ -93,6 +94,8 @@ defmodule MudbrickTest do
                /Resources <</Font <</F1 1 0 R
                /F2 2 0 R
              >>
+               /XObject <<
+             >>
              >>
              >>
              endobj
@@ -144,17 +147,17 @@ defmodule MudbrickTest do
              0000000023 00000 n 
              0000000125 00000 n 
              0000000229 00000 n 
-             0000000346 00000 n 
-             0000000396 00000 n 
-             0000000490 00000 n 
-             0000000628 00000 n 
-             0000000724 00000 n 
+             0000000363 00000 n 
+             0000000413 00000 n 
+             0000000507 00000 n 
+             0000000645 00000 n 
+             0000000741 00000 n 
              trailer
              <</Root 4 0 R
                /Size 9
              >>
              startxref
-             777
+             794
              %%EOF\
              """
   end
@@ -172,6 +175,8 @@ defmodule MudbrickTest do
                /Count 1
                /Kids [3 0 R]
                /Resources <</Font <<
+             >>
+               /XObject <<
              >>
              >>
              >>
@@ -200,15 +205,15 @@ defmodule MudbrickTest do
              0 5
              0000000000 65535 f 
              0000000023 00000 n 
-             0000000113 00000 n 
-             0000000163 00000 n 
-             0000000259 00000 n 
+             0000000130 00000 n 
+             0000000180 00000 n 
+             0000000276 00000 n 
              trailer
              <</Root 2 0 R
                /Size 5
              >>
              startxref
-             312
+             329
              %%EOF\
              """
   end
@@ -226,6 +231,8 @@ defmodule MudbrickTest do
                /Kids []
                /Resources <</Font <<
              >>
+               /XObject <<
+             >>
              >>
              >>
              endobj
@@ -238,13 +245,13 @@ defmodule MudbrickTest do
              0 3
              0000000000 65535 f 
              0000000023 00000 n 
-             0000000108 00000 n 
+             0000000125 00000 n 
              trailer
              <</Root 2 0 R
                /Size 3
              >>
              startxref
-             158
+             175
              %%EOF\
              """
   end

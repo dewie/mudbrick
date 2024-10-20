@@ -2,6 +2,7 @@ defmodule Mudbrick do
   alias Mudbrick.ContentStream
   alias Mudbrick.Document
   alias Mudbrick.Font
+  alias Mudbrick.Image
   alias Mudbrick.Page
 
   @dpi 72
@@ -52,6 +53,26 @@ defmodule Mudbrick do
 
       :error ->
         raise Font.Unregistered, "Unregistered font: #{user_identifier}"
+    end
+  end
+
+  def image({doc, _content_stream_obj} = context, user_identifier) do
+    import ContentStream
+
+    case Map.fetch(Document.root_page_tree(doc).value.images, user_identifier) do
+      {:ok, image} ->
+        context
+        |> add(%ContentStream.QPush{})
+        |> add(%ContentStream.Cm{
+          scale: {100, 100},
+          skew: {0, 0},
+          translate: {45, 550}
+        })
+        |> add(%ContentStream.Do{image: image.value})
+        |> add(%ContentStream.QPop{})
+
+      :error ->
+        raise Image.Unregistered, "Unregistered image: #{user_identifier}"
     end
   end
 

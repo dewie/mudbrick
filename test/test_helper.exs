@@ -6,6 +6,12 @@ defmodule TestHelper do
     Mudbrick.Object.from(o) |> to_string()
   end
 
+  def operations({_doc, content_stream}) do
+    content_stream.value.operations
+    |> Enum.reverse()
+    |> Enum.map(&show/1)
+  end
+
   def bodoni do
     @bodoni
   end
