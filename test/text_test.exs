@@ -8,6 +8,27 @@ defmodule Mudbrick.TextTest do
   alias Mudbrick.Font
   alias Mudbrick.Indirect
 
+  test "can set leading" do
+    assert [
+             "/F1 10 Tf",
+             "14 TL",
+             "(black and ) Tj"
+           ] =
+             new(
+               fonts: %{
+                 helvetica: [
+                   name: :Helvetica,
+                   type: :TrueType,
+                   encoding: :PDFDocEncoding
+                 ]
+               }
+             )
+             |> page()
+             |> font(:helvetica, size: 10, leading: 14)
+             |> text("black and ")
+             |> operations()
+  end
+
   test "can set colour on a piece of text" do
     {_doc, content_stream} =
       new(

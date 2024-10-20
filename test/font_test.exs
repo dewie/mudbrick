@@ -110,7 +110,7 @@ defmodule Mudbrick.FontTest do
 
     e =
       assert_raise Font.Unregistered, fn ->
-        chain |> font(:bodoni, 24)
+        chain |> font(:bodoni, size: 24)
       end
 
     assert e.message == "Unregistered font: bodoni"

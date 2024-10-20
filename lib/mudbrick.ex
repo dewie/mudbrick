@@ -31,6 +31,8 @@ defmodule Mudbrick do
   def font({doc, _content_stream_obj} = context, user_identifier, opts) do
     import ContentStream
 
+    {leading, opts} = Keyword.pop(opts, :leading, Keyword.fetch!(opts, :size) * 1.2)
+
     case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
       {:ok, font} ->
         context
@@ -42,7 +44,7 @@ defmodule Mudbrick do
             font.value
           )
         )
-        |> add(ContentStream.TL, leading: Keyword.fetch!(opts, :size) * 1.2)
+        |> add(ContentStream.TL, leading: leading)
 
       :error ->
         raise Font.Unregistered, "Unregistered font: #{user_identifier}"

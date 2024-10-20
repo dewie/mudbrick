@@ -11,6 +11,11 @@ defmodule MudbrickTest do
              }
            )
            |> page(size: :letter)
+           |> image(
+             :flower,
+             scale: Mudbrick.Page.size(:letter),
+             position: {0, 0}
+           )
            |> text_position(200, 700)
            |> font(:bodoni, size: 14)
            |> colour({1, 0, 0})
@@ -20,15 +25,11 @@ defmodule MudbrickTest do
            is Carbon Dioxide
            and HNO₃ is Nitric Acid
            """)
-           |> image(
-             :flower,
-             scale: Mudbrick.Page.size(:letter),
-             position: {0, 0}
-           )
            |> text("wide stuff", align: :right)
            |> text("wider stuff", align: :right)
            |> text("z", align: :right)
            |> text_position(400, 600)
+           |> font(:bodoni, size: 14, leading: 14)
            |> text("""
            I am left again
 
