@@ -1,5 +1,6 @@
 defmodule Mudbrick.Document do
-  defstruct objects: []
+  defstruct compress: false,
+            objects: []
 
   alias Mudbrick.Catalog
   alias Mudbrick.Document
@@ -10,7 +11,10 @@ defmodule Mudbrick.Document do
 
   def new(opts) do
     {doc, font_objects} =
-      Font.add_objects(%Document{}, Keyword.get(opts, :fonts, []))
+      Font.add_objects(
+        %Document{compress: Keyword.get(opts, :compress, false)},
+        Keyword.get(opts, :fonts, [])
+      )
 
     {doc, image_objects} =
       Image.add_objects(doc, Keyword.get(opts, :images, []))

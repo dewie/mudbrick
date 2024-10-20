@@ -6,6 +6,7 @@ defmodule Mudbrick.FontTest do
   alias Mudbrick.Document
   alias Mudbrick.Font
   alias Mudbrick.Indirect
+  alias Mudbrick.Stream
 
   test "embedded OTF fonts have a glyph-unicode mapping to enable copy+paste" do
     doc = Mudbrick.new(fonts: %{bodoni: [file: bodoni()]})
@@ -76,6 +77,16 @@ defmodule Mudbrick.FontTest do
     assert Document.object_with_ref(doc, descendant.ref)
     assert Document.object_with_ref(doc, descriptor.ref)
     assert Document.object_with_ref(doc, file.ref)
+  end
+
+  test "with compression enabled, Length is compressed size, Length1 is uncompressed size" do
+    data = bodoni()
+    doc = Mudbrick.new(compress: true, fonts: %{bodoni: [file: data]})
+    stream = Document.find_object(doc, &match?(%Stream{}, &1)).value
+
+    assert :erlang.iolist_size(stream.data) < :erlang.iolist_size(data)
+    assert stream.additional_entries[:Length1] == :erlang.iolist_size(data)
+    assert stream.length < :erlang.iolist_size(data)
   end
 
   test "forgetting to set the font is an error" do

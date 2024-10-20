@@ -82,6 +82,7 @@ defmodule Mudbrick.Font do
     doc
     |> Document.add(
       Stream.new(
+        compress: doc.compress,
         data: contents,
         additional_entries: %{
           Length1: byte_size(contents),

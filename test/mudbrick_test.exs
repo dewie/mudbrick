@@ -5,6 +5,7 @@ defmodule MudbrickTest do
 
   test "playground" do
     assert new(
+             compress: true,
              fonts: %{bodoni: [file: TestHelper.bodoni()]},
              images: %{
                flower: [file: TestHelper.flower()]

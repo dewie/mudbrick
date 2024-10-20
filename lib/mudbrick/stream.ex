@@ -1,26 +1,49 @@
 defmodule Mudbrick.Stream do
-  defstruct data: nil,
-            additional_entries: %{}
+  defstruct compress: false,
+            data: nil,
+            additional_entries: %{},
+            length: nil,
+            filters: []
 
   def new(opts) do
-    struct!(__MODULE__, opts)
+    opts =
+      if opts[:compress] do
+        opts
+        |> Keyword.update!(:data, fn data ->
+          z = :zlib.open()
+          :ok = :zlib.deflateInit(z)
+          deflated = :zlib.deflate(z, data, :finish)
+          :zlib.deflateEnd(z)
+          :zlib.close(z)
+          deflated
+        end)
+        |> then(fn opts ->
+          Keyword.merge(
+            opts,
+            length: :erlang.iolist_size(opts[:data]),
+            filters: [:FlateDecode]
+          )
+        end)
+      else
+        opts
+      end
+
+    struct!(__MODULE__, Keyword.put(opts, :length, :erlang.iolist_size(opts[:data])))
   end
 
   defimpl Mudbrick.Object do
     def from(stream) do
-      # z = :zlib.open()
-      # :ok = :zlib.deflateInit(z)
-      # deflated = :zlib.deflate(z, stream.data, :finish)
-      # :zlib.deflateEnd(z)
-      # :zlib.close(z)
-
       [
         Mudbrick.Object.from(
-          %{
-            Length: :erlang.iolist_size(stream.data)
-            # Filter: [:FlateDecode]
-          }
+          %{Length: stream.length}
           |> Map.merge(stream.additional_entries)
+          |> Map.merge(
+            if Enum.empty?(stream.filters) do
+              %{}
+            else
+              %{Filter: stream.filters}
+            end
+          )
         ),
         "\nstream\n",
         stream.data,
