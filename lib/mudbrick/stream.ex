@@ -5,30 +5,39 @@ defmodule Mudbrick.Stream do
             length: nil,
             filters: []
 
+  import :erlang, only: [iolist_size: 1]
+
   def new(opts) do
     opts =
-      if opts[:compress] do
-        opts
-        |> Keyword.update!(:data, fn data ->
-          z = :zlib.open()
-          :ok = :zlib.deflateInit(z)
-          deflated = :zlib.deflate(z, data, :finish)
-          :zlib.deflateEnd(z)
-          :zlib.close(z)
-          deflated
-        end)
-        |> then(fn opts ->
+      case decide_compression(opts) do
+        {:ok, data} ->
           Keyword.merge(
             opts,
-            length: :erlang.iolist_size(opts[:data]),
+            data: data,
+            length: iolist_size(data),
             filters: [:FlateDecode]
           )
-        end)
-      else
-        opts
+
+        :error ->
+          opts
       end
 
-    struct!(__MODULE__, Keyword.put(opts, :length, :erlang.iolist_size(opts[:data])))
+    struct!(__MODULE__, Keyword.put(opts, :length, iolist_size(opts[:data])))
+  end
+
+  defp decide_compression(opts) do
+    if opts[:compress] do
+      uncompressed = opts[:data]
+      compressed = Mudbrick.compress(uncompressed)
+
+      if iolist_size(compressed) < iolist_size(uncompressed) do
+        {:ok, compressed}
+      else
+        :error
+      end
+    else
+      :error
+    end
   end
 
   defimpl Mudbrick.Object do

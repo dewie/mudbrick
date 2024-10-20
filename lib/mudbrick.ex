@@ -114,6 +114,15 @@ defmodule Mudbrick do
     Enum.map_join(list, separator, &Mudbrick.Object.from/1)
   end
 
+  def compress(data) do
+    z = :zlib.open()
+    :ok = :zlib.deflateInit(z)
+    deflated = :zlib.deflate(z, data, :finish)
+    :zlib.deflateEnd(z)
+    :zlib.close(z)
+    deflated
+  end
+
   defp contents({doc, page}) do
     import Document
 
