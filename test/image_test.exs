@@ -11,9 +11,14 @@ defmodule Mudbrick.ImageTest do
     data = flower()
     doc = new(images: %{flower: [file: data]})
 
-    expected_image = %Image{file: data, resource_identifier: :I1}
+    expected_image = %Image{
+      file: data,
+      resource_identifier: :I1,
+      width: 500,
+      height: 477
+    }
 
-    assert Document.find_object(doc, &match?(^expected_image, &1))
+    assert Document.find_object(doc, &(&1 == expected_image))
     assert Document.root_page_tree(doc).value.images[:flower].value == expected_image
   end
 
@@ -45,8 +50,13 @@ defmodule Mudbrick.ImageTest do
 
   describe "serialisation" do
     test "is an XObject stream" do
-      assert %Image{file: "some image data", resource_identifier: :I1}
-             |> show() ==
+      [dictionary, _stream] =
+        Image.new(file: flower(), resource_identifier: :I1)
+        |> Mudbrick.Object.from()
+        |> :erlang.iolist_to_binary()
+        |> String.split("stream", parts: 2)
+
+      assert dictionary ==
                """
                <</Type /XObject
                  /Subtype /Image
@@ -54,12 +64,9 @@ defmodule Mudbrick.ImageTest do
                  /ColorSpace /DeviceRGB
                  /Filter /DCTDecode
                  /Height 477
-                 /Length 15
+                 /Length 36287
                  /Width 500
                >>
-               stream
-               some image data
-               endstream\
                """
     end
   end

@@ -1,6 +1,14 @@
 defmodule Mudbrick.Image do
   @enforce_keys [:file, :resource_identifier]
-  defstruct [:file, :resource_identifier]
+  defstruct [
+    :file,
+    :resource_identifier,
+    :width,
+    :height,
+    :bits_per_component,
+    :colour_space,
+    :filter
+  ]
 
   defmodule Unregistered do
     defexception [:message]
@@ -10,7 +18,16 @@ defmodule Mudbrick.Image do
   alias Mudbrick.Stream
 
   def new(opts) do
-    struct!(__MODULE__, opts)
+    {"image/jpeg", width, height, _variant} = ExImageInfo.info(opts[:file])
+
+    struct!(
+      __MODULE__,
+      Keyword.merge(
+        opts,
+        width: width,
+        height: height
+      )
+    )
   end
 
   def add_objects(doc, images) do
@@ -39,8 +56,8 @@ defmodule Mudbrick.Image do
         additional_entries: %{
           Type: :XObject,
           Subtype: :Image,
-          Width: 500,
-          Height: 477,
+          Width: image.width,
+          Height: image.height,
           BitsPerComponent: 8,
           ColorSpace: :DeviceRGB,
           Filter: :DCTDecode
