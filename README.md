@@ -14,11 +14,11 @@ Currently working:
 - Right alignment.
 - Coloured text.
 - JPEG images.
+- Compression.
 
 To do:
 
 - Other image formats.
-- Compression.
 - Font subsetting.
 - Vector graphics.
 
