@@ -118,7 +118,7 @@ defmodule Mudbrick do
     import Document
 
     doc
-    |> add(ContentStream.new(page: page.value))
+    |> add(ContentStream.new(compress: doc.compress, page: page.value))
     |> update(page, fn contents, %Page{} = p ->
       %{p | contents: contents}
     end)

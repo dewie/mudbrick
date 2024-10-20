@@ -124,7 +124,7 @@ defmodule Mudbrick.Font do
 
   defp add_font({doc, cid_font}, opentype, font_name, font_opts) do
     doc
-    |> Document.add(CMap.new(parsed: opentype))
+    |> Document.add(CMap.new(compress: doc.compress, parsed: opentype))
     |> Document.add(fn cmap ->
       Font.new(
         Keyword.merge(font_opts,

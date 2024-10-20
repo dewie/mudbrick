@@ -1,6 +1,7 @@
 defmodule Mudbrick.ContentStream do
   @enforce_keys [:page]
-  defstruct current_alignment: nil,
+  defstruct compress: false,
+            current_alignment: nil,
             operations: [],
             page: nil
 
@@ -299,6 +300,7 @@ defmodule Mudbrick.ContentStream do
   defimpl Mudbrick.Object do
     def from(content_stream) do
       Mudbrick.Stream.new(
+        compress: content_stream.compress,
         data: [
           [%ET{} | content_stream.operations ++ [%BT{}]]
           |> Enum.reverse()

@@ -5,6 +5,7 @@ defmodule Mudbrick.FontTest do
 
   alias Mudbrick.Document
   alias Mudbrick.Font
+  alias Mudbrick.Font.CMap
   alias Mudbrick.Indirect
   alias Mudbrick.Stream
 
@@ -79,14 +80,26 @@ defmodule Mudbrick.FontTest do
     assert Document.object_with_ref(doc, file.ref)
   end
 
-  test "with compression enabled, Length is compressed size, Length1 is uncompressed size" do
-    data = bodoni()
-    doc = Mudbrick.new(compress: true, fonts: %{bodoni: [file: data]})
-    stream = Document.find_object(doc, &match?(%Stream{}, &1)).value
+  describe "with compression enabled" do
+    test "Length is compressed size, Length1 is uncompressed size" do
+      data = bodoni()
+      doc = Mudbrick.new(compress: true, fonts: %{bodoni: [file: data]})
+      stream = Document.find_object(doc, &match?(%Stream{}, &1)).value
 
-    assert :erlang.iolist_size(stream.data) < :erlang.iolist_size(data)
-    assert stream.additional_entries[:Length1] == :erlang.iolist_size(data)
-    assert stream.length < :erlang.iolist_size(data)
+      assert :erlang.iolist_size(stream.data) < :erlang.iolist_size(data)
+      assert stream.additional_entries[:Length1] == :erlang.iolist_size(data)
+      assert stream.length < :erlang.iolist_size(data)
+    end
+
+    test "cmap is compressed" do
+      uncompressed_doc = Mudbrick.new(compress: false, fonts: %{bodoni: [file: bodoni()]})
+      compressed_doc = Mudbrick.new(compress: true, fonts: %{bodoni: [file: bodoni()]})
+      uncompressed_stream = Document.find_object(uncompressed_doc, &match?(%CMap{}, &1)).value
+      compressed_stream = Document.find_object(compressed_doc, &match?(%CMap{}, &1)).value
+
+      assert :erlang.iolist_size(Mudbrick.Object.from(compressed_stream)) <
+               :erlang.iolist_size(Mudbrick.Object.from(uncompressed_stream))
+    end
   end
 
   test "forgetting to set the font is an error" do

@@ -1,5 +1,6 @@
 defmodule Mudbrick.Font.CMap do
-  defstruct [:parsed]
+  defstruct compress: false,
+            parsed: nil
 
   def new(opts) do
     struct!(__MODULE__, opts)
@@ -44,7 +45,12 @@ defmodule Mudbrick.Font.CMap do
         """
       ]
 
-      Mudbrick.Object.from(Mudbrick.Stream.new(data: data))
+      Mudbrick.Object.from(
+        Mudbrick.Stream.new(
+          compress: cmap.compress,
+          data: data
+        )
+      )
     end
   end
 end

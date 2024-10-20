@@ -8,21 +8,42 @@ defmodule Mudbrick.TextTest do
   alias Mudbrick.Font
   alias Mudbrick.Indirect
 
+  @fonts_helvetica %{
+    helvetica: [
+      name: :Helvetica,
+      type: :TrueType,
+      encoding: :PDFDocEncoding
+    ]
+  }
+
+  describe "with compression enabled" do
+    test "compresses text stream" do
+      text = "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+
+      {_doc, compressed_content_stream} =
+        new(compress: true, fonts: @fonts_helvetica)
+        |> page()
+        |> font(:helvetica, size: 10, leading: 14)
+        |> text(text)
+
+      {_doc, uncompressed_content_stream} =
+        new(compress: false, fonts: @fonts_helvetica)
+        |> page()
+        |> font(:helvetica, size: 10, leading: 14)
+        |> text(text)
+
+      assert :erlang.iolist_size(Mudbrick.Object.from(compressed_content_stream)) <
+               :erlang.iolist_size(Mudbrick.Object.from(uncompressed_content_stream))
+    end
+  end
+
   test "can set leading" do
     assert [
              "/F1 10 Tf",
              "14 TL",
              "(black and ) Tj"
            ] =
-             new(
-               fonts: %{
-                 helvetica: [
-                   name: :Helvetica,
-                   type: :TrueType,
-                   encoding: :PDFDocEncoding
-                 ]
-               }
-             )
+             new(fonts: @fonts_helvetica)
              |> page()
              |> font(:helvetica, size: 10, leading: 14)
              |> text("black and ")
@@ -31,15 +52,7 @@ defmodule Mudbrick.TextTest do
 
   test "can set colour on a piece of text" do
     {_doc, content_stream} =
-      new(
-        fonts: %{
-          helvetica: [
-            name: :Helvetica,
-            type: :TrueType,
-            encoding: :PDFDocEncoding
-          ]
-        }
-      )
+      new(fonts: @fonts_helvetica)
       |> page()
       |> font(:helvetica, size: 10)
       |> text("black and ")
@@ -190,15 +203,7 @@ defmodule Mudbrick.TextTest do
 
     test "is unsupported for built-in fonts right now" do
       assert_raise(Font.NotMeasured, fn ->
-        new(
-          fonts: %{
-            helvetica: [
-              name: :Helvetica,
-              type: :TrueType,
-              encoding: :PDFDocEncoding
-            ]
-          }
-        )
+        new(fonts: @fonts_helvetica)
         |> page(size: :letter)
         |> font(:helvetica, size: 10)
         |> text("hi", align: :right)
@@ -208,15 +213,7 @@ defmodule Mudbrick.TextTest do
 
   test "built-in font linebreaks are converted to the ' operator" do
     assert ["(a) Tj", "(b) '"] =
-             new(
-               fonts: %{
-                 helvetica: [
-                   name: :Helvetica,
-                   type: :TrueType,
-                   encoding: :PDFDocEncoding
-                 ]
-               }
-             )
+             new(fonts: @fonts_helvetica)
              |> page(size: :letter)
              |> font(:helvetica, size: 10)
              |> text_position(0, 700)
