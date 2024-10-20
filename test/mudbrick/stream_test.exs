@@ -9,11 +9,11 @@ defmodule Mudbrick.StreamTest do
       |> Mudbrick.Object.from()
       |> :erlang.iolist_to_binary()
 
-    assert String.slice(serialised, 0..24) == """
+    assert String.starts_with?(serialised, """
            <</Length 42952
            >>
            stream\
-           """
+           """)
 
     assert String.ends_with?(serialised, """
            endstream\
