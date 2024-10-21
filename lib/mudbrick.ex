@@ -123,6 +123,15 @@ defmodule Mudbrick do
     deflated
   end
 
+  def decompress(data) do
+    z = :zlib.open()
+    :zlib.inflateInit(z)
+    inflated = :zlib.inflate(z, data)
+    :zlib.inflateEnd(z)
+    :zlib.close(z)
+    inflated
+  end
+
   defp contents({doc, page}) do
     import Document
 
