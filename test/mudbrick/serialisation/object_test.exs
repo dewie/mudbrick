@@ -2,7 +2,7 @@ defmodule Mudbrick.ObjectTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
-  import TestHelper
+  import Mudbrick.TestHelper
 
   describe "dictionary (map)" do
     test "is enclosed in double angle brackets" do

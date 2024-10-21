@@ -3,7 +3,7 @@ defmodule Mbc.PredicatesTest do
 
   import Mudbrick
   import Mudbrick.Predicates
-  import TestHelper
+  import Mudbrick.TestHelper
 
   describe "with direct glyph encoding" do
     test "with compression, can assert/refute that a piece of text appears" do

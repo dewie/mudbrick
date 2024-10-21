@@ -3,14 +3,15 @@ defmodule MudbrickTest do
   doctest Mudbrick
 
   import Mudbrick
+  import Mudbrick.TestHelper
 
   alias Mudbrick.Page
 
   test "playground" do
     assert new(
              compress: true,
-             fonts: %{bodoni: [file: TestHelper.bodoni()]},
-             images: %{flower: [file: TestHelper.flower()]}
+             fonts: %{bodoni: [file: bodoni()]},
+             images: %{flower: [file: flower()]}
            )
            |> page(size: Page.size(:letter))
            |> image(

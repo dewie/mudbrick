@@ -1,7 +1,7 @@
 defmodule Mudbrick.FontTest do
   use ExUnit.Case, async: true
 
-  import TestHelper
+  import Mudbrick.TestHelper
 
   alias Mudbrick.Document
   alias Mudbrick.Font

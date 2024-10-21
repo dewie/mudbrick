@@ -1,7 +1,7 @@
 defmodule Mudbrick.CatalogTest do
   use ExUnit.Case, async: true
 
-  import TestHelper
+  import Mudbrick.TestHelper
 
   alias Mudbrick.Catalog
   alias Mudbrick.Indirect

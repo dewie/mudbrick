@@ -1,15 +1,15 @@
 defmodule Mudbrick.PageTreeTest do
   use ExUnit.Case, async: true
 
-  import TestHelper
+  import Mudbrick.TestHelper
 
   alias Mudbrick.Document
 
   test "is a dictionary of pages, fonts and images" do
     doc =
       Mudbrick.new(
-        fonts: %{bodoni: [file: TestHelper.bodoni()]},
-        images: %{flower: [file: TestHelper.flower()]}
+        fonts: %{bodoni: [file: bodoni()]},
+        images: %{flower: [file: flower()]}
       )
 
     assert doc |> Document.root_page_tree() |> show() ==

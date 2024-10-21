@@ -2,7 +2,7 @@ defmodule Mudbrick.StreamTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
-  import TestHelper
+  import Mudbrick.TestHelper
 
   property "compresses data when there's a saving" do
     check all uncompressed <- string(:alphanumeric, min_length: 150), max_runs: 200 do

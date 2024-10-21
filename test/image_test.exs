@@ -2,7 +2,7 @@ defmodule Mudbrick.ImageTest do
   use ExUnit.Case, async: true
 
   import Mudbrick
-  import TestHelper
+  import Mudbrick.TestHelper
 
   alias Mudbrick.Document
   alias Mudbrick.Image
