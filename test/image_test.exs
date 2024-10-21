@@ -47,19 +47,6 @@ defmodule Mudbrick.ImageTest do
              |> operations()
   end
 
-  test "asking for an unregistered image is an error" do
-    chain =
-      new(images: %{})
-      |> page()
-
-    e =
-      assert_raise Image.Unregistered, fn ->
-        chain |> image(:flower)
-      end
-
-    assert e.message == "Unregistered image: flower"
-  end
-
   describe "serialisation" do
     test "produces a JPEG XObject stream" do
       [dictionary, _stream] =

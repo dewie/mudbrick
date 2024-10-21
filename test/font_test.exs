@@ -125,21 +125,6 @@ defmodule Mudbrick.FontTest do
     assert e.message == "No font chosen"
   end
 
-  test "asking for an unregistered font is an error" do
-    import Mudbrick
-
-    chain =
-      new(fonts: %{})
-      |> page()
-
-    e =
-      assert_raise Font.Unregistered, fn ->
-        chain |> font(:bodoni, size: 24)
-      end
-
-    assert e.message == "Unregistered font: bodoni"
-  end
-
   describe "serialisation" do
     test "without encoding" do
       assert %Font{

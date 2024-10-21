@@ -67,7 +67,7 @@ defmodule Mudbrick do
 
   ## Options
 
-  - `:size` - a tuple of `{width, height}`
+  - `:size` - a tuple of `{width, height}`. Some standard sizes available in `Mudbrick.Page.size/1`.
   """
   def page(context, opts \\ [])
 
@@ -95,6 +95,20 @@ defmodule Mudbrick do
       iex> Mudbrick.new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
       ...> |> Mudbrick.page()
       ...> |> Mudbrick.font(:my_bodoni, size: 14)
+
+  Forgetting to set the font is an error:
+
+      iex> Mudbrick.new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
+      ...> |> Mudbrick.page()
+      ...> |> Mudbrick.text("oops!")
+      ** (Mudbrick.Font.NotSet) No font chosen
+
+  Forgetting to register the font is an error:
+
+      iex> Mudbrick.new()
+      ...> |> Mudbrick.page()
+      ...> |> Mudbrick.font(:helvetica, size: 21)
+      ** (Mudbrick.Font.Unregistered) Unregistered font: helvetica
   """
   def font({doc, _content_stream_obj} = context, user_identifier, opts) do
     import ContentStream
@@ -119,6 +133,31 @@ defmodule Mudbrick do
     end
   end
 
+  @doc """
+  Insert image previously registered in `new/1` at the given coordinates.
+
+  ## Options
+
+  - `:position` - `{x, y}` in points, relative to bottom-left corner.
+  - `:scale` - `{w, h}` in points.
+  - `:skew` - `{x, y}`, passed through to PDF `cm` operator.
+
+  All options default to `{0, 0}`.
+
+  ## Examples
+
+      iex> Mudbrick.new(images: %{lovely_flower: [file: Mudbrick.TestHelper.flower()]})
+      ...> |> Mudbrick.page()
+      ...> |> Mudbrick.image(:lovely_flower, position: {100, 100}, scale: {100, 100})
+
+      iex> Mudbrick.new()
+      ...> |> Mudbrick.page()
+      ...> |> Mudbrick.image(:my_face, position: {100, 100}, scale: {100, 100})
+      ** (Mudbrick.Image.Unregistered) Unregistered image: my_face
+
+  Tip: to make the image fit the page, pass e.g. `Page.size(:a4)` as the
+  `scale` and `{0, 0}` as the `position`.
+  """
   def image({doc, _content_stream_obj} = context, user_identifier, opts \\ []) do
     import ContentStream
 
@@ -135,6 +174,10 @@ defmodule Mudbrick do
     end
   end
 
+  @doc """
+  Set the position for future calls to `text/3`, relative to the current page's
+  bottom left corner. Starts a new PDF text object (`BT`/`ET`).
+  """
   def text_position({_doc, content_stream_obj} = context, x, y) do
     case content_stream_obj.value.operations do
       [] ->
@@ -172,10 +215,21 @@ defmodule Mudbrick do
     ContentStream.add(context, ContentStream.Rg.new(r: r, g: g, b: b))
   end
 
+  @doc """
+  Write text at the current position. Repeated calls to this do not produce newlines.
+
+  ## Options
+
+  - `:align` - either `:left` or `:right`. When `:right`, text is right-aligned
+    to the current position set with `text_position/3`. Default: `:left`.
+  """
   def text(context, text, opts \\ []) do
     ContentStream.write_text(context, text, opts)
   end
 
+  @doc """
+  Produce `iodata` from the current document.
+  """
   def render({doc, _page}) do
     render(doc)
   end
