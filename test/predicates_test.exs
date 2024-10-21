@@ -1,5 +1,6 @@
-defmodule Mbc.PredicatesTest do
+defmodule Mudbrick.PredicatesTest do
   use ExUnit.Case, async: true
+  doctest Mudbrick.Predicates
 
   import Mudbrick
   import Mudbrick.Predicates

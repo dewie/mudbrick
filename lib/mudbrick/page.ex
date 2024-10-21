@@ -8,6 +8,7 @@ defmodule Mudbrick.Page do
   @dpi 72
 
   @page_sizes %{
+    a3: {11.7 * @dpi, 16.5 * @dpi},
     a4: {8.3 * @dpi, 11.7 * @dpi},
     letter: {8.5 * @dpi, 11 * @dpi}
   }
@@ -17,6 +18,20 @@ defmodule Mudbrick.Page do
     struct!(__MODULE__, opts)
   end
 
+  @doc """
+  Returns predefined page sizes in points.
+
+  ## Examples
+
+      iex> Mudbrick.Page.size(:a4)
+      {597.6, 842.4}
+
+      iex> Mudbrick.Page.size(:a3)
+      {842.4, 1188.0}
+
+      iex> Mudbrick.Page.size(:letter)
+      {612.0, 792}
+  """
   def size(name) do
     @page_sizes[name]
   end
