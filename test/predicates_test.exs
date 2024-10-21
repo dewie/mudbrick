@@ -33,7 +33,30 @@ defmodule Mbc.PredicatesTest do
     end
   end
 
-  describe "with standard encoding, no compression" do
+  describe "with standard encoding" do
+    test "with compression, can assert/refute that a piece of text appears" do
+      raw_pdf =
+        new(
+          compress: true,
+          fonts: %{
+            helvetica: [
+              name: :Helvetica,
+              type: :TrueType,
+              encoding: :PDFDocEncoding
+            ]
+          }
+        )
+        |> page(size: :letter)
+        |> font(:helvetica, size: 100)
+        |> text(
+          "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWhello, world!WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+        )
+        |> render()
+
+      assert raw_pdf |> has_text?("hello, world!")
+      refute raw_pdf |> has_text?("good morning!")
+    end
+
     test "without compression, can assert/refute that a piece of text appears" do
       raw_pdf =
         new(

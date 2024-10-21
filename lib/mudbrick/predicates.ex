@@ -1,20 +1,16 @@
 defmodule Mudbrick.Predicates do
   def has_text?(pdf, text) do
     binary = IO.iodata_to_binary(pdf)
-    String.contains?(binary, text)
+    streams = extract_streams(binary)
+    Enum.any?(streams, &String.contains?(&1, text))
   end
 
   def has_text?(pdf, text, in_font: font) do
-    binary = IO.iodata_to_binary(pdf)
     parsed_font = OpenType.new() |> OpenType.parse(font)
-
-    {glyph_ids_decimal, _positions} =
-      OpenType.layout_text(parsed_font, text)
-
+    {glyph_ids_decimal, _positions} = OpenType.layout_text(parsed_font, text)
     glyph_ids_hex = Enum.map_join(glyph_ids_decimal, "", &Mudbrick.to_hex/1)
 
-    streams = extract_streams(binary)
-    Enum.any?(streams, &String.contains?(&1, glyph_ids_hex))
+    has_text?(pdf, glyph_ids_hex)
   end
 
   defp extract_streams(pdf) do
