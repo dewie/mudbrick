@@ -1,4 +1,6 @@
 defmodule Mudbrick.Font.Descriptor do
+  @moduledoc false
+
   @enforce_keys [
     :ascent,
     :bounding_box,

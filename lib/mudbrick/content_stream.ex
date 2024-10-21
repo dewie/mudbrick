@@ -1,4 +1,6 @@
 defmodule Mudbrick.ContentStream do
+  @moduledoc false
+
   @enforce_keys [:page]
   defstruct compress: false,
             current_alignment: nil,
@@ -9,6 +11,7 @@ defmodule Mudbrick.ContentStream do
   alias Mudbrick.Font
 
   defmodule Cm do
+    @moduledoc false
     defstruct scale: {0, 0},
               skew: {0, 0},
               position: {0, 0}
@@ -28,6 +31,7 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule QPush do
+    @moduledoc false
     defstruct []
 
     defimpl Mudbrick.Object do
@@ -36,6 +40,7 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule QPop do
+    @moduledoc false
     defstruct []
 
     defimpl Mudbrick.Object do
@@ -44,6 +49,7 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule Do do
+    @moduledoc false
     defstruct [:image]
 
     defimpl Mudbrick.Object do
@@ -57,6 +63,7 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule BT do
+    @moduledoc false
     defstruct []
 
     defimpl Mudbrick.Object do
@@ -65,6 +72,7 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule ET do
+    @moduledoc false
     defstruct []
 
     defimpl Mudbrick.Object do
@@ -73,6 +81,7 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule Rg do
+    @moduledoc false
     defstruct [:r, :g, :b]
 
     defimpl Mudbrick.Object do
@@ -83,6 +92,7 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule Tf do
+    @moduledoc false
     defstruct [:font, :size]
 
     def latest!(content_stream) do
@@ -105,6 +115,7 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule Td do
+    @moduledoc false
     defstruct tx: 0,
               ty: 0,
               purpose: nil
@@ -123,6 +134,7 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule TL do
+    @moduledoc false
     defstruct [:leading]
 
     defimpl Mudbrick.Object do
@@ -133,12 +145,14 @@ defmodule Mudbrick.ContentStream do
   end
 
   defmodule Tj do
+    @moduledoc false
     defstruct font: nil,
               operator: "Tj",
               text: nil
   end
 
   defmodule Apostrophe do
+    @moduledoc false
     defstruct font: nil,
               operator: "'",
               text: nil

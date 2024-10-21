@@ -1,4 +1,6 @@
 defmodule Mudbrick.Catalog do
+  @moduledoc false
+
   defstruct [:page_tree]
 
   def new(opts) do

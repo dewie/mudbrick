@@ -1,4 +1,6 @@
 defmodule Mudbrick.PageTree do
+  @moduledoc false
+
   defstruct fonts: %{},
             images: %{},
             kids: []

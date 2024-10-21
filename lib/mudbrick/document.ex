@@ -1,4 +1,6 @@
 defmodule Mudbrick.Document do
+  @moduledoc false
+
   defstruct compress: false,
             objects: []
 

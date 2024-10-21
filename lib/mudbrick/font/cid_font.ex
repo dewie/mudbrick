@@ -1,4 +1,6 @@
 defmodule Mudbrick.Font.CIDFont do
+  @moduledoc false
+
   @enforce_keys [
     :default_width,
     :descriptor,

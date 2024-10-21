@@ -1,5 +1,6 @@
 defmodule MudbrickTest do
   use ExUnit.Case, async: true
+  doctest Mudbrick
 
   import Mudbrick
 

@@ -1,4 +1,6 @@
 defmodule Mudbrick.Image do
+  @moduledoc false
+
   @enforce_keys [:file, :resource_identifier]
   defstruct [
     :file,

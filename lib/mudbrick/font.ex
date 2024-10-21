@@ -1,4 +1,6 @@
 defmodule Mudbrick.Font do
+  @moduledoc false
+
   @enforce_keys [
     :name,
     :resource_identifier,

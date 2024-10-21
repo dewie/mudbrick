@@ -1,4 +1,6 @@
 defmodule Mudbrick.Font.CMap do
+  @moduledoc false
+
   defstruct compress: false,
             parsed: nil
 

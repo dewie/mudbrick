@@ -1,5 +1,9 @@
 defmodule Mudbrick.Indirect do
+  @moduledoc false
+
   defmodule Ref do
+    @moduledoc false
+
     defstruct [:number]
 
     def new(number) do
@@ -14,6 +18,8 @@ defmodule Mudbrick.Indirect do
   end
 
   defmodule Object do
+    @moduledoc false
+
     defstruct [:value, :ref]
 
     def new(ref, value) do

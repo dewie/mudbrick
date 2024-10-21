@@ -1,4 +1,6 @@
 defprotocol Mudbrick.Object do
+  @moduledoc false
+
   @fallback_to_any true
   @spec from(value :: any()) :: iodata()
   def from(value)

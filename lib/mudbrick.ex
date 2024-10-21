@@ -95,12 +95,14 @@ defmodule Mudbrick do
     Mudbrick.Object.from(doc)
   end
 
+  @doc false
   def to_hex(n) do
     n
     |> Integer.to_string(16)
     |> String.pad_leading(4, "0")
   end
 
+  @doc false
   def join(a, separator \\ " ")
 
   def join(tuple, separator) when is_tuple(tuple) do

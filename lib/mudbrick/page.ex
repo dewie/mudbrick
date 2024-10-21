@@ -13,6 +13,7 @@ defmodule Mudbrick.Page do
     letter: {8.5 * @dpi, 11 * @dpi}
   }
 
+  @doc false
   def new(opts \\ []) do
     struct!(__MODULE__, opts)
   end
@@ -21,6 +22,7 @@ defmodule Mudbrick.Page do
     @page_sizes[name]
   end
 
+  @doc false
   def add(doc, opts) do
     add_empty_page(doc, opts)
     |> add_to_page_tree()

@@ -1,4 +1,6 @@
 defmodule Mudbrick.Stream do
+  @moduledoc false
+
   defstruct compress: false,
             data: nil,
             additional_entries: %{},
