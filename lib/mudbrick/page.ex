@@ -4,7 +4,6 @@ defmodule Mudbrick.Page do
             size: nil
 
   alias Mudbrick.Document
-  alias Mudbrick.Font
 
   @dpi 72
 
@@ -29,18 +28,7 @@ defmodule Mudbrick.Page do
   end
 
   defp add_empty_page(doc, opts) do
-    case Keyword.pop(opts, :fonts) do
-      {nil, opts} ->
-        Document.add(doc, new_at_root(opts, doc))
-
-      {fonts, opts} ->
-        Font.add_objects(doc, fonts)
-        |> Document.add(
-          &(opts
-            |> Keyword.put(:fonts, &1)
-            |> new_at_root(doc))
-        )
-    end
+    Document.add(doc, new_at_root(opts, doc))
   end
 
   defp new_at_root(opts, doc) do
