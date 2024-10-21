@@ -52,7 +52,7 @@ defmodule Mudbrick.ImageTest do
       [dictionary, _stream] =
         Image.new(file: flower(), resource_identifier: :I1)
         |> Mudbrick.Object.from()
-        |> :erlang.iolist_to_binary()
+        |> IO.iodata_to_binary()
         |> String.split("stream", parts: 2)
 
       assert dictionary ==

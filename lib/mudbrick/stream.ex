@@ -7,8 +7,6 @@ defmodule Mudbrick.Stream do
             length: nil,
             filters: []
 
-  import :erlang, only: [iolist_size: 1]
-
   def new(opts) do
     opts =
       case decide_compression(opts) do
@@ -16,7 +14,7 @@ defmodule Mudbrick.Stream do
           Keyword.merge(
             opts,
             data: data,
-            length: iolist_size(data),
+            length: IO.iodata_length(data),
             filters: [:FlateDecode]
           )
 
@@ -24,7 +22,7 @@ defmodule Mudbrick.Stream do
           opts
       end
 
-    struct!(__MODULE__, Keyword.put(opts, :length, iolist_size(opts[:data])))
+    struct!(__MODULE__, Keyword.put(opts, :length, IO.iodata_length(opts[:data])))
   end
 
   defp decide_compression(opts) do
@@ -32,7 +30,7 @@ defmodule Mudbrick.Stream do
       uncompressed = opts[:data]
       compressed = Mudbrick.compress(uncompressed)
 
-      if iolist_size(compressed) < iolist_size(uncompressed) do
+      if IO.iodata_length(compressed) < IO.iodata_length(uncompressed) do
         {:ok, compressed}
       else
         :error

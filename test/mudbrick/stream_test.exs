@@ -9,7 +9,7 @@ defmodule Mudbrick.StreamTest do
       result =
         Mudbrick.Stream.new(compress: true, data: uncompressed)
         |> Mudbrick.Object.from()
-        |> :erlang.iolist_to_binary()
+        |> IO.iodata_to_binary()
 
       assert result =~ "FlateDecode"
     end
@@ -20,7 +20,7 @@ defmodule Mudbrick.StreamTest do
       result =
         Mudbrick.Stream.new(compress: true, data: uncompressed)
         |> Mudbrick.Object.from()
-        |> :erlang.iolist_to_binary()
+        |> IO.iodata_to_binary()
 
       refute result =~ "FlateDecode"
     end
@@ -30,7 +30,7 @@ defmodule Mudbrick.StreamTest do
     serialised =
       Mudbrick.Stream.new(data: bodoni())
       |> Mudbrick.Object.from()
-      |> :erlang.iolist_to_binary()
+      |> IO.iodata_to_binary()
 
     assert String.starts_with?(serialised, """
            <</Length 42952

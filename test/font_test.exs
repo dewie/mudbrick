@@ -86,9 +86,9 @@ defmodule Mudbrick.FontTest do
       doc = Mudbrick.new(compress: true, fonts: %{bodoni: [file: data]})
       stream = Document.find_object(doc, &match?(%Stream{}, &1)).value
 
-      assert :erlang.iolist_size(stream.data) < :erlang.iolist_size(data)
-      assert stream.additional_entries[:Length1] == :erlang.iolist_size(data)
-      assert stream.length < :erlang.iolist_size(data)
+      assert IO.iodata_length(stream.data) < IO.iodata_length(data)
+      assert stream.additional_entries[:Length1] == IO.iodata_length(data)
+      assert stream.length < IO.iodata_length(data)
     end
 
     test "cmap is compressed" do
@@ -97,8 +97,8 @@ defmodule Mudbrick.FontTest do
       uncompressed_stream = Document.find_object(uncompressed_doc, &match?(%CMap{}, &1)).value
       compressed_stream = Document.find_object(compressed_doc, &match?(%CMap{}, &1)).value
 
-      assert :erlang.iolist_size(Mudbrick.Object.from(compressed_stream)) <
-               :erlang.iolist_size(Mudbrick.Object.from(uncompressed_stream))
+      assert IO.iodata_length(Mudbrick.Object.from(compressed_stream)) <
+               IO.iodata_length(Mudbrick.Object.from(uncompressed_stream))
     end
   end
 

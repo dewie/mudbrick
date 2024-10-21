@@ -56,7 +56,7 @@ defimpl Mudbrick.Object, for: Mudbrick.Document do
 
   defp offset(strings) do
     strings
-    |> Enum.map(&:erlang.iolist_size([&1, "\n"]))
+    |> Enum.map(&IO.iodata_length([&1, "\n"]))
     |> Enum.sum()
     |> Kernel.to_string()
   end

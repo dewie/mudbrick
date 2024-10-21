@@ -33,8 +33,8 @@ defmodule Mudbrick.TextTest do
         |> font(:helvetica, size: 10, leading: 14)
         |> text(text)
 
-      assert :erlang.iolist_size(Mudbrick.Object.from(compressed_content_stream)) <
-               :erlang.iolist_size(Mudbrick.Object.from(uncompressed_content_stream))
+      assert IO.iodata_length(Mudbrick.Object.from(compressed_content_stream)) <
+               IO.iodata_length(Mudbrick.Object.from(uncompressed_content_stream))
     end
   end
 
