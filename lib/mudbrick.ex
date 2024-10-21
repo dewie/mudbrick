@@ -1,10 +1,63 @@
 defmodule Mudbrick do
+  @moduledoc """
+  Top-level API for creating documents.
+
+  ## Examples
+
+      iex> import Mudbrick.TestHelper                 # import some example fonts and images
+      ...> import Mudbrick
+      ...> alias Mudbrick.Page
+      ...> new(
+      ...>   compress: true,                          # flate compression for fonts, text etc.
+      ...>   fonts: %{bodoni: [file: bodoni()]},      # register an OTF font
+      ...>   images: %{flower: [file: flower()]}      # register a JPEG
+      ...> )
+      ...> |> page(size: Page.size(:letter))
+      ...> |> image(                                  # place preregistered JPEG
+      ...>   :flower,
+      ...>   scale: {100, 100},
+      ...>   position: {50, 600}                      # in points (1/72 inch), starts at bottom left
+      ...> )
+      ...> |> text_position(200, 700)                 # set text start position from bottom left
+      ...> |> font(:bodoni, size: 14)                 # choose preregistered font
+      ...> |> colour({1, 0, 0})                       # make text red
+      ...> |> text("CO₂", align: :right)              # write text in current font, with right side
+      ...>                                            # anchored to 200 points from left of page
+      ...> |> render()                                # produces iodata, can go straight to File.write/2
+      ...> |> IO.iodata_to_binary()                   # or turned into a (non-String) binary
+  """
+
   alias Mudbrick.ContentStream
   alias Mudbrick.Document
   alias Mudbrick.Font
   alias Mudbrick.Image
   alias Mudbrick.Page
 
+  @doc """
+  Start a new document.
+
+  ## Options
+
+  - `:compress` - when set to `true`, apply deflate compression to streams (if compression saves space).
+  - `:fonts` - register OTF or built-in fonts for later use.
+  - `:images` - register images for later use.
+
+  ## Examples
+
+  Register an OTF font. Pass the file's raw data to the `:file` option.
+
+      iex> Mudbrick.new(fonts: %{bodoni: [file: Mudbrick.TestHelper.bodoni()]})
+
+  Or a built-in font. Note that these don't support right-alignment or special characters.
+
+      iex> Mudbrick.new(fonts: %{helvetica: [name: :Helvetica, type: :TrueType, encoding: :PDFDocEncoding]})
+
+  Register an image.
+
+      iex> Mudbrick.new(images: %{flower: [file: Mudbrick.TestHelper.flower()]})
+  """
+
+  @spec new(opts :: Keyword.t()) :: Document.t()
   def new(opts \\ []) do
     Document.new(opts)
   end

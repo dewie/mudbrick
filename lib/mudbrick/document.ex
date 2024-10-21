@@ -1,6 +1,11 @@
 defmodule Mudbrick.Document do
   @moduledoc false
 
+  @type t :: %__MODULE__{
+          compress: boolean(),
+          objects: list()
+        }
+
   defstruct compress: false,
             objects: []
 
