@@ -1,6 +1,4 @@
 defmodule Mudbrick.Document do
-  @moduledoc false
-
   @type t :: %__MODULE__{
           compress: boolean(),
           objects: list()
@@ -16,6 +14,7 @@ defmodule Mudbrick.Document do
   alias Mudbrick.Indirect
   alias Mudbrick.PageTree
 
+  @doc false
   def new(opts) do
     {doc, font_objects} =
       Font.add_objects(
@@ -32,53 +31,65 @@ defmodule Mudbrick.Document do
     |> finish()
   end
 
+  @doc false
   def add(%Document{objects: objects} = doc, value) do
     object = next_object(doc, value)
     {%Document{doc | objects: [object | objects]}, object}
   end
 
+  @doc false
   def add({doc, just_added_object}, fun) do
     add(doc, fun.(just_added_object))
   end
 
+  @doc false
   def add_page_ref(%Indirect.Object{value: tree} = tree_obj, page) do
     %{tree_obj | value: PageTree.add_page_ref(tree, page.ref)}
   end
 
+  @doc false
   def update({doc, just_added_object}, object, fun) do
     put(doc, %{object | value: fun.(just_added_object, object.value)})
   end
 
+  @doc false
   def update(doc, object, fun) do
     put(doc, %{object | value: fun.(object.value)})
   end
 
+  @doc false
   def finish({doc, object}, fun) do
     {doc, fun.(object)}
   end
 
+  @doc false
   def finish({doc, _objects}) do
     doc
   end
 
+  @doc false
   def root_page_tree(doc) do
     find_object(doc, &match?(%PageTree{}, &1))
   end
 
+  @doc false
   def update_root_page_tree(doc, fun) do
     Map.update!(doc, :objects, fn objects ->
       update_in(objects, [Access.find(&match?(%PageTree{}, &1.value))], &fun.(&1))
     end)
   end
 
+  @doc false
   def catalog(doc) do
     find_object(doc, &match?(%Catalog{}, &1))
   end
 
+  @doc false
   def object_with_ref(doc, ref) do
     Enum.at(doc.objects, -ref.number)
   end
 
+  @doc false
   def find_object(%Document{objects: objects}, f) do
     Enum.find(objects, fn object ->
       f.(object.value)

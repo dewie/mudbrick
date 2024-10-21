@@ -1,5 +1,6 @@
 defmodule Mudbrick.TextTest do
   use ExUnit.Case, async: true
+  use ExUnitProperties
 
   import Mudbrick
   import Mudbrick.TestHelper
@@ -50,29 +51,53 @@ defmodule Mudbrick.TextTest do
              |> operations()
   end
 
-  test "can set colour on a piece of text" do
-    {_doc, content_stream} =
-      new(fonts: @fonts_helvetica)
-      |> page()
-      |> font(:helvetica, size: 10)
-      |> text("black and ")
-      |> colour({1.0, 0.0, 0.0})
-      |> text("""
-      red
-      text\
-      """)
+  describe "colour" do
+    property "it's an error to set a colour above 1" do
+      valid_colour = float(min: 0, max: 1)
 
-    assert show(content_stream) =~
-             """
-             BT
-             /F1 10 Tf
-             12.0 TL
-             (black and ) Tj
-             1.0 0.0 0.0 rg
-             (red) Tj
-             (text) '
-             ET
-             """
+      check all initial_list <- list_of(valid_colour, length: 2),
+                insertion_point <- integer(0..2),
+                invalid_colour <- float(min: 1.00001),
+                colour <-
+                  initial_list
+                  |> List.insert_at(insertion_point, invalid_colour)
+                  |> List.to_tuple()
+                  |> constant() do
+        e =
+          assert_raise(Mudbrick.ContentStream.InvalidColour, fn ->
+            new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
+            |> page()
+            |> colour(colour)
+          end)
+
+        assert e.message == "tuple must be made of floats or integers between 0 and 1"
+      end
+    end
+
+    test "can be set on a piece of text" do
+      {_doc, content_stream} =
+        new(fonts: @fonts_helvetica)
+        |> page()
+        |> font(:helvetica, size: 10)
+        |> text("black and ")
+        |> colour({1.0, 0.0, 0.0})
+        |> text("""
+        red
+        text\
+        """)
+
+      assert show(content_stream) =~
+               """
+               BT
+               /F1 10 Tf
+               12.0 TL
+               (black and ) Tj
+               1.0 0.0 0.0 rg
+               (red) Tj
+               (text) '
+               ET
+               """
+    end
   end
 
   describe "positioning text" do

@@ -62,7 +62,14 @@ defmodule Mudbrick do
     Document.new(opts)
   end
 
-  def page(a, opts \\ [])
+  @doc """
+  Start a new page upon which future operators should apply.
+
+  ## Options
+
+  - `:size` - a tuple of `{width, height}`
+  """
+  def page(context, opts \\ [])
 
   def page({doc, _page}, opts) do
     page(doc, opts)
@@ -80,6 +87,15 @@ defmodule Mudbrick do
     |> contents()
   end
 
+  @doc """
+  Set the current font using a name previously registered in `new/1`.
+
+  ## Example
+
+      iex> Mudbrick.new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
+      ...> |> Mudbrick.page()
+      ...> |> Mudbrick.font(:my_bodoni, size: 14)
+  """
   def font({doc, _content_stream_obj} = context, user_identifier, opts) do
     import ContentStream
 
@@ -132,8 +148,28 @@ defmodule Mudbrick do
     |> ContentStream.add(ContentStream.Td, tx: x, ty: y)
   end
 
+  @doc """
+  Set the current fill colour (currently only for text).
+
+  Takes an `{r, g, b}` tuple.
+
+  ## Examples
+
+  Green text:
+
+      iex> Mudbrick.new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
+      ...> |> Mudbrick.page()
+      ...> |> Mudbrick.colour({0, 1, 0})
+
+  Invalid:
+
+      iex> Mudbrick.new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
+      ...> |> Mudbrick.page()
+      ...> |> Mudbrick.colour({2, 0, 0})
+      ** (Mudbrick.ContentStream.InvalidColour) tuple must be made of floats or integers between 0 and 1
+  """
   def colour(context, {r, g, b}) do
-    ContentStream.add(context, ContentStream.Rg, r: r, g: g, b: b)
+    ContentStream.add(context, ContentStream.Rg.new(r: r, g: g, b: b))
   end
 
   def text(context, text, opts \\ []) do
@@ -168,6 +204,14 @@ defmodule Mudbrick do
     Enum.map_join(list, separator, &Mudbrick.Object.from/1)
   end
 
+  @doc """
+  Compress data with the same method that PDF generation does. Useful for testing.
+
+  ## Example
+
+      iex> Mudbrick.compress(["hi", "there", ["you"]])
+      [<<120, 156, 203, 200, 44, 201, 72, 45, 74, 173, 204, 47, 5, 0, 23, 45, 4, 71>>]
+  """
   def compress(data) do
     z = :zlib.open()
     :ok = :zlib.deflateInit(z)
@@ -177,6 +221,14 @@ defmodule Mudbrick do
     deflated
   end
 
+  @doc """
+  Decompress data with the same method that PDF generation does. Useful for testing.
+
+  ## Example
+
+      iex> Mudbrick.decompress([<<120, 156, 203, 200, 44, 201, 72, 45, 74, 173, 204, 47, 5, 0, 23, 45, 4, 71>>])
+      ["hithereyou"]
+  """
   def decompress(data) do
     z = :zlib.open()
     :zlib.inflateInit(z)
