@@ -87,7 +87,7 @@ defmodule Mudbrick.TextTest do
                _text2
              ] =
                new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
-               |> page(size: :letter)
+               |> page()
                |> font(:bodoni, size: 14)
                |> text("hi")
                |> text_position(200, 700)
@@ -100,7 +100,7 @@ defmodule Mudbrick.TextTest do
                "200 700 Td"
              ] =
                new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
-               |> page(size: :letter)
+               |> page()
                |> text_position(200, 700)
                |> operations()
     end
@@ -265,7 +265,7 @@ defmodule Mudbrick.TextTest do
     test "converts Tj text to the assigned font's glyph IDs in hex" do
       assert ["<001100550174> Tj"] =
                new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
-               |> page(size: :letter)
+               |> page()
                |> font(:bodoni, size: 24)
                |> text_position(0, 700)
                |> text("CO₂")
@@ -275,7 +275,7 @@ defmodule Mudbrick.TextTest do
 
     test "copes with trailing newlines in CID font text" do
       assert new(fonts: %{bodoni: [file: TestHelper.bodoni()]})
-             |> page(size: :letter)
+             |> page()
              |> font(:bodoni, size: 13)
              |> text("\n")
              |> render()

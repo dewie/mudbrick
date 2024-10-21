@@ -18,11 +18,10 @@ defmodule Mudbrick do
   def page(doc, opts) do
     Page.add(
       doc,
-      Keyword.update(
+      Keyword.put_new(
         opts,
         :size,
-        Page.size(:a4),
-        &Page.size(&1)
+        Page.size(:a4)
       )
     )
     |> contents()

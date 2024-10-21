@@ -3,6 +3,8 @@ defmodule MudbrickTest do
 
   import Mudbrick
 
+  alias Mudbrick.Page
+
   test "playground" do
     assert new(
              compress: true,
@@ -11,7 +13,7 @@ defmodule MudbrickTest do
                flower: [file: TestHelper.flower()]
              }
            )
-           |> page(size: :letter)
+           |> page(size: Page.size(:letter))
            |> image(
              :flower,
              scale: Mudbrick.Page.size(:letter),
@@ -65,7 +67,7 @@ defmodule MudbrickTest do
                ]
              }
            )
-           |> page(size: :letter)
+           |> page(size: Page.size(:letter))
            |> text_position(300, 400)
            |> font(:helvetica, size: 100)
            |> text("hello, world!")
@@ -74,7 +76,7 @@ defmodule MudbrickTest do
 
            a new line!\
            """)
-           |> page(size: :a4)
+           |> page(size: Page.size(:a4))
            |> render()
            |> to_string() ==
              """
