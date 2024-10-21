@@ -15,13 +15,27 @@
     {
       devShells = forAllSystems (pkgs: {
         default = with pkgs; mkShell {
-          packages = [
-            elixir_1_17
-            (elixir_ls.override { elixir = elixir_1_17; })
-            qpdf
-          ]
-          ++ lib.lists.optional stdenv.isLinux inotify-tools
-          ++ lib.lists.optional stdenv.isDarwin darwin.apple_sdk.frameworks.CoreServices;
+          packages =
+            let
+              release = writeShellApplication {
+                name = "release";
+                runtimeInputs = [ elixir_1_17 gh ];
+                text = ''
+                  tag=$1
+
+                  gh release create "$tag" --draft --generate-notes
+                  mix hex.publish
+                '';
+              };
+            in
+            [
+              elixir_1_17
+              (elixir_ls.override { elixir = elixir_1_17; })
+              qpdf
+              release
+            ]
+            ++ lib.lists.optional stdenv.isLinux inotify-tools
+            ++ lib.lists.optional stdenv.isDarwin darwin.apple_sdk.frameworks.CoreServices;
 
           shellHook = ''
             export ERL_AFLAGS="-kernel shell_history enabled shell_history_file_bytes 1024000"

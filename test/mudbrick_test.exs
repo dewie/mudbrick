@@ -9,9 +9,7 @@ defmodule MudbrickTest do
     assert new(
              compress: true,
              fonts: %{bodoni: [file: TestHelper.bodoni()]},
-             images: %{
-               flower: [file: TestHelper.flower()]
-             }
+             images: %{flower: [file: TestHelper.flower()]}
            )
            |> page(size: Page.size(:letter))
            |> image(
