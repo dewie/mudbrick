@@ -16,7 +16,7 @@ defmodule MudbrickTest do
            |> page(size: Page.size(:letter))
            |> image(
              :flower,
-             scale: Mudbrick.Page.size(:letter),
+             scale: Page.size(:letter),
              position: {0, 0}
            )
            |> text_position(200, 700)
