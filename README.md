@@ -33,3 +33,15 @@ def deps do
   ]
 end
 ```
+
+## See also
+
+- [elixir-pdf](https://github.com/andrewtimberlake/elixir-pdf), a more mature
+  library, supporting AFM instead of OTF fonts, but only the base
+  WinAnsiEncoding and no special characters. Uses a GenServer for state.
+- [erlguten](https://github.com/hwatkins/erlguten), an antiquated Erlang
+  PDF generator.
+- [opentype-elixir](https://github.com/jbowtie/opentype-elixir), used for OTF
+  parsing.
+- [ex_image_info](https://github.com/Group4Layers/ex_image_info), used for
+  image metadata parsing.
