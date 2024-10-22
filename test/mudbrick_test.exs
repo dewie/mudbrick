@@ -78,8 +78,7 @@ defmodule MudbrickTest do
            a new line!\
            """)
            |> page(size: Page.size(:a4))
-           |> render()
-           |> to_string() ==
+           |> comparable() ==
              """
              %PDF-2.0
              %����
@@ -121,8 +120,8 @@ defmodule MudbrickTest do
                    </dc:title>
                  </rdf:Description>
                  <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
-                   <xmpMM:DocumentID>OZwlvvscl2EvtNnawU3bf4LcjVKMXc7miQZtxrzmFCk</xmpMM:DocumentID>
-                   <xmpMM:InstanceID>z1MfnkCKfrWi4OT2JJpEYwwMAc28M/7FlCLRHXNRAss</xmpMM:InstanceID>
+                   <xmpMM:DocumentID>0000000000000000000000000000000000000000000</xmpMM:DocumentID>
+                   <xmpMM:InstanceID>0000000000000000000000000000000000000000000</xmpMM:InstanceID>
                  </rdf:Description>
                </rdf:RDF>
              </x:xmpmeta>
@@ -210,8 +209,7 @@ defmodule MudbrickTest do
   test "can serialise with one empty page" do
     assert new()
            |> page()
-           |> render()
-           |> to_string() ==
+           |> comparable() ==
              """
              %PDF-2.0
              %����
@@ -239,8 +237,8 @@ defmodule MudbrickTest do
                    </dc:title>
                  </rdf:Description>
                  <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
-                   <xmpMM:DocumentID>tmkxRntcYJxXApecOCsIkUzOKj982KUmBE28bsh/Btw</xmpMM:DocumentID>
-                   <xmpMM:InstanceID>hfuu1Fk+glpWfauCVDrYAyuxMOSG+1ZzxKrGCxzE+XY</xmpMM:InstanceID>
+                   <xmpMM:DocumentID>0000000000000000000000000000000000000000000</xmpMM:DocumentID>
+                   <xmpMM:InstanceID>0000000000000000000000000000000000000000000</xmpMM:InstanceID>
                  </rdf:Description>
                </rdf:RDF>
              </x:xmpmeta>
@@ -300,8 +298,7 @@ defmodule MudbrickTest do
 
   test "can serialise with no pages" do
     assert new()
-           |> render()
-           |> to_string() ==
+           |> comparable() ==
              """
              %PDF-2.0
              %����
@@ -329,8 +326,8 @@ defmodule MudbrickTest do
                    </dc:title>
                  </rdf:Description>
                  <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
-                   <xmpMM:DocumentID>tmkxRntcYJxXApecOCsIkUzOKj982KUmBE28bsh/Btw</xmpMM:DocumentID>
-                   <xmpMM:InstanceID>hfuu1Fk+glpWfauCVDrYAyuxMOSG+1ZzxKrGCxzE+XY</xmpMM:InstanceID>
+                   <xmpMM:DocumentID>0000000000000000000000000000000000000000000</xmpMM:DocumentID>
+                   <xmpMM:InstanceID>0000000000000000000000000000000000000000000</xmpMM:InstanceID>
                  </rdf:Description>
                </rdf:RDF>
              </x:xmpmeta>
@@ -369,6 +366,16 @@ defmodule MudbrickTest do
              1321
              %%EOF\
              """
+  end
+
+  def comparable(doc) do
+    doc
+    |> render()
+    |> to_string()
+    |> String.replace(
+      ~r{<xmpMM:(Document|Instance)ID>.*</xmpMM:(Document|Instance)ID>},
+      "<xmpMM:\\1ID>0000000000000000000000000000000000000000000</xmpMM:\\2ID>"
+    )
   end
 
   def output(chain) do
