@@ -47,7 +47,7 @@ defmodule Mudbrick.Metadata do
       document_id,
       """
       </xmpMM:DocumentID>
-           <xmpMM:InstanceID>\
+            <xmpMM:InstanceID>\
       """,
       instance_id,
       """
@@ -85,7 +85,7 @@ defmodule Mudbrick.Metadata do
   end
 
   defp id(opts) do
-    :crypto.hash(:sha256, inspect(opts))
+    :crypto.hash(:sha256, [Application.spec(:mudbrick)[:vsn], inspect(opts)])
     |> Base.encode64(padding: false)
   end
 end
