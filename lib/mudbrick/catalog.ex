@@ -11,7 +11,7 @@ defmodule Mudbrick.Catalog do
     def from(catalog) do
       Mudbrick.Object.from(%{
         Type: :Catalog,
-        Pages: catalog.page_tree
+        Pages: catalog.page_tree.ref
       })
     end
   end

@@ -27,7 +27,7 @@ defmodule Mudbrick.Document do
 
     doc
     |> add(PageTree.new(fonts: font_objects, images: image_objects))
-    |> add(&Catalog.new(page_tree: &1.ref))
+    |> add(&Catalog.new(page_tree: &1))
     |> finish()
   end
 
