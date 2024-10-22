@@ -23,6 +23,7 @@
                 text = ''
                   tag=$1
 
+                  mix test
                   gh release create "$tag" --draft --generate-notes
                   mix hex.publish
                 '';
