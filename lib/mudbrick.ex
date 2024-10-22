@@ -2,7 +2,9 @@ defmodule Mudbrick do
   @moduledoc """
   Top-level API for creating documents.
 
-  ## Examples
+  ## Example
+
+  Compression, OTF font with special characters and image placement:
 
       iex> import Mudbrick.TestHelper                 # import some example fonts and images
       ...> import Mudbrick
@@ -38,9 +40,19 @@ defmodule Mudbrick do
 
   ## Options
 
-  - `:compress` - when set to `true`, apply deflate compression to streams (if compression saves space).
+  - `:compress` - when set to `true`, apply deflate compression to streams (if
+    compression saves space). Default: `false`
   - `:fonts` - register OTF or built-in fonts for later use.
   - `:images` - register images for later use.
+
+  The following options define metadata for the document:
+
+  - `:producer` - software used to create the document, default: `"Mudbrick"`
+  - `:creator_tool` - tool used to create the document, default: `"Mudbrick"`
+  - `:create_date` - `DateTime` representing the document's creation time
+  - `:modify_date` - `DateTime` representing the document's last update time
+  - `:title` - title (can change e.g. browser window title), default: `nil`
+  - `:creators` - list of names of the creators of the document, default: `[]`
 
   ## Examples
 
@@ -55,9 +67,13 @@ defmodule Mudbrick do
   Register an image.
 
       iex> Mudbrick.new(images: %{flower: [file: Mudbrick.TestHelper.flower()]})
+
+  Set document metadata.
+
+      iex> Mudbrick.new(title: "The best PDF", producer: "My cool software")
   """
 
-  @spec new(opts :: Keyword.t()) :: Document.t()
+  @spec new(opts :: Document.options()) :: Document.t()
   def new(opts \\ []) do
     Document.new(opts)
   end

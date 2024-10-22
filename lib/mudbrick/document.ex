@@ -12,13 +12,31 @@ defmodule Mudbrick.Document do
   alias Mudbrick.Font
   alias Mudbrick.Image
   alias Mudbrick.Indirect
+  alias Mudbrick.Metadata
   alias Mudbrick.PageTree
+  alias Mudbrick.Stream
+
+  @type option ::
+          {:compress, boolean()}
+          | {:fonts, map()}
+          | {:images, map()}
+          | {:producer, String.t()}
+          | {:creator_tool, String.t()}
+          | {:create_date, DateTime.t()}
+          | {:modify_date, DateTime.t()}
+          | {:title, String.t()}
+          | {:creators, list(String.t())}
+
+  @type options :: [option()]
 
   @doc false
+  @spec new(options()) :: t()
   def new(opts) do
+    compress = Keyword.get(opts, :compress, false)
+
     {doc, font_objects} =
       Font.add_objects(
-        %Document{compress: Keyword.get(opts, :compress, false)},
+        %Document{compress: compress},
         Keyword.get(opts, :fonts, [])
       )
 
@@ -26,20 +44,40 @@ defmodule Mudbrick.Document do
       Image.add_objects(doc, Keyword.get(opts, :images, []))
 
     doc
-    |> add(PageTree.new(fonts: font_objects, images: image_objects))
-    |> add(&Catalog.new(page_tree: &1))
+    |> add([
+      PageTree.new(fonts: font_objects, images: image_objects),
+      Stream.new(
+        compress: compress,
+        data: Metadata.render(opts),
+        additional_entries: %{
+          Type: :Metadata,
+          Subtype: :XML
+        }
+      )
+    ])
+    |> add(fn [page_tree, metadata] ->
+      Catalog.new(page_tree: page_tree, metadata: metadata)
+    end)
     |> finish()
+  end
+
+  @doc false
+  def add(%Document{} = doc, values) when is_list(values) do
+    List.foldr(values, {doc, []}, fn value, {doc, objects} ->
+      {doc, obj} = add(doc, value)
+      {doc, [obj | objects]}
+    end)
+  end
+
+  @doc false
+  def add({doc, just_added_object}, fun) when is_function(fun) do
+    add(doc, fun.(just_added_object))
   end
 
   @doc false
   def add(%Document{objects: objects} = doc, value) do
     object = next_object(doc, value)
     {%Document{doc | objects: [object | objects]}, object}
-  end
-
-  @doc false
-  def add({doc, just_added_object}, fun) do
-    add(doc, fun.(just_added_object))
   end
 
   @doc false

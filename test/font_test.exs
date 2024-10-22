@@ -83,8 +83,9 @@ defmodule Mudbrick.FontTest do
   describe "with compression enabled" do
     test "Length is compressed size, Length1 is uncompressed size" do
       data = bodoni()
+      compressed = Mudbrick.compress(data)
       doc = Mudbrick.new(compress: true, fonts: %{bodoni: [file: data]})
-      stream = Document.find_object(doc, &match?(%Stream{}, &1)).value
+      stream = Document.find_object(doc, &match?(%Stream{data: ^compressed}, &1)).value
 
       assert IO.iodata_length(stream.data) < IO.iodata_length(data)
       assert stream.additional_entries[:Length1] == IO.iodata_length(data)

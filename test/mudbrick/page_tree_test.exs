@@ -14,7 +14,7 @@ defmodule Mudbrick.PageTreeTest do
 
     assert doc |> Document.root_page_tree() |> show() ==
              """
-             7 0 obj
+             8 0 obj
              <</Type /Pages
                /Count 0
                /Kids []

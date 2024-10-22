@@ -9,6 +9,7 @@ defmodule MudbrickTest do
 
   test "playground" do
     assert new(
+             title: "My thing",
              compress: true,
              fonts: %{bodoni: [file: bodoni()]},
              images: %{flower: [file: flower()]}
@@ -97,9 +98,42 @@ defmodule MudbrickTest do
              >>
              endobj
              3 0 obj
+             <</Type /Metadata
+               /Subtype /XML
+               /Length 1042
+             >>
+             stream
+             <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+             <x:xmpmeta xmlns:x="adobe:ns:meta/">
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                 <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
+                   <pdf:Producer>Mudbrick</pdf:Producer>
+                 </rdf:Description>
+                 <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
+                   <xmp:CreatorTool>Mudbrick</xmp:CreatorTool>
+                 </rdf:Description>
+                 <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
+                   <dc:format>application/pdf</dc:format>
+                   <dc:title>
+                     <rdf:Alt>
+                       <rdf:li xml:lang="x-default"></rdf:li>
+                     </rdf:Alt>
+                   </dc:title>
+                 </rdf:Description>
+                 <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
+                   <xmpMM:DocumentID>/aqULtTrBy1/G8uKIgoObFx4RRZpMG/nCojsDy26YOc</xmpMM:DocumentID>
+                  <xmpMM:InstanceID>ZzBsu+wjW0fPjubUZGQhCkklz6Jw67Gx+Qj0Nc4L4Uk</xmpMM:InstanceID>
+                 </rdf:Description>
+               </rdf:RDF>
+             </x:xmpmeta>
+
+             <?xpacket end="w"?>
+             endstream
+             endobj
+             4 0 obj
              <</Type /Pages
                /Count 2
-               /Kids [5 0 R 7 0 R]
+               /Kids [6 0 R 8 0 R]
                /Resources <</Font <</F1 1 0 R
                /F2 2 0 R
              >>
@@ -108,19 +142,20 @@ defmodule MudbrickTest do
              >>
              >>
              endobj
-             4 0 obj
-             <</Type /Catalog
-               /Pages 3 0 R
-             >>
-             endobj
              5 0 obj
-             <</Type /Page
-               /Contents 6 0 R
-               /MediaBox [0 0 612.0 792]
-               /Parent 3 0 R
+             <</Type /Catalog
+               /Metadata 3 0 R
+               /Pages 4 0 R
              >>
              endobj
              6 0 obj
+             <</Type /Page
+               /Contents 7 0 R
+               /MediaBox [0 0 612.0 792]
+               /Parent 4 0 R
+             >>
+             endobj
+             7 0 obj
              <</Length 89
              >>
              stream
@@ -135,14 +170,14 @@ defmodule MudbrickTest do
              ET
              endstream
              endobj
-             7 0 obj
+             8 0 obj
              <</Type /Page
-               /Contents 8 0 R
+               /Contents 9 0 R
                /MediaBox [0 0 597.6 842.4]
-               /Parent 3 0 R
+               /Parent 4 0 R
              >>
              endobj
-             8 0 obj
+             9 0 obj
              <</Length 5
              >>
              stream
@@ -151,22 +186,23 @@ defmodule MudbrickTest do
              endstream
              endobj
              xref
-             0 9
+             0 10
              0000000000 65535 f 
              0000000023 00000 n 
              0000000125 00000 n 
              0000000229 00000 n 
-             0000000363 00000 n 
-             0000000413 00000 n 
-             0000000507 00000 n 
-             0000000645 00000 n 
-             0000000741 00000 n 
+             0000001356 00000 n 
+             0000001490 00000 n 
+             0000001558 00000 n 
+             0000001652 00000 n 
+             0000001790 00000 n 
+             0000001886 00000 n 
              trailer
-             <</Root 4 0 R
-               /Size 9
+             <</Root 5 0 R
+               /Size 10
              >>
              startxref
-             794
+             1939
              %%EOF\
              """
   end
@@ -180,9 +216,42 @@ defmodule MudbrickTest do
              %PDF-2.0
              %����
              1 0 obj
+             <</Type /Metadata
+               /Subtype /XML
+               /Length 1042
+             >>
+             stream
+             <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+             <x:xmpmeta xmlns:x="adobe:ns:meta/">
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                 <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
+                   <pdf:Producer>Mudbrick</pdf:Producer>
+                 </rdf:Description>
+                 <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
+                   <xmp:CreatorTool>Mudbrick</xmp:CreatorTool>
+                 </rdf:Description>
+                 <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
+                   <dc:format>application/pdf</dc:format>
+                   <dc:title>
+                     <rdf:Alt>
+                       <rdf:li xml:lang="x-default"></rdf:li>
+                     </rdf:Alt>
+                   </dc:title>
+                 </rdf:Description>
+                 <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
+                   <xmpMM:DocumentID>T1PNoYwrqgwDVLtfmj7L5e0Sq02OEbqHPC8RFhICuUU</xmpMM:DocumentID>
+                  <xmpMM:InstanceID>KMdbFiJuJL2vUCqI9jJB/TN84ka0KLXNcewGIRwbZyc</xmpMM:InstanceID>
+                 </rdf:Description>
+               </rdf:RDF>
+             </x:xmpmeta>
+
+             <?xpacket end="w"?>
+             endstream
+             endobj
+             2 0 obj
              <</Type /Pages
                /Count 1
-               /Kids [3 0 R]
+               /Kids [4 0 R]
                /Resources <</Font <<
              >>
                /XObject <<
@@ -190,19 +259,20 @@ defmodule MudbrickTest do
              >>
              >>
              endobj
-             2 0 obj
-             <</Type /Catalog
-               /Pages 1 0 R
-             >>
-             endobj
              3 0 obj
-             <</Type /Page
-               /Contents 4 0 R
-               /MediaBox [0 0 597.6 842.4]
-               /Parent 1 0 R
+             <</Type /Catalog
+               /Metadata 1 0 R
+               /Pages 2 0 R
              >>
              endobj
              4 0 obj
+             <</Type /Page
+               /Contents 5 0 R
+               /MediaBox [0 0 597.6 842.4]
+               /Parent 2 0 R
+             >>
+             endobj
+             5 0 obj
              <</Length 5
              >>
              stream
@@ -211,18 +281,19 @@ defmodule MudbrickTest do
              endstream
              endobj
              xref
-             0 5
+             0 6
              0000000000 65535 f 
              0000000023 00000 n 
-             0000000130 00000 n 
-             0000000180 00000 n 
-             0000000276 00000 n 
+             0000001150 00000 n 
+             0000001257 00000 n 
+             0000001325 00000 n 
+             0000001421 00000 n 
              trailer
-             <</Root 2 0 R
-               /Size 5
+             <</Root 3 0 R
+               /Size 6
              >>
              startxref
-             329
+             1474
              %%EOF\
              """
   end
@@ -235,6 +306,39 @@ defmodule MudbrickTest do
              %PDF-2.0
              %����
              1 0 obj
+             <</Type /Metadata
+               /Subtype /XML
+               /Length 1042
+             >>
+             stream
+             <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+             <x:xmpmeta xmlns:x="adobe:ns:meta/">
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                 <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
+                   <pdf:Producer>Mudbrick</pdf:Producer>
+                 </rdf:Description>
+                 <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
+                   <xmp:CreatorTool>Mudbrick</xmp:CreatorTool>
+                 </rdf:Description>
+                 <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
+                   <dc:format>application/pdf</dc:format>
+                   <dc:title>
+                     <rdf:Alt>
+                       <rdf:li xml:lang="x-default"></rdf:li>
+                     </rdf:Alt>
+                   </dc:title>
+                 </rdf:Description>
+                 <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
+                   <xmpMM:DocumentID>T1PNoYwrqgwDVLtfmj7L5e0Sq02OEbqHPC8RFhICuUU</xmpMM:DocumentID>
+                  <xmpMM:InstanceID>KMdbFiJuJL2vUCqI9jJB/TN84ka0KLXNcewGIRwbZyc</xmpMM:InstanceID>
+                 </rdf:Description>
+               </rdf:RDF>
+             </x:xmpmeta>
+
+             <?xpacket end="w"?>
+             endstream
+             endobj
+             2 0 obj
              <</Type /Pages
                /Count 0
                /Kids []
@@ -245,22 +349,24 @@ defmodule MudbrickTest do
              >>
              >>
              endobj
-             2 0 obj
+             3 0 obj
              <</Type /Catalog
-               /Pages 1 0 R
+               /Metadata 1 0 R
+               /Pages 2 0 R
              >>
              endobj
              xref
-             0 3
+             0 4
              0000000000 65535 f 
              0000000023 00000 n 
-             0000000125 00000 n 
+             0000001150 00000 n 
+             0000001252 00000 n 
              trailer
-             <</Root 2 0 R
-               /Size 3
+             <</Root 3 0 R
+               /Size 4
              >>
              startxref
-             175
+             1320
              %%EOF\
              """
   end
