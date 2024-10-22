@@ -16,7 +16,7 @@ defmodule Mudbrick.MixProject do
       # Docs
       source_url: @scm_url,
       docs: [
-        main: "readme",
+        main: "Mudbrick",
         extras: ["README.md"]
       ]
     ]

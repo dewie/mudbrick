@@ -1,6 +1,6 @@
 # Mudbrick
 
-[Documentation](https://hexdocs.pm/mudbrick)
+[API Documentation](https://hexdocs.pm/mudbrick/Mudbrick.html)
 
 Early-stages PDF generator, beelining for:
 
