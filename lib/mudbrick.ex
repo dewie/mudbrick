@@ -134,15 +134,18 @@ defmodule Mudbrick do
     case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
       {:ok, font} ->
         context
-        |> add(
-          ContentStream.Tf,
-          Keyword.put(
-            opts,
-            :font,
-            font.value
-          )
+        |> ContentStream.put(
+          current_tf:
+            struct!(
+              ContentStream.Tf,
+              Keyword.put(
+                opts,
+                :font,
+                font.value
+              )
+            )
         )
-        |> add(ContentStream.TL, leading: leading)
+        |> ContentStream.put(current_tl: %ContentStream.TL{leading: leading})
 
       :error ->
         raise Font.Unregistered, "Unregistered font: #{user_identifier}"
@@ -192,19 +195,13 @@ defmodule Mudbrick do
 
   @doc """
   Set the position for future calls to `text/3`, relative to the current page's
-  bottom left corner. Starts a new PDF text object (`BT`/`ET`).
+  bottom left corner.
   """
-  def text_position({_doc, content_stream_obj} = context, x, y) do
-    case content_stream_obj.value.operations do
-      [] ->
-        context
+  def text_position(context, x, y) do
+    td = %ContentStream.Td{tx: x, ty: y}
 
-      _ ->
-        context
-        |> ContentStream.add(%ContentStream.ET{})
-        |> ContentStream.add(%ContentStream.BT{})
-    end
-    |> ContentStream.add(ContentStream.Td, tx: x, ty: y)
+    context
+    |> ContentStream.put(current_base_td: td)
   end
 
   @doc """
@@ -228,7 +225,15 @@ defmodule Mudbrick do
       ** (Mudbrick.ContentStream.InvalidColour) tuple must be made of floats or integers between 0 and 1
   """
   def colour(context, {r, g, b}) do
-    ContentStream.add(context, ContentStream.Rg.new(r: r, g: g, b: b))
+    operation = ContentStream.Rg.new(r: r, g: g, b: b)
+
+    ContentStream.update_operations(context, fn
+      [%ContentStream.ET{} = et | operations] ->
+        [et, operation | operations]
+
+      operations ->
+        [operation | operations]
+    end)
   end
 
   @doc """

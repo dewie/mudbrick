@@ -1,14 +1,19 @@
 defmodule Mudbrick.ContentStream do
   @moduledoc false
 
+  alias Mudbrick.ContentStream.ET
+  alias Mudbrick.ContentStream.Td
+  alias Mudbrick.Document
+  alias Mudbrick.Font
+
   @enforce_keys [:page]
   defstruct compress: false,
             current_alignment: nil,
             operations: [],
-            page: nil
-
-  alias Mudbrick.Document
-  alias Mudbrick.Font
+            page: nil,
+            current_base_td: %Td{tx: 0, ty: 0},
+            current_tf: nil,
+            current_tl: nil
 
   defmodule Cm do
     @moduledoc false
@@ -66,17 +71,16 @@ defmodule Mudbrick.ContentStream do
     @moduledoc false
     defstruct []
 
+    def open({_doc, content_stream} = context) do
+      context
+      |> Mudbrick.ContentStream.add(%BT{})
+      |> Mudbrick.ContentStream.add(content_stream.value.current_base_td)
+      |> Mudbrick.ContentStream.add(content_stream.value.current_tf)
+      |> Mudbrick.ContentStream.add(content_stream.value.current_tl)
+    end
+
     defimpl Mudbrick.Object do
       def from(_), do: ["BT"]
-    end
-  end
-
-  defmodule ET do
-    @moduledoc false
-    defstruct []
-
-    defimpl Mudbrick.Object do
-      def from(_), do: ["ET"]
     end
   end
 
@@ -110,11 +114,8 @@ defmodule Mudbrick.ContentStream do
     @moduledoc false
     defstruct [:font, :size]
 
-    def latest!(content_stream) do
-      Enum.find(
-        content_stream.value.operations,
-        &match?(%Tf{}, &1)
-      ) || raise Mudbrick.Font.NotSet, "No font chosen"
+    def current!(content_stream) do
+      content_stream.value.current_tf || raise Mudbrick.Font.NotSet, "No font chosen"
     end
 
     defimpl Mudbrick.Object do
@@ -125,25 +126,6 @@ defmodule Mudbrick.ContentStream do
           to_string(tf.size),
           " Tf"
         ]
-      end
-    end
-  end
-
-  defmodule Td do
-    @moduledoc false
-    defstruct tx: 0,
-              ty: 0,
-              purpose: nil
-
-    def most_recent(content_stream) do
-      Enum.find(content_stream.value.operations, &match?(%Td{}, &1))
-    end
-
-    defimpl Mudbrick.Object do
-      def from(td) do
-        [td.tx, td.ty, "Td"]
-        |> Enum.map(&to_string/1)
-        |> Enum.intersperse(" ")
       end
     end
   end
@@ -192,76 +174,98 @@ defmodule Mudbrick.ContentStream do
     struct!(__MODULE__, opts)
   end
 
+  def add(context, nil) do
+    context
+  end
+
   def add(context, operation) do
-    update(context, fn contents ->
-      Map.update!(contents, :operations, fn operations ->
-        [operation | operations]
-      end)
+    update_operations(context, fn operations ->
+      [operation | operations]
     end)
   end
 
   def add(context, mod, opts) do
-    update(context, fn contents ->
-      Map.update!(contents, :operations, fn operations ->
-        [struct!(mod, opts) | operations]
-      end)
+    update_operations(context, fn operations ->
+      [struct!(mod, opts) | operations]
     end)
   end
 
   def write_text({_doc, content_stream} = context, text, opts) do
-    tf = Tf.latest!(content_stream)
+    tf = Tf.current!(content_stream)
     old_alignment = content_stream.value.current_alignment
     new_alignment = Keyword.get(opts, :align, :left)
 
     [first_part | parts] = String.split(text, "\n")
 
-    case first_part do
-      "" ->
-        context
-
-      text ->
-        align(
-          context,
-          text,
-          old_alignment,
-          new_alignment,
-          %Tj{font: tf.font, text: text}
-        )
-    end
+    context
+    |> then(&if new_alignment == old_alignment, do: ET.remove(&1), else: BT.open(&1))
     |> then(fn context ->
-      for text <- parts, reduce: context do
-        context ->
-          align(
-            context,
+      case first_part do
+        "" ->
+          context
+
+        text ->
+          context
+          |> align(
             text,
             old_alignment,
             new_alignment,
-            %Apostrophe{font: tf.font, text: text}
+            %Tj{font: tf.font, text: text}
           )
       end
+      |> then(fn context ->
+        for text <- parts, reduce: context do
+          context ->
+            {context, operator} =
+              if new_alignment == :left do
+                {track_line(context), %Apostrophe{font: tf.font, text: text}}
+              else
+                {context
+                 |> add(%ET{})
+                 |> add(%BT{})
+                 |> track_line()
+                 |> Td.add_current(), %Tj{font: tf.font, text: text}}
+              end
+
+            align(context, text, old_alignment, new_alignment, operator)
+        end
+      end)
+    end)
+    |> Mudbrick.ContentStream.add(%ET{})
+  end
+
+  def put(context, fields) do
+    update(context, fn contents ->
+      struct!(contents, fields)
+    end)
+  end
+
+  defp update({doc, contents_obj}, f) do
+    Document.update(doc, contents_obj, f)
+  end
+
+  def update_operations(context, f) do
+    update(context, fn contents ->
+      Map.update!(contents, :operations, f)
     end)
   end
 
   defp align(context, text, old, new, operator) do
-    {current_text_width, context} =
-      case {old, new} do
-        {_, :left} ->
-          {nil, put(context, current_alignment: :left)}
+    case {old, new} do
+      {_, :left} ->
+        put(context, current_alignment: :left)
 
-        {:right, :right} ->
-          align_right_after_existing(context, text)
+      {:right, :right} ->
+        align_right_after_existing(context, text)
 
-        {_, :right} ->
-          {nil, align_right(context, text)}
-      end
-
-    context
+      {_, :right} ->
+        align_right(context, text)
+    end
     |> add(operator)
-    |> negate_right_alignment(current_text_width)
   end
 
   defp align_right({_doc, content_stream} = context, text) do
-    tf = Tf.latest!(content_stream)
+    tf = Tf.current!(content_stream)
 
     case Font.width(tf.font, tf.size, text) do
       0 -> context
@@ -272,58 +276,28 @@ defmodule Mudbrick.ContentStream do
 
   defp align_right_after_existing({_doc, content_stream} = context, text) do
     td = Enum.find(content_stream.value.operations, &match?(%Td{purpose: :align_right}, &1))
-    tf = Tf.latest!(content_stream)
+    tf = Tf.current!(content_stream)
     current_text_width = Font.width(tf.font, tf.size, text)
-    new_offset_for_previous_text = td.tx - current_text_width
 
-    {
-      current_text_width,
-      context
-      # existing negation puts us in correct place
-      |> update_latest_align(td, new_offset_for_previous_text)
-      |> put(current_alignment: :right)
-    }
+    context
+    |> update_latest_align(td, -current_text_width)
+    |> put(current_alignment: :right)
   end
 
-  defp negate_right_alignment({_doc, cs} = context, nil) do
-    if tx = current_right_alignment(cs) do
-      add(context, %Td{tx: -tx, purpose: :negate_align_right})
-    else
-      context
-    end
-  end
-
-  defp negate_right_alignment(context, current_text_width) do
-    add(context, %Td{tx: current_text_width, purpose: :negate_align_right})
-  end
-
-  defp current_right_alignment(content_stream) do
-    case Td.most_recent(content_stream) do
-      %Td{purpose: :align_right} = td -> td.tx
-      _ -> nil
-    end
-  end
-
-  defp update_latest_align(context, operator, new_offset) do
-    update(context, fn contents ->
-      %{
-        contents
-        | operations:
-            update_in(contents.operations, [Access.find(&(&1 == operator))], fn o ->
-              %{o | tx: new_offset}
-            end)
-      }
+  defp update_latest_align(context, operator, offset) do
+    update_operations(context, fn operations ->
+      update_in(operations, [Access.find(&(&1 == operator))], fn o ->
+        Map.update!(o, :tx, &(&1 + offset))
+      end)
     end)
   end
 
-  defp put(context, fields) do
-    update(context, fn contents ->
-      struct!(contents, fields)
+  defp track_line(context) do
+    update(context, fn content_stream ->
+      Map.update!(content_stream, :current_base_td, fn td ->
+        Map.update!(td, :ty, &(&1 - content_stream.current_tl.leading))
+      end)
     end)
-  end
-
-  defp update({doc, contents_obj}, f) do
-    Document.update(doc, contents_obj, f)
   end
 
   defimpl Mudbrick.Object do
@@ -331,7 +305,7 @@ defmodule Mudbrick.ContentStream do
       Mudbrick.Stream.new(
         compress: content_stream.compress,
         data: [
-          [%ET{} | content_stream.operations ++ [%BT{}]]
+          content_stream.operations
           |> Enum.reverse()
           |> Mudbrick.join("\n")
         ]

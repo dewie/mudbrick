@@ -55,8 +55,8 @@ defmodule Mudbrick.Stream do
           )
         ),
         "\nstream\n",
-        stream.data,
-        "\nendstream"
+        if(stream.data == [""], do: [], else: [stream.data, "\n"]),
+        "endstream"
       ]
     end
   end

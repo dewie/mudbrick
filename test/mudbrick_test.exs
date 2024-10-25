@@ -10,7 +10,7 @@ defmodule MudbrickTest do
   test "playground" do
     assert new(
              title: "My thing",
-             compress: true,
+             compress: false,
              fonts: %{bodoni: [file: bodoni()]},
              images: %{flower: [file: flower()]}
            )
@@ -28,6 +28,7 @@ defmodule MudbrickTest do
            |> text("""
            is Carbon Dioxide
            and HNO₃ is Nitric Acid
+           for sure
            """)
            |> text("wide stuff", align: :right)
            |> text("wider stuff", align: :right)
@@ -41,7 +42,8 @@ defmodule MudbrickTest do
            |> text(
              """
              I am right again
-             I am right again
+             I am r again
+             I am again
              """,
              align: :right
            )
@@ -102,7 +104,7 @@ defmodule MudbrickTest do
                /Length 1043
              >>
              stream
-             <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+             <?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?>
              <x:xmpmeta xmlns:x="adobe:ns:meta/">
                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
                  <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
@@ -155,7 +157,7 @@ defmodule MudbrickTest do
              >>
              endobj
              7 0 obj
-             <</Length 89
+             <</Length 71
              >>
              stream
              BT
@@ -163,8 +165,6 @@ defmodule MudbrickTest do
              /F2 100 Tf
              120.0 TL
              (hello, world!) Tj
-             /F1 10 Tf
-             12.0 TL
              (a new line!) '
              ET
              endstream
@@ -177,11 +177,9 @@ defmodule MudbrickTest do
              >>
              endobj
              9 0 obj
-             <</Length 5
+             <</Length 0
              >>
              stream
-             BT
-             ET
              endstream
              endobj
              xref
@@ -194,14 +192,14 @@ defmodule MudbrickTest do
              0000001491 00000 n 
              0000001559 00000 n 
              0000001653 00000 n 
-             0000001791 00000 n 
-             0000001887 00000 n 
+             0000001773 00000 n 
+             0000001869 00000 n 
              trailer
              <</Root 5 0 R
                /Size 10
              >>
              startxref
-             1940
+             1916
              %%EOF\
              """
   end
@@ -271,11 +269,9 @@ defmodule MudbrickTest do
              >>
              endobj
              5 0 obj
-             <</Length 5
+             <</Length 0
              >>
              stream
-             BT
-             ET
              endstream
              endobj
              xref
@@ -291,7 +287,7 @@ defmodule MudbrickTest do
                /Size 6
              >>
              startxref
-             1475
+             1469
              %%EOF\
              """
   end

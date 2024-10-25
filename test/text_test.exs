@@ -24,13 +24,13 @@ defmodule Mudbrick.TextTest do
       {_doc, compressed_content_stream} =
         new(compress: true, fonts: @fonts_helvetica)
         |> page()
-        |> font(:helvetica, size: 10, leading: 14)
+        |> font(:helvetica, size: 10)
         |> text(text)
 
       {_doc, uncompressed_content_stream} =
         new(compress: false, fonts: @fonts_helvetica)
         |> page()
-        |> font(:helvetica, size: 10, leading: 14)
+        |> font(:helvetica, size: 10)
         |> text(text)
 
       assert IO.iodata_length(Mudbrick.Object.from(compressed_content_stream)) <
@@ -40,14 +40,17 @@ defmodule Mudbrick.TextTest do
 
   test "can set leading" do
     assert [
+             "BT",
+             "0 0 Td",
              "/F1 10 Tf",
              "14 TL",
-             "(black and ) Tj"
+             "(hello there) Tj",
+             "ET"
            ] =
              new(fonts: @fonts_helvetica)
              |> page()
              |> font(:helvetica, size: 10, leading: 14)
-             |> text("black and ")
+             |> text("hello there")
              |> operations()
   end
 
@@ -89,6 +92,7 @@ defmodule Mudbrick.TextTest do
       assert show(content_stream) =~
                """
                BT
+               0 0 Td
                /F1 10 Tf
                12.0 TL
                (black and ) Tj
@@ -100,30 +104,28 @@ defmodule Mudbrick.TextTest do
     end
   end
 
-  describe "positioning text" do
-    test "starts a new text object" do
+  describe "text position" do
+    test "gets written at start of subsequent text objects" do
       assert [
-               _font,
-               _leading,
-               _text,
-               "ET",
                "BT",
                "200 700 Td",
-               _text2
+               "/F1 14 Tf",
+               "16.8 TL",
+               "(hi) Tj",
+               "(there) Tj",
+               "ET"
              ] =
-               new(fonts: %{bodoni: [file: bodoni()]})
+               new(fonts: @fonts_helvetica)
                |> page()
-               |> font(:bodoni, size: 14)
-               |> text("hi")
+               |> font(:helvetica, size: 14)
                |> text_position(200, 700)
+               |> text("hi")
                |> text("there")
                |> operations()
     end
 
     test "doesn't produce empty objects" do
-      assert [
-               "200 700 Td"
-             ] =
+      assert [] =
                new(fonts: %{bodoni: [file: bodoni()]})
                |> page()
                |> text_position(200, 700)
@@ -132,23 +134,29 @@ defmodule Mudbrick.TextTest do
   end
 
   describe "aligned text" do
-    test "when it changes, starts fresh Tj, to keep same line" do
+    test "when it changes, starts fresh text object, but keeps same 'line'" do
       assert [
-               _initial_position,
-               _font,
-               _leading,
+               "BT",
+               "400 12 Td",
+               "/F1 10 Tf",
+               "12.0 TL",
                # offset for a
                "-5.0600000000000005 0 Td",
                # a
                "<00A5> Tj",
                # reset a's offset
-               "5.0600000000000005 0 Td",
+               "ET",
+               "BT",
+               "400 12 Td",
+               _font,
+               "12.0 TL",
                # b
-               "<00B4> Tj"
+               "<00B4> Tj",
+               "ET"
              ] =
                new(fonts: %{bodoni: [file: bodoni()]})
                |> page(size: :letter)
-               |> text_position(400, 0)
+               |> text_position(400, 12)
                |> font(:bodoni, size: 10)
                |> text("a", align: :right)
                |> text("b")
@@ -156,55 +164,82 @@ defmodule Mudbrick.TextTest do
     end
 
     test "continues same-alignment text on same lines unless newline found" do
-      assert_in_delta 10.75 - 5.699999999999999 - 5.05, 0, 0.001
-
       assert [
-               _initial_position,
-               _font,
-               _leading,
-               # a
-               "<00A5> Tj",
-               # offset for right-aligned b = b width + c width
-               "-10.75 0 Td",
-               # b
-               "<00B4> '",
-               # reset b's offset, putting us in the correct place for c
-               "5.699999999999999 0 Td",
-               # c
-               "<00B5> Tj",
-               # reset c's offset
-               "5.05 0 Td",
-               # d
-               "<00BB> Tj"
+               "BT",
+               "400 100 Td",
+               "/F1 10 Tf",
+               "12.0 TL",
+               _a,
+               "ET",
+               # 'useless' BT/ET
+               "BT",
+               "400 100 Td",
+               "/F1 10 Tf",
+               "12.0 TL",
+               "ET",
+               "BT",
+               "400 88.0 Td",
+               "-16.43 0 Td",
+               _b,
+               _c,
+               "ET",
+               "BT",
+               "400 76.0 Td",
+               _d,
+               "ET",
+               "BT",
+               "400 76.0 Td",
+               "/F1 10 Tf",
+               "12.0 TL",
+               _e,
+               "ET"
              ] =
                new(fonts: %{bodoni: [file: bodoni()]})
                |> page(size: :letter)
-               |> text_position(400, 0)
+               |> text_position(400, 100)
                |> font(:bodoni, size: 10)
                |> text("a")
                |> text("\nb", align: :right)
-               |> text("c", align: :right)
-               |> text("d")
+               |> text("c\nd", align: :right)
+               |> text("e")
                |> operations()
     end
 
     test "can switch between alignments" do
       assert [
+               "BT",
                "200 700 Td",
                "/F1 14 Tf",
                "16.8 TL",
                "-6.72 0 Td",
                _z,
-               "6.72 0 Td",
+               "ET",
+               "BT",
+               "200 700 Td",
+               "/F1 14 Tf",
+               "16.8 TL",
                _i_am_left_again,
                "() '",
                "() '",
                "() '",
+               "ET",
+               "BT",
+               "200 649.6000000000001 Td",
+               "/F1 14 Tf",
+               "16.8 TL",
                "-98.91 0 Td",
                _i_am_right_again,
-               "98.91 0 Td",
-               "() '",
-               _left_again
+               "ET",
+               "BT",
+               "200 632.8000000000002 Td",
+               "() Tj",
+               "ET",
+               "BT",
+               "200 632.8000000000002 Td",
+               "/F1 14 Tf",
+               "16.8 TL",
+               _left_again,
+               "ET"
              ] =
                new(fonts: %{bodoni: [file: bodoni()]})
                |> page(size: :letter)
@@ -237,7 +272,15 @@ defmodule Mudbrick.TextTest do
   end
 
   test "built-in font linebreaks are converted to the ' operator" do
-    assert ["(a) Tj", "(b) '"] =
+    assert [
+             "BT",
+             "0 700 Td",
+             "/F1 10 Tf",
+             "12.0 TL",
+             "(a) Tj",
+             "(b) '",
+             "ET"
+           ] =
              new(fonts: @fonts_helvetica)
              |> page(size: :letter)
              |> font(:helvetica, size: 10)
@@ -247,13 +290,13 @@ defmodule Mudbrick.TextTest do
              b\
              """)
              |> operations()
-             |> Enum.take(-2)
   end
 
   test "CID font linebreaks are converted to the ' operator" do
     assert [
              "<00A5> Tj",
              "<00B4> '"
+             | _
            ] =
              new(fonts: %{bodoni: [file: bodoni()]})
              |> page(size: :letter)
@@ -264,7 +307,7 @@ defmodule Mudbrick.TextTest do
              b\
              """)
              |> operations()
-             |> Enum.take(-2)
+             |> Enum.take(-3)
   end
 
   test "font is assigned to the operator struct when font descendant present" do
@@ -275,7 +318,7 @@ defmodule Mudbrick.TextTest do
       |> text_position(0, 700)
       |> text("CO₂")
 
-    [show_text_operation | _] = content_stream.value.operations
+    [_et, show_text_operation | _] = content_stream.value.operations
 
     assert %Tj{
              text: "CO₂",
@@ -288,14 +331,14 @@ defmodule Mudbrick.TextTest do
 
   describe "serialisation" do
     test "converts Tj text to the assigned font's glyph IDs in hex" do
-      assert ["<001100550174> Tj"] =
+      assert ["<001100550174> Tj" | _] =
                new(fonts: %{bodoni: [file: bodoni()]})
                |> page()
                |> font(:bodoni, size: 24)
                |> text_position(0, 700)
                |> text("CO₂")
                |> operations()
-               |> Enum.take(-1)
+               |> Enum.take(-2)
     end
 
     test "copes with trailing newlines in CID font text" do
