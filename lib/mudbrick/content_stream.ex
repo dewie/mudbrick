@@ -1,8 +1,10 @@
 defmodule Mudbrick.ContentStream do
   @moduledoc false
 
-  alias Mudbrick.ContentStream.ET
+  alias Mudbrick.ContentStream.{BT, ET}
   alias Mudbrick.ContentStream.Td
+  alias Mudbrick.ContentStream.Tf
+  alias Mudbrick.ContentStream.{Tj, Apostrophe}
   alias Mudbrick.Document
   alias Mudbrick.Font
 
@@ -15,159 +17,8 @@ defmodule Mudbrick.ContentStream do
             current_tf: nil,
             current_tl: nil
 
-  defmodule Cm do
-    @moduledoc false
-    defstruct scale: {0, 0},
-              skew: {0, 0},
-              position: {0, 0}
-
-    defimpl Mudbrick.Object do
-      def from(%Cm{
-            scale: {x_scale, y_scale},
-            skew: {x_skew, y_skew},
-            position: {x_translate, y_translate}
-          }) do
-        [
-          Mudbrick.join([x_scale, x_skew, y_skew, y_scale, x_translate, y_translate]),
-          " cm"
-        ]
-      end
-    end
-  end
-
-  defmodule QPush do
-    @moduledoc false
-    defstruct []
-
-    defimpl Mudbrick.Object do
-      def from(_), do: ["q"]
-    end
-  end
-
-  defmodule QPop do
-    @moduledoc false
-    defstruct []
-
-    defimpl Mudbrick.Object do
-      def from(_), do: ["Q"]
-    end
-  end
-
-  defmodule Do do
-    @moduledoc false
-    defstruct [:image]
-
-    defimpl Mudbrick.Object do
-      def from(operator) do
-        [
-          Mudbrick.Object.from(operator.image.resource_identifier),
-          " Do"
-        ]
-      end
-    end
-  end
-
-  defmodule BT do
-    @moduledoc false
-    defstruct []
-
-    def open({_doc, content_stream} = context) do
-      context
-      |> Mudbrick.ContentStream.add(%BT{})
-      |> Mudbrick.ContentStream.add(content_stream.value.current_base_td)
-      |> Mudbrick.ContentStream.add(content_stream.value.current_tf)
-      |> Mudbrick.ContentStream.add(content_stream.value.current_tl)
-    end
-
-    defimpl Mudbrick.Object do
-      def from(_), do: ["BT"]
-    end
-  end
-
-  defmodule Rg do
-    @moduledoc false
-    defstruct [:r, :g, :b]
-
-    def new(opts) do
-      if Enum.any?(opts, fn {_k, v} ->
-           v < 0 or v > 1
-         end) do
-        raise Mudbrick.ContentStream.InvalidColour,
-              "tuple must be made of floats or integers between 0 and 1"
-      end
-
-      struct!(__MODULE__, opts)
-    end
-
-    defimpl Mudbrick.Object do
-      def from(%Rg{r: r, g: g, b: b}) do
-        [[r, g, b] |> Enum.map_join(" ", &to_string/1), " rg"]
-      end
-    end
-  end
-
   defmodule InvalidColour do
     defexception [:message]
-  end
-
-  defmodule Tf do
-    @moduledoc false
-    defstruct [:font, :size]
-
-    def current!(content_stream) do
-      content_stream.value.current_tf || raise Mudbrick.Font.NotSet, "No font chosen"
-    end
-
-    defimpl Mudbrick.Object do
-      def from(tf) do
-        [
-          Mudbrick.Object.from(tf.font.resource_identifier),
-          " ",
-          to_string(tf.size),
-          " Tf"
-        ]
-      end
-    end
-  end
-
-  defmodule TL do
-    @moduledoc false
-    defstruct [:leading]
-
-    defimpl Mudbrick.Object do
-      def from(tl) do
-        [to_string(tl.leading), " TL"]
-      end
-    end
-  end
-
-  defmodule Tj do
-    @moduledoc false
-    defstruct font: nil,
-              operator: "Tj",
-              text: nil
-  end
-
-  defmodule Apostrophe do
-    @moduledoc false
-    defstruct font: nil,
-              operator: "'",
-              text: nil
-  end
-
-  defimpl Mudbrick.Object, for: [Tj, Apostrophe] do
-    def from(op) do
-      if op.font.descendant && String.length(op.text) > 0 do
-        {glyph_ids_decimal, _positions} =
-          OpenType.layout_text(op.font.parsed, op.text)
-
-        glyph_ids_hex = Enum.map(glyph_ids_decimal, &Mudbrick.to_hex/1)
-
-        ["<", glyph_ids_hex, "> ", op.operator]
-      else
-        [Mudbrick.Object.from(op.text), " ", op.operator]
-      end
-    end
   end
 
   def new(opts \\ []) do
