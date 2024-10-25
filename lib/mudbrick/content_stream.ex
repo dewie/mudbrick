@@ -67,18 +67,28 @@ defmodule Mudbrick.ContentStream do
       |> then(fn context ->
         for text <- parts, reduce: context do
           context ->
-            {context, operator} =
-              if new_alignment == :left do
-                {track_line(context), %Apostrophe{font: tf.font, text: text}}
-              else
-                {context
-                 |> add(%ET{})
-                 |> add(%BT{})
-                 |> track_line()
-                 |> Td.add_current(), %Tj{font: tf.font, text: text}}
-              end
+            if new_alignment == :right && text == "" do
+              context
+              |> track_line()
+              |> put(current_alignment: nil)
+            else
+              {context, operator} =
+                if new_alignment == :left do
+                  {
+                    context
+                    |> track_line(),
+                    %Apostrophe{font: tf.font, text: text}
+                  }
+                else
+                  {context
+                   |> add(%ET{})
+                   |> add(%BT{})
+                   |> track_line()
+                   |> Td.add_current(), %Tj{font: tf.font, text: text}}
+                end
 
-            align(context, text, old_alignment, new_alignment, operator)
+              align(context, text, old_alignment, new_alignment, operator)
+            end
         end
       end)
     end)
