@@ -1,5 +1,6 @@
 defmodule Mudbrick.ContentStream.Tf do
   @moduledoc false
+  @enforce_keys [:font, :size]
   defstruct [:font, :size]
 
   def current!(content_stream) do
