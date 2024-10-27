@@ -31,6 +31,8 @@ defmodule Mudbrick do
       ...> |> IO.iodata_to_binary()                   # or turned into a (non-String) binary
   """
 
+  @type coords :: {number(), number()}
+
   alias Mudbrick.ContentStream
   alias Mudbrick.Document
   alias Mudbrick.Font
@@ -147,7 +149,44 @@ defmodule Mudbrick do
     end
   end
 
-  def text(context, writes, opts \\ [])
+  @doc """
+  Write text at the given coordinates.
+
+  ## Top-level options
+
+  - `:font` - *Required*. Name of a font previously registered with `new/1`.
+  - `:position` - Coordinates from bottom-left of page in points. Default: `{0, 0}`.
+  - `:font_size` - Size in points. Default: `12`.
+  - `:leading` - Leading in points. Default is 120% of `:font_size`.
+  - `:align` - Either `:left` or `:right`. Default: `:left`. Note that the rightmost point of right-aligned text is the horizontal offset provided to `:position`.
+
+  ## Individual write options
+
+  When passing a list to this function, each element can be tuple of `{text, opts}`,
+  where `opts` are:
+
+  - `:colour` - `{r, g, b}` tuple. Each element is a number between 0 and 1. Default: `{0, 0, 0}`.
+
+  ## Examples
+
+  Write "CO₂" in the bottom-left corner of a default-sized page.
+
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick
+      ...> new(fonts: %{bodoni: [file: bodoni()]})
+      ...> |> page()
+      ...> |> text("CO₂", font: :bodoni)
+
+  Write "I am red" at 200, 200, where "red" is in red.
+
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick
+      ...> new(fonts: %{bodoni: [file: bodoni()]})
+      ...> |> page()
+      ...> |> text(["I am ", {"red", colour: {1, 0, 0}}], font: :bodoni, position: {200, 200})
+  """
+
+  def text(context, write_or_writes, opts \\ [])
 
   def text({doc, _contents_obj} = context, writes, opts) when is_list(writes) do
     opts =

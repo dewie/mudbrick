@@ -1,6 +1,26 @@
 defmodule Mudbrick.TextBlock do
   @moduledoc false
 
+  @type alignment :: :left | :right
+
+  @type option ::
+          {:align, alignment()}
+          | {:font, atom()}
+          | {:font_size, number()}
+          | {:position, Mudbrick.coords()}
+          | {:leading, number()}
+
+  @type options :: [option()]
+
+  @type t :: %__MODULE__{
+          align: alignment(),
+          font: atom(),
+          font_size: number(),
+          lines: list(),
+          position: Mudbrick.coords(),
+          leading: number()
+        }
+
   defstruct align: :left,
             font: nil,
             font_size: 12,
@@ -11,6 +31,7 @@ defmodule Mudbrick.TextBlock do
   alias Mudbrick.TextBlock.Line
   alias Mudbrick.TextBlock.Line.Part
 
+  @spec new(options()) :: t()
   def new(opts \\ []) do
     struct!(__MODULE__, opts)
   end
