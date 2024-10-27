@@ -183,6 +183,20 @@ defmodule Mudbrick.TextBlockTest do
                end)
                |> operations()
     end
+
+    # test "is unsupported for built-in fonts" do
+    #   assert_raise(Font.NotMeasured, fn ->
+    #     output(fn font ->
+    #       Mudbrick.TextBlock.new(
+    #         font: font,
+    #         font_size: 10,
+    #         position: {400, 500},
+    #         align: :right
+    #       )
+    #       |> Mudbrick.TextBlock.write("a")
+    #     end)
+    #   end)
+    # end
   end
 
   defp operations(ops) do

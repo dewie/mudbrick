@@ -4,6 +4,7 @@ defmodule MudbrickTest do
 
   import Mudbrick
   import Mudbrick.TestHelper
+  import Mudbrick.TextBlock, only: [write: 2, write: 3]
 
   alias Mudbrick.Page
 
@@ -20,37 +21,47 @@ defmodule MudbrickTest do
              scale: Page.size(:letter),
              position: {0, 0}
            )
-           |> text_position(200, 700)
-           |> font(:bodoni, size: 14)
-           |> colour({1, 0, 0})
-           |> text("CO₂ ", align: :right)
-           |> colour({0, 0, 0})
-           |> text("""
-           is Carbon Dioxide
-           and HNO₃ is Nitric Acid
-           for sure
-           """)
-           |> text("wide stuff", align: :right)
-           |> text("wider stuff", align: :right)
-           |> text("z", align: :right)
-           |> text_position(400, 600)
-           |> font(:bodoni, size: 14, leading: 14)
-           |> text("""
-           I am left again
-
-           """)
-           |> text(
-             """
-             I am right again
-             I am r again
-             I am again
-             """,
-             align: :right
+           |> text(&write(&1, "CO₂ ", colour: {1, 0, 0}),
+             font: :bodoni,
+             font_size: 14,
+             align: :right,
+             position: {200, 700}
            )
-           |> text("""
-           I am left again
+           |> text(
+             &write(
+               &1,
+               """
+               is Carbon Dioxide
+               and HNO₃ is Nitric Acid
+               for sure
+               """,
+               colour: {0, 0, 0}
+             ),
+             font: :bodoni,
+             font_size: 14,
+             position: {200, 700}
+           )
+           |> text(
+             &(&1
+               |> write("wide stuff")
+               |> write("wider stuff")
+               |> write("z")),
+             align: :right,
+             font: :bodoni,
+             font_size: 14,
+             position: {200, 649.6}
+           )
+           |> text(
+             &(&1
+               |> write("""
+               I am left again
 
-           """)
+               """)),
+             font: :bodoni,
+             font_size: 14,
+             leading: 14,
+             position: {400, 600}
+           )
            |> render()
            |> output()
   end
@@ -71,14 +82,16 @@ defmodule MudbrickTest do
              }
            )
            |> page(size: Page.size(:letter))
-           |> text_position(300, 400)
-           |> font(:helvetica, size: 100)
-           |> text("hello, world!")
-           |> font(:courier, size: 10)
-           |> text("""
-
-           a new line!\
-           """)
+           |> text(&write(&1, "hello, world!"),
+             position: {300, 400},
+             font: :helvetica,
+             font_size: 100
+           )
+           |> text(&write(&1, "\na new line!"),
+             position: {300, 400},
+             font: :courier,
+             font_size: 10
+           )
            |> page(size: Page.size(:a4))
            |> comparable() ==
              """
@@ -104,31 +117,31 @@ defmodule MudbrickTest do
                /Length 1043
              >>
              stream
-             <?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?>
-             <x:xmpmeta xmlns:x="adobe:ns:meta/">
-               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-                 <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
+             <?xpacket begin=\"\uFEFF\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>
+             <x:xmpmeta xmlns:x=\"adobe:ns:meta/\">
+               <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">
+                 <rdf:Description rdf:about=\"\" xmlns:pdf=\"http://ns.adobe.com/pdf/1.3/\">
                    <pdf:Producer>Mudbrick</pdf:Producer>
                  </rdf:Description>
-                 <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
+                 <rdf:Description rdf:about=\"\" xmlns:xmp=\"http://ns.adobe.com/xap/1.0/\">
                    <xmp:CreatorTool>Mudbrick</xmp:CreatorTool>
                  </rdf:Description>
-                 <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
+                 <rdf:Description rdf:about=\"\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">
                    <dc:format>application/pdf</dc:format>
                    <dc:title>
                      <rdf:Alt>
-                       <rdf:li xml:lang="x-default"></rdf:li>
+                       <rdf:li xml:lang=\"x-default\"></rdf:li>
                      </rdf:Alt>
                    </dc:title>
                  </rdf:Description>
-                 <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
+                 <rdf:Description rdf:about=\"\" xmlns:xmpMM=\"http://ns.adobe.com/xap/1.0/mm/\">
                    <xmpMM:DocumentID>0000000000000000000000000000000000000000000</xmpMM:DocumentID>
                    <xmpMM:InstanceID>0000000000000000000000000000000000000000000</xmpMM:InstanceID>
                  </rdf:Description>
                </rdf:RDF>
              </x:xmpmeta>
 
-             <?xpacket end="w"?>
+             <?xpacket end=\"w\"?>
              endstream
              endobj
              4 0 obj
@@ -157,14 +170,22 @@ defmodule MudbrickTest do
              >>
              endobj
              7 0 obj
-             <</Length 71
+             <</Length 130
              >>
              stream
              BT
-             300 400 Td
              /F2 100 Tf
              120.0 TL
+             300 400 Td
+             0 0 0 rg
              (hello, world!) Tj
+             ET
+             BT
+             /F1 10 Tf
+             12.0 TL
+             300 400 Td
+             0 0 0 rg
+             () Tj
              (a new line!) '
              ET
              endstream
@@ -192,14 +213,14 @@ defmodule MudbrickTest do
              0000001491 00000 n 
              0000001559 00000 n 
              0000001653 00000 n 
-             0000001773 00000 n 
-             0000001869 00000 n 
+             0000001833 00000 n 
+             0000001929 00000 n 
              trailer
              <</Root 5 0 R
                /Size 10
              >>
              startxref
-             1916
+             1976
              %%EOF\
              """
   end
