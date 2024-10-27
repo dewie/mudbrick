@@ -3,7 +3,8 @@ defmodule Mudbrick.TextBlock do
             font: nil,
             font_size: nil,
             lines: [],
-            position: {0, 0}
+            position: {0, 0},
+            leading: nil
 
   alias Mudbrick.TextBlock.Line
   alias Mudbrick.TextBlock.Line.Part

@@ -39,18 +39,25 @@ defmodule Mudbrick.TextTest do
   end
 
   test "can set leading" do
+    import Mudbrick.TextBlock, only: [write: 2]
+
     assert [
              "BT",
-             "0 0 Td",
              "/F1 10 Tf",
              "14 TL",
+             "0 0 Td",
+             "0 0 0 rg",
              "(hello there) Tj",
              "ET"
            ] =
              new(fonts: @fonts_helvetica)
              |> page()
-             |> font(:helvetica, size: 10, leading: 14)
-             |> text("hello there")
+             |> text(
+               &write(&1, "hello there"),
+               font: :helvetica,
+               font_size: 10,
+               leading: 14
+             )
              |> operations()
   end
 

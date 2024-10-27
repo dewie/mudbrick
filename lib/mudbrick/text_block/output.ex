@@ -167,6 +167,6 @@ defmodule Mudbrick.TextBlock.Output do
   end
 
   defp leading(tb) do
-    tb.font_size * 1.2
+    tb.leading || tb.font_size * 1.2
   end
 end

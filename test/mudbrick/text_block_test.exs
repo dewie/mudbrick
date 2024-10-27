@@ -59,7 +59,7 @@ defmodule Mudbrick.TextBlockTest do
       assert [
                "BT",
                "/F1 10 Tf",
-               "12.0 TL",
+               "14 TL",
                "400 500 Td",
                "0 0 0 rg",
                "<014C010F0116011D01B700ED00D900F400C0> Tj",
@@ -71,7 +71,8 @@ defmodule Mudbrick.TextBlockTest do
                  TextBlock.new(
                    font: font,
                    font_size: 10,
-                   position: {400, 500}
+                   position: {400, 500},
+                   leading: 14
                  )
                  |> TextBlock.write("""
                  first line

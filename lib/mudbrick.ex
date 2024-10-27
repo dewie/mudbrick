@@ -236,6 +236,30 @@ defmodule Mudbrick do
     end)
   end
 
+  def text(context, text_or_function, opts \\ [])
+
+  def text({doc, _contents_obj} = context, f, opts) when is_function(f) do
+    opts =
+      Keyword.update!(opts, :font, fn user_identifier ->
+        case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
+          {:ok, font} ->
+            font.value
+
+          :error ->
+            raise Font.Unregistered, "Unregistered font: #{user_identifier}"
+        end
+      end)
+
+    text_block = Mudbrick.TextBlock.new(opts)
+
+    text_block = f.(text_block)
+
+    context
+    |> ContentStream.update_operations(fn ops ->
+      Enum.reverse(Mudbrick.TextBlock.Output.from(text_block)) ++ ops
+    end)
+  end
+
   @doc """
   Write text at the current position. Repeated calls to this do not produce newlines.
 
@@ -244,7 +268,7 @@ defmodule Mudbrick do
   - `:align` - either `:left` or `:right`. When `:right`, text is right-aligned
     to the current position set with `text_position/3`. Default: `:left`.
   """
-  def text(context, text, opts \\ []) do
+  def text(context, text, opts) do
     ContentStream.write_text(context, text, opts)
   end
 
