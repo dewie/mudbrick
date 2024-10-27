@@ -80,7 +80,7 @@ defmodule MudbrickTest do
              }
            )
            |> page(size: Page.size(:letter))
-           |> text("hello, world!",
+           |> text([{"hello, ", font: :courier}, "world!"],
              position: {300, 400},
              font: :helvetica,
              font_size: 100
@@ -168,7 +168,7 @@ defmodule MudbrickTest do
              >>
              endobj
              7 0 obj
-             <</Length 124
+             <</Length 152
              >>
              stream
              BT
@@ -176,7 +176,10 @@ defmodule MudbrickTest do
              120.0 TL
              300 400 Td
              0 0 0 rg
-             (hello, world!) Tj
+             /F1 100 Tf
+             (hello, ) Tj
+             /F2 100 Tf
+             (world!) Tj
              ET
              BT
              /F1 10 Tf
@@ -210,14 +213,14 @@ defmodule MudbrickTest do
              0000001491 00000 n 
              0000001559 00000 n 
              0000001653 00000 n 
-             0000001827 00000 n 
-             0000001923 00000 n 
+             0000001855 00000 n 
+             0000001951 00000 n 
              trailer
              <</Root 5 0 R
                /Size 10
              >>
              startxref
-             1970
+             1998
              %%EOF\
              """
   end

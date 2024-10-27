@@ -197,22 +197,13 @@ defmodule Mudbrick do
   def text(context, write_or_writes, opts \\ [])
 
   def text({doc, _contents_obj} = context, writes, opts) when is_list(writes) do
-    opts =
-      Keyword.update(opts, :font, nil, fn user_identifier ->
-        case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
-          {:ok, font} ->
-            font.value
-
-          :error ->
-            raise Font.Unregistered, "Unregistered font: #{user_identifier}"
-        end
-      end)
+    opts = fetch_font(doc, opts)
 
     text_block =
       writes
       |> Enum.reduce(Mudbrick.TextBlock.new(opts), fn
         {text, opts}, acc ->
-          Mudbrick.TextBlock.write(acc, text, opts)
+          Mudbrick.TextBlock.write(acc, text, fetch_font(doc, opts))
 
         text, acc ->
           Mudbrick.TextBlock.write(acc, text, [])
@@ -226,6 +217,18 @@ defmodule Mudbrick do
 
   def text(context, write, opts) do
     text(context, [write], opts)
+  end
+
+  defp fetch_font(doc, opts) do
+    Keyword.update(opts, :font, nil, fn user_identifier ->
+      case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
+        {:ok, font} ->
+          font.value
+
+        :error ->
+          raise Font.Unregistered, "Unregistered font: #{user_identifier}"
+      end
+    end)
   end
 
   @doc """
