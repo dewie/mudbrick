@@ -154,10 +154,8 @@ defmodule Mudbrick.TextBlockTest do
   describe "right-aligned" do
     test "newlines become Tjs with offsets" do
       assert [
-               "BT",
                "/F1 10 Tf",
                "12.0 TL",
-               "400 500 Td",
                "BT",
                "384.82 500.0 Td",
                "0 0 0 rg",
@@ -222,10 +220,8 @@ defmodule Mudbrick.TextBlockTest do
 
     test "inline font change is written with Tfs" do
       assert [
-               "BT",
                "/F1 10 Tf",
                "12.0 TL",
-               "400 500 Td",
                "BT",
                "225.89999999999998 500.0 Td",
                "0 0 0 rg",

@@ -116,8 +116,7 @@ defmodule Mudbrick.TextBlock.Output do
         %Mudbrick.TextBlock{
           align: :right,
           font: font,
-          font_size: font_size,
-          position: {x, y}
+          font_size: font_size
         } = tb
       ) do
     output =
@@ -125,10 +124,8 @@ defmodule Mudbrick.TextBlock.Output do
       |> RightAlign.reduce_lines(tb.lines, fn output, text, line ->
         right_offset(output, tb, text, line)
       end)
-      |> add(%Td{tx: x, ty: y})
       |> add(%TL{leading: leading(tb)})
       |> add(%Tf{font: font, size: font_size})
-      |> start_block()
 
     output.operations
   end
