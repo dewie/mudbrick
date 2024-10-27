@@ -133,13 +133,13 @@ defmodule Mudbrick.TextBlock.Output do
   end
 
   def with_font(output, op, part) do
-    if part.font == nil or output.font == part.font do
+    if part.font in [nil, output.font] and part.font_size == nil do
       add(output, op)
     else
       output
       |> add(%Tf{font: output.font, size: output.font_size})
       |> add(op)
-      |> add(%Tf{font: part.font, size: output.font_size})
+      |> add(%Tf{font: part.font || output.font, size: part.font_size || output.font_size})
     end
   end
 

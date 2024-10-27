@@ -117,7 +117,9 @@ defmodule Mudbrick.TextBlockTest do
                "12.0 TL",
                "400 500 Td",
                "0 0 0 rg",
+               "/F1 14 Tf",
                "<011D00D500D9011601B700D9011601B7> Tj",
+               "/F1 10 Tf",
                "/F2 10 Tf",
                "<00B400FC00ED00BB01B7> Tj",
                "/F1 10 Tf",
@@ -133,7 +135,7 @@ defmodule Mudbrick.TextBlockTest do
                    font_size: 10,
                    position: {400, 500}
                  )
-                 |> TextBlock.write("this is ")
+                 |> TextBlock.write("this is ", font_size: 14)
                  |> TextBlock.write("bold ", font: bold)
                  |> TextBlock.write("but this isn't ")
                  |> TextBlock.write("this is franklin", font: franklin)
