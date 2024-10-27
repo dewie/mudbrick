@@ -34,6 +34,7 @@ defmodule Mudbrick do
   alias Mudbrick.Font
   alias Mudbrick.Image
   alias Mudbrick.Page
+  alias Mudbrick.TextBlock
 
   @doc """
   Start a new document.
@@ -256,7 +257,7 @@ defmodule Mudbrick do
 
     context
     |> ContentStream.update_operations(fn ops ->
-      Enum.reverse(Mudbrick.TextBlock.Output.from(text_block)) ++ ops
+      Enum.reverse(TextBlock.Output.from(text_block)) ++ ops
     end)
   end
 

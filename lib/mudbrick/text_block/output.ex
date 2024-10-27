@@ -1,14 +1,14 @@
 defmodule Mudbrick.TextBlock.Output do
   defstruct font: nil, operations: []
 
-  alias Mudbrick.TextBlock.Line
   alias Mudbrick.ContentStream.{BT, ET}
   alias Mudbrick.ContentStream.Rg
   alias Mudbrick.ContentStream.Td
   alias Mudbrick.ContentStream.Tf
-  alias Mudbrick.ContentStream.{Tj, Apostrophe}
+  alias Mudbrick.ContentStream.{Apostrophe, Tj}
   alias Mudbrick.ContentStream.TL
   alias Mudbrick.Font
+  alias Mudbrick.TextBlock.Line
 
   defmodule LeftAlign do
     alias Mudbrick.TextBlock.Output

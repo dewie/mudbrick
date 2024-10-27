@@ -4,7 +4,7 @@ defmodule Mudbrick.ContentStream do
   alias Mudbrick.ContentStream.{BT, ET}
   alias Mudbrick.ContentStream.Td
   alias Mudbrick.ContentStream.Tf
-  alias Mudbrick.ContentStream.{Tj, Apostrophe}
+  alias Mudbrick.ContentStream.{Apostrophe, Tj}
   alias Mudbrick.Document
   alias Mudbrick.Font
 
