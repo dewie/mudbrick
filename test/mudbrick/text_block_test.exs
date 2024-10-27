@@ -40,20 +40,13 @@ defmodule Mudbrick.TextBlockTest do
       line
       second line
       """)
-      |> TextBlock.write("""
-      third line\
-      """)
-      |> TextBlock.write("\nfourth", colour: {0, 1, 0})
+      |> TextBlock.write("third ")
+      |> TextBlock.write("line")
+      |> TextBlock.write("\nfourth", colour: {0, 1, 0}, font_size: 24)
 
     assert block.lines == [
-             %Line{parts: [%Part{text: "fourth", colour: {0, 1, 0}}]},
-             %Line{
-               parts: [
-                 %Part{text: "", colour: {0, 1, 0}},
-                 %Part{text: "third line"},
-                 %Part{text: ""}
-               ]
-             },
+             %Line{parts: [%Part{text: "fourth", colour: {0, 1, 0}, font_size: 24}]},
+             %Line{parts: [%Part{text: "line"}, %Part{text: "third "}]},
              %Line{parts: [%Part{text: "second line"}]},
              %Line{parts: [%Part{text: "line"}, %Part{text: "first ", colour: {1, 0, 0}}]}
            ]
@@ -69,7 +62,6 @@ defmodule Mudbrick.TextBlockTest do
                "0 0 0 rg",
                "<014C010F0116011D01B700ED00D900F400C0> Tj",
                "<011600C000B500FC00F400BB01B700ED00D900F400C0> '",
-               "() '",
                "ET"
              ] =
                output(fn font, _, _ ->
@@ -98,7 +90,6 @@ defmodule Mudbrick.TextBlockTest do
                "1 0 0 rg",
                "<00B4> Tj",
                "0 1 0 rg",
-               "() Tj",
                "<00B5> '",
                "<00BB> '",
                "0 0 1 rg",
@@ -165,7 +156,6 @@ defmodule Mudbrick.TextBlockTest do
                "ET",
                "BT",
                "379.42 488.0 Td",
-               "() Tj",
                "0 0 0 rg",
                "<013801380138> Tj",
                "ET",
@@ -177,12 +167,10 @@ defmodule Mudbrick.TextBlockTest do
                "ET",
                "BT",
                "400 464.0 Td",
-               "() Tj",
-               "0 0 0 rg",
-               "() Tj",
                "ET",
                "BT",
                "390.74 452.0 Td",
+               "0 0 0 rg",
                "<00D500D9> Tj",
                "ET"
              ] =

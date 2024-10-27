@@ -40,17 +40,26 @@ defmodule Mudbrick.TextBlock do
     Map.update!(tb, :lines, fn
       [] ->
         for text <- String.split(text, "\n"), reduce: [] do
-          acc -> [Line.wrap(text, opts) | acc]
+          acc ->
+            [Line.wrap(text, opts) | acc]
         end
 
       [%Line{} = previous_line | existing_lines] ->
         [first_new_line_text | new_line_texts] = String.split(text, "\n")
 
-        previous_line =
-          Map.update!(previous_line, :parts, &[Part.wrap(first_new_line_text, opts) | &1])
+        new_previous_line =
+          if first_new_line_text == "" do
+            previous_line
+          else
+            Map.update!(previous_line, :parts, fn
+              parts ->
+                [Part.wrap(first_new_line_text, opts) | parts]
+            end)
+          end
 
-        for text <- new_line_texts, reduce: [previous_line | existing_lines] do
-          acc -> [Line.wrap(text, opts) | acc]
+        for text <- new_line_texts, reduce: [new_previous_line | existing_lines] do
+          acc ->
+            [Line.wrap(text, opts) | acc]
         end
     end)
   end

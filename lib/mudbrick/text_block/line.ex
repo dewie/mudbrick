@@ -8,11 +8,16 @@ defmodule Mudbrick.TextBlock.Line do
 
     defstruct colour: {0, 0, 0},
               font: nil,
+              font_size: nil,
               text: ""
 
-    def wrap(text, opts) do
+    def wrap(text, opts) when text != "" do
       struct!(%Part{text: text}, opts)
     end
+  end
+
+  def wrap("", _opts) do
+    %__MODULE__{}
   end
 
   def wrap(text, opts) do

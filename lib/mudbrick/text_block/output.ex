@@ -27,12 +27,18 @@ defmodule Mudbrick.TextBlock.Output do
       |> reduce_lines(lines)
     end
 
-    # first line, first part
+    defp reduce_parts(output, %Line{parts: []}, _operator, :first_line) do
+      output
+    end
+
     defp reduce_parts(output, %Line{parts: [part]}, _operator, :first_line) do
       Output.add_part(output, part, Tj)
     end
 
-    # subsequent line, first part
+    defp reduce_parts(output, %Line{parts: []}, _operator, nil) do
+      output
+    end
+
     defp reduce_parts(output, %Line{parts: [part]}, _operator, nil) do
       Output.add_part(output, part, Apostrophe)
     end
@@ -64,6 +70,10 @@ defmodule Mudbrick.TextBlock.Output do
       |> measure.(Line.text(line), length(lines) + 1)
       |> Output.start_block()
       |> reduce_lines(lines, measure)
+    end
+
+    defp reduce_parts(output, %Line{parts: []}) do
+      output
     end
 
     defp reduce_parts(output, %Line{parts: [part]}) do
