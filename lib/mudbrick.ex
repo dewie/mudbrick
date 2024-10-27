@@ -162,10 +162,10 @@ defmodule Mudbrick do
 
   ## Individual write options
 
-  When passing a list to this function, each element can be tuple of `{text, opts}`,
-  where `opts` are:
+  When passing a `{text, opts}` tuple or list of tuples to this function, `opts` are:
 
   - `:colour` - `{r, g, b}` tuple. Each element is a number between 0 and 1. Default: `{0, 0, 0}`.
+  - `:font` - Name of a font previously registered with `new/1`. Overrides the top-level option.
 
   ## Examples
 
