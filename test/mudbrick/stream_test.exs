@@ -28,7 +28,7 @@ defmodule Mudbrick.StreamTest do
 
   test "includes length and stream markers when serialised" do
     serialised =
-      Mudbrick.Stream.new(data: bodoni())
+      Mudbrick.Stream.new(data: bodoni_regular())
       |> Mudbrick.Object.from()
       |> IO.iodata_to_binary()
 

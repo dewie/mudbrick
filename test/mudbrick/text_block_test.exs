@@ -1,7 +1,7 @@
 defmodule Mudbrick.TextBlockTest do
   use ExUnit.Case, async: true
 
-  import Mudbrick.TestHelper, only: [bodoni: 0]
+  import Mudbrick.TestHelper, only: [bodoni_regular: 0]
 
   alias Mudbrick.Page
   alias Mudbrick.TextBlock
@@ -197,7 +197,7 @@ defmodule Mudbrick.TextBlockTest do
       Mudbrick.new(
         title: "My thing",
         compress: false,
-        fonts: %{bodoni: [file: bodoni()]}
+        fonts: %{bodoni: [file: bodoni_regular()]}
       )
       |> page(size: Page.size(:letter))
 

@@ -34,7 +34,7 @@ defmodule Mudbrick.Predicates do
 
   ## Example
 
-      iex> Mudbrick.Predicates.has_text?("some-pdf", "hello", in_font: Mudbrick.TestHelper.bodoni())
+      iex> Mudbrick.Predicates.has_text?("some-pdf", "hello", in_font: Mudbrick.TestHelper.bodoni_regular())
   """
   @spec has_text?(pdf :: iodata(), text :: binary(), opts :: list()) :: boolean()
   def has_text?(pdf, text, opts) do

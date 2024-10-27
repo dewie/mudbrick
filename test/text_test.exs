@@ -71,7 +71,7 @@ defmodule Mudbrick.TextTest do
                   |> constant() do
         e =
           assert_raise(Mudbrick.ContentStream.InvalidColour, fn ->
-            new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
+            new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni_regular()]})
             |> page()
             |> text({"hi there", colour: colour}, font: :my_bodoni)
           end)
@@ -151,7 +151,7 @@ defmodule Mudbrick.TextTest do
              "<00B4> '"
              | _
            ] =
-             new(fonts: %{bodoni: [file: bodoni()]})
+             new(fonts: %{bodoni: [file: bodoni_regular()]})
              |> page(size: :letter)
              |> text(
                """
@@ -168,7 +168,7 @@ defmodule Mudbrick.TextTest do
 
   test "font is assigned to the operator struct when font descendant present" do
     {_doc, content_stream} =
-      new(fonts: %{bodoni: [file: bodoni()]})
+      new(fonts: %{bodoni: [file: bodoni_regular()]})
       |> page(size: :letter)
       |> text("CO₂", font: :bodoni, font_size: 24, position: {0, 700})
 
@@ -186,7 +186,7 @@ defmodule Mudbrick.TextTest do
   describe "serialisation" do
     test "converts Tj text to the assigned font's glyph IDs in hex" do
       assert ["<001100550174> Tj" | _] =
-               new(fonts: %{bodoni: [file: bodoni()]})
+               new(fonts: %{bodoni: [file: bodoni_regular()]})
                |> page()
                |> text("CO₂", font: :bodoni, font_size: 24, position: {0, 700})
                |> operations()
@@ -194,7 +194,7 @@ defmodule Mudbrick.TextTest do
     end
 
     test "copes with trailing newlines in CID font text" do
-      assert new(fonts: %{bodoni: [file: bodoni()]})
+      assert new(fonts: %{bodoni: [file: bodoni_regular()]})
              |> page()
              |> text("\n", font: :bodoni, font_size: 13)
              |> render()

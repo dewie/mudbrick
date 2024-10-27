@@ -11,7 +11,7 @@ defmodule MudbrickTest do
     assert new(
              title: "My thing",
              compress: false,
-             fonts: %{bodoni: [file: bodoni()]},
+             fonts: %{bodoni: [file: bodoni_regular()]},
              images: %{flower: [file: flower()]}
            )
            |> page(size: Page.size(:letter))

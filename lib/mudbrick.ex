@@ -11,7 +11,7 @@ defmodule Mudbrick do
       ...> alias Mudbrick.Page
       ...> new(
       ...>   compress: true,                          # flate compression for fonts, text etc.
-      ...>   fonts: %{bodoni: [file: bodoni()]},      # register an OTF font
+      ...>   fonts: %{bodoni: [file: bodoni_regular()]},      # register an OTF font
       ...>   images: %{flower: [file: flower()]}      # register a JPEG
       ...> )
       ...> |> page(size: Page.size(:letter))
@@ -63,7 +63,7 @@ defmodule Mudbrick do
 
   Register an OTF font. Pass the file's raw data to the `:file` option.
 
-      iex> Mudbrick.new(fonts: %{bodoni: [file: Mudbrick.TestHelper.bodoni()]})
+      iex> Mudbrick.new(fonts: %{bodoni: [file: Mudbrick.TestHelper.bodoni_regular()]})
 
   Or a built-in font. Note that these don't support right-alignment or special characters.
 
@@ -173,7 +173,7 @@ defmodule Mudbrick do
 
       iex> import Mudbrick.TestHelper
       ...> import Mudbrick
-      ...> new(fonts: %{bodoni: [file: bodoni()]})
+      ...> new(fonts: %{bodoni: [file: bodoni_regular()]})
       ...> |> page()
       ...> |> text("CO₂", font: :bodoni)
 
@@ -181,7 +181,7 @@ defmodule Mudbrick do
 
       iex> import Mudbrick.TestHelper
       ...> import Mudbrick
-      ...> new(fonts: %{bodoni: [file: bodoni()]})
+      ...> new(fonts: %{bodoni: [file: bodoni_regular()]})
       ...> |> page()
       ...> |> text(["I am ", {"red", colour: {1, 0, 0}}], font: :bodoni, position: {200, 200})
   """

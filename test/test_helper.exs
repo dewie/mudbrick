@@ -13,7 +13,7 @@ defmodule Mudbrick.TestHelper do
     |> Enum.map(&show/1)
   end
 
-  def bodoni do
+  def bodoni_regular do
     @bodoni
   end
 

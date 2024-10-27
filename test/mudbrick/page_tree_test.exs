@@ -8,7 +8,7 @@ defmodule Mudbrick.PageTreeTest do
   test "is a dictionary of pages, fonts and images" do
     doc =
       Mudbrick.new(
-        fonts: %{bodoni: [file: bodoni()]},
+        fonts: %{bodoni: [file: bodoni_regular()]},
         images: %{flower: [file: flower()]}
       )
 
