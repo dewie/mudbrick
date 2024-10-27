@@ -4,7 +4,6 @@ defmodule MudbrickTest do
 
   import Mudbrick
   import Mudbrick.TestHelper
-  import Mudbrick.TextBlock, only: [write: 2, write: 3]
 
   alias Mudbrick.Page
 
@@ -21,42 +20,41 @@ defmodule MudbrickTest do
              scale: Page.size(:letter),
              position: {0, 0}
            )
-           |> text(&write(&1, "CO₂ ", colour: {1, 0, 0}),
+           |> text({"CO₂ ", colour: {1, 0, 0}},
              font: :bodoni,
              font_size: 14,
              align: :right,
              position: {200, 700}
            )
            |> text(
-             &write(
-               &1,
+             {
                """
                is Carbon Dioxide
                and HNO₃ is Nitric Acid
                for sure
                """,
                colour: {0, 0, 0}
-             ),
+             },
              font: :bodoni,
              font_size: 14,
              position: {200, 700}
            )
            |> text(
-             &(&1
-               |> write("wide stuff")
-               |> write("wider stuff")
-               |> write("z")),
+             [
+               "wide stuff",
+               "wider stuff",
+               "z"
+             ],
              align: :right,
              font: :bodoni,
              font_size: 14,
              position: {200, 649.6}
            )
            |> text(
-             &(&1
-               |> write("""
-               I am left again
+             """
+             I am left again
 
-               """)),
+             """,
              font: :bodoni,
              font_size: 14,
              leading: 14,
@@ -82,12 +80,12 @@ defmodule MudbrickTest do
              }
            )
            |> page(size: Page.size(:letter))
-           |> text(&write(&1, "hello, world!"),
+           |> text("hello, world!",
              position: {300, 400},
              font: :helvetica,
              font_size: 100
            )
-           |> text(&write(&1, "\na new line!"),
+           |> text("\na new line!",
              position: {300, 400},
              font: :courier,
              font_size: 10

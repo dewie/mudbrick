@@ -1,7 +1,11 @@
 defmodule Mudbrick.TextBlock.Line do
+  @moduledoc false
+
   defstruct parts: []
 
   defmodule Part do
+    @moduledoc false
+
     defstruct colour: {0, 0, 0},
               text: ""
 

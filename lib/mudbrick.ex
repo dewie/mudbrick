@@ -8,7 +8,6 @@ defmodule Mudbrick do
 
       iex> import Mudbrick.TestHelper                 # import some example fonts and images
       ...> import Mudbrick
-      ...> import Mudbrick.TextBlock, only: [write: 3]
       ...> alias Mudbrick.Page
       ...> new(
       ...>   compress: true,                          # flate compression for fonts, text etc.
@@ -21,9 +20,8 @@ defmodule Mudbrick do
       ...>   scale: {100, 100},
       ...>   position: {50, 600}                      # in points (1/72 inch), starts at bottom left
       ...> )
-      ...> # write right-aligned text in Bodoni 14, with right side anchored 200 points from left of page
-      ...> |> text(
-      ...>   &write(&1, "CO₂", colour: {1, 0, 0}),
+      ...> |> text(                                   # write red, right-aligned text in Bodoni 14, with
+      ...>   {"CO₂", colour: {1, 0, 0}},              # right side anchored 200 points from left of page
       ...>   align: :right,
       ...>   font: :bodoni,
       ...>   font_size: 14,
@@ -149,7 +147,9 @@ defmodule Mudbrick do
     end
   end
 
-  def text({doc, _contents_obj} = context, f, opts \\ []) do
+  def text(context, writes, opts \\ [])
+
+  def text({doc, _contents_obj} = context, writes, opts) when is_list(writes) do
     opts =
       Keyword.update(opts, :font, nil, fn user_identifier ->
         case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
@@ -161,14 +161,24 @@ defmodule Mudbrick do
         end
       end)
 
-    text_block = Mudbrick.TextBlock.new(opts)
+    text_block =
+      writes
+      |> Enum.reduce(Mudbrick.TextBlock.new(opts), fn
+        {text, opts}, acc ->
+          Mudbrick.TextBlock.write(acc, text, opts)
 
-    text_block = f.(text_block)
+        text, acc ->
+          Mudbrick.TextBlock.write(acc, text, [])
+      end)
 
     context
     |> ContentStream.update_operations(fn ops ->
       Enum.reverse(TextBlock.Output.from(text_block)) ++ ops
     end)
+  end
+
+  def text(context, write, opts) do
+    text(context, [write], opts)
   end
 
   @doc """

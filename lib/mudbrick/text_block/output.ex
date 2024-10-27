@@ -1,4 +1,6 @@
 defmodule Mudbrick.TextBlock.Output do
+  @moduledoc false
+
   defstruct font: nil, operations: []
 
   alias Mudbrick.ContentStream.{BT, ET}
@@ -11,6 +13,8 @@ defmodule Mudbrick.TextBlock.Output do
   alias Mudbrick.TextBlock.Line
 
   defmodule LeftAlign do
+    @moduledoc false
+
     alias Mudbrick.TextBlock.Output
 
     def reduce_lines(output, [line]) do
@@ -47,6 +51,8 @@ defmodule Mudbrick.TextBlock.Output do
   end
 
   defmodule RightAlign do
+    @moduledoc false
+
     alias Mudbrick.TextBlock.Output
 
     defp text(line) do

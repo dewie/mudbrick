@@ -1,4 +1,6 @@
 defmodule Mudbrick.TextBlock do
+  @moduledoc false
+
   defstruct align: :left,
             font: nil,
             font_size: 12,
