@@ -220,7 +220,7 @@ defmodule Mudbrick do
 
     context
     |> ContentStream.update_operations(fn ops ->
-      Enum.reverse(TextBlock.Output.from(text_block)) ++ ops
+      Enum.reverse(TextBlock.Output.from(text_block).operations) ++ ops
     end)
   end
 

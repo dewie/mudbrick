@@ -29,27 +29,18 @@ defmodule Mudbrick.TextBlock.Output do
 
     # first line, first part
     defp reduce_parts(output, %Line{parts: [part]}, _operator, :first_line) do
-      add_part(output, part, Tj)
+      Output.add_part(output, part, Tj)
     end
 
     # subsequent line, first part
     defp reduce_parts(output, %Line{parts: [part]}, _operator, nil) do
-      add_part(output, part, Apostrophe)
+      Output.add_part(output, part, Apostrophe)
     end
 
     defp reduce_parts(output, %Line{parts: [part | parts]} = line, operator, line_kind) do
       output
-      |> add_part(part, operator)
+      |> Output.add_part(part, operator)
       |> reduce_parts(%{line | parts: parts}, Tj, line_kind)
-    end
-
-    def add_part(output, part, operator) do
-      output
-      |> Output.with_font(
-        struct!(operator, font: part.font || output.font, text: part.text),
-        part
-      )
-      |> Output.colour(part.colour)
     end
   end
 
@@ -76,19 +67,13 @@ defmodule Mudbrick.TextBlock.Output do
     end
 
     defp reduce_parts(output, %Line{parts: [part]}) do
-      add_part(output, part)
+      Output.add_part(output, part, Tj)
     end
 
     defp reduce_parts(output, %Line{parts: [part | parts]} = line) do
       output
-      |> add_part(part)
+      |> Output.add_part(part, Tj)
       |> reduce_parts(%{line | parts: parts})
-    end
-
-    def add_part(output, part) do
-      output
-      |> Output.with_font(%Tj{font: part.font || output.font, text: part.text}, part)
-      |> Output.colour(part.colour)
     end
   end
 
@@ -100,16 +85,13 @@ defmodule Mudbrick.TextBlock.Output do
           position: {x, y}
         } = tb
       ) do
-    output =
-      %__MODULE__{font: font, font_size: font_size}
-      |> end_block()
-      |> LeftAlign.reduce_lines(tb.lines)
-      |> add(%Td{tx: x, ty: y})
-      |> add(%TL{leading: leading(tb)})
-      |> add(%Tf{font: font, size: font_size})
-      |> start_block()
-
-    output.operations
+    %__MODULE__{font: font, font_size: font_size}
+    |> end_block()
+    |> LeftAlign.reduce_lines(tb.lines)
+    |> add(%Td{tx: x, ty: y})
+    |> add(%TL{leading: leading(tb)})
+    |> add(%Tf{font: font, size: font_size})
+    |> start_block()
   end
 
   def from(
@@ -119,19 +101,25 @@ defmodule Mudbrick.TextBlock.Output do
           font_size: font_size
         } = tb
       ) do
-    output =
-      %__MODULE__{font: font, font_size: font_size}
-      |> RightAlign.reduce_lines(tb.lines, fn output, text, line ->
-        right_offset(output, tb, text, line)
-      end)
-      |> add(%TL{leading: leading(tb)})
-      |> add(%Tf{font: font, size: font_size})
-
-    output.operations
+    %__MODULE__{font: font, font_size: font_size}
+    |> RightAlign.reduce_lines(tb.lines, fn output, text, line ->
+      right_offset(output, tb, text, line)
+    end)
+    |> add(%TL{leading: leading(tb)})
+    |> add(%Tf{font: font, size: font_size})
   end
 
   def add(%__MODULE__{} = output, op) do
     Map.update!(output, :operations, &[op | &1])
+  end
+
+  def add_part(output, part, operator) do
+    output
+    |> with_font(
+      struct!(operator, font: part.font || output.font, text: part.text),
+      part
+    )
+    |> colour(part.colour)
   end
 
   def with_font(output, op, part) do

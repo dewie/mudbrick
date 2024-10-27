@@ -277,7 +277,7 @@ defmodule Mudbrick.TextBlockTest do
     franklin_regular_font = Map.fetch!(fonts, :c).value
     block = f.(regular_font, bold_font, franklin_regular_font)
 
-    ops = Output.from(block)
+    ops = Output.from(block).operations
 
     context
     |> Mudbrick.ContentStream.put(operations: Enum.reverse(ops))
