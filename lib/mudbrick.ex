@@ -184,6 +184,14 @@ defmodule Mudbrick do
       ...> new(fonts: %{bodoni: [file: bodoni_regular()]})
       ...> |> page()
       ...> |> text(["I am ", {"red", colour: {1, 0, 0}}], font: :bodoni, position: {200, 200})
+
+  Write "I am bold" at 200, 200, where "bold" is in bold.
+
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick
+      ...> new(fonts: %{regular: [file: bodoni_regular()], bold: [file: bodoni_bold()]})
+      ...> |> page()
+      ...> |> text(["I am ", {"bold", font: :bold}], font: :regular, position: {200, 200})
   """
 
   def text(context, write_or_writes, opts \\ [])

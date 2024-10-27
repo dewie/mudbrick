@@ -1,7 +1,7 @@
 defmodule Mudbrick.TextBlock.Output do
   @moduledoc false
 
-  defstruct font: nil, operations: []
+  defstruct font: nil, font_size: nil, operations: []
 
   alias Mudbrick.ContentStream.{BT, ET}
   alias Mudbrick.ContentStream.Rg
@@ -45,7 +45,7 @@ defmodule Mudbrick.TextBlock.Output do
 
     def add_part(output, part, operator) do
       output
-      |> Output.add(struct!(operator, font: output.font, text: part.text))
+      |> Output.with_font(struct!(operator, font: output.font, text: part.text), part)
       |> Output.colour(part.colour)
     end
   end
@@ -88,7 +88,7 @@ defmodule Mudbrick.TextBlock.Output do
 
     def add_part(output, part) do
       output
-      |> Output.add(%Tj{font: output.font, text: part.text})
+      |> Output.with_font(%Tj{font: output.font, text: part.text}, part)
       |> Output.colour(part.colour)
     end
   end
@@ -102,7 +102,7 @@ defmodule Mudbrick.TextBlock.Output do
         } = tb
       ) do
     output =
-      %__MODULE__{font: font}
+      %__MODULE__{font: font, font_size: font_size}
       |> end_block()
       |> LeftAlign.reduce_lines(tb.lines)
       |> add(%Td{tx: x, ty: y})
@@ -122,7 +122,7 @@ defmodule Mudbrick.TextBlock.Output do
         } = tb
       ) do
     output =
-      %__MODULE__{font: font}
+      %__MODULE__{font: font, font_size: font_size}
       |> RightAlign.reduce_lines(tb.lines, fn output, text, line ->
         right_offset(output, tb, text, line)
       end)
@@ -136,6 +136,17 @@ defmodule Mudbrick.TextBlock.Output do
 
   def add(%__MODULE__{} = output, op) do
     Map.update!(output, :operations, &[op | &1])
+  end
+
+  def with_font(output, op, part) do
+    if part.font == nil or output.font == part.font do
+      add(output, op)
+    else
+      output
+      |> add(%Tf{font: output.font, size: output.font_size})
+      |> add(op)
+      |> add(%Tf{font: part.font, size: output.font_size})
+    end
   end
 
   def colour(output, {r, g, b}) do

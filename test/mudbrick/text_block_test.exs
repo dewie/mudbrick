@@ -1,7 +1,7 @@
 defmodule Mudbrick.TextBlockTest do
   use ExUnit.Case, async: true
 
-  import Mudbrick.TestHelper, only: [bodoni_regular: 0]
+  import Mudbrick.TestHelper, only: [bodoni_regular: 0, bodoni_bold: 0]
 
   alias Mudbrick.Page
   alias Mudbrick.TextBlock
@@ -67,7 +67,7 @@ defmodule Mudbrick.TextBlockTest do
                "() '",
                "ET"
              ] =
-               output(fn font ->
+               output(fn font, _ ->
                  TextBlock.new(
                    font: font,
                    font_size: 10,
@@ -100,7 +100,7 @@ defmodule Mudbrick.TextBlockTest do
                "<00C0> Tj",
                "ET"
              ] =
-               output(fn font ->
+               output(fn font, _ ->
                  TextBlock.new(
                    font: font,
                    font_size: 10,
@@ -110,6 +110,33 @@ defmodule Mudbrick.TextBlockTest do
                  |> TextBlock.write("b", colour: {1, 0, 0})
                  |> TextBlock.write("\nc\nd", colour: {0, 1, 0})
                  |> TextBlock.write("e", colour: {0, 0, 1})
+               end)
+               |> operations()
+    end
+
+    test "inline font change is written with Tfs" do
+      assert [
+               "BT",
+               "/F1 10 Tf",
+               "12.0 TL",
+               "400 500 Td",
+               "0 0 0 rg",
+               "<011D00D500D9011601B700D9011601B7> Tj",
+               "/F2 10 Tf",
+               "<00B400FC00ED00BB01B7> Tj",
+               "/F1 10 Tf",
+               "<00B40121011D01B7011D00D500D9011601B700D9011600F4019E011D> Tj",
+               "ET"
+             ] =
+               output(fn regular, bold ->
+                 TextBlock.new(
+                   font: regular,
+                   font_size: 10,
+                   position: {400, 500}
+                 )
+                 |> TextBlock.write("this is ")
+                 |> TextBlock.write("bold ", font: bold)
+                 |> TextBlock.write("but this isn't")
                end)
                |> operations()
     end
@@ -152,7 +179,7 @@ defmodule Mudbrick.TextBlockTest do
                "<00D500D9> Tj",
                "ET"
              ] =
-               output(fn font ->
+               output(fn font, _ ->
                  Mudbrick.TextBlock.new(
                    font: font,
                    font_size: 10,
@@ -183,6 +210,36 @@ defmodule Mudbrick.TextBlockTest do
                end)
                |> operations()
     end
+
+    test "inline font change is written with Tfs" do
+      assert [
+               "BT",
+               "/F1 10 Tf",
+               "12.0 TL",
+               "400 500 Td",
+               "BT",
+               "293.34000000000003 500.0 Td",
+               "0 0 0 rg",
+               "<011D00D500D9011601B700D9011601B7> Tj",
+               "/F2 10 Tf",
+               "<00B400FC00ED00BB01B7> Tj",
+               "/F1 10 Tf",
+               "<00B40121011D01B7011D00D500D9011601B700D9011600F4019E011D> Tj",
+               "ET"
+             ] =
+               output(fn regular, bold ->
+                 TextBlock.new(
+                   font: regular,
+                   font_size: 10,
+                   position: {400, 500},
+                   align: :right
+                 )
+                 |> TextBlock.write("this is ")
+                 |> TextBlock.write("bold ", font: bold)
+                 |> TextBlock.write("but this isn't")
+               end)
+               |> operations()
+    end
   end
 
   defp operations(ops) do
@@ -197,12 +254,17 @@ defmodule Mudbrick.TextBlockTest do
       Mudbrick.new(
         title: "My thing",
         compress: false,
-        fonts: %{bodoni: [file: bodoni_regular()]}
+        fonts: %{
+          a: [file: bodoni_regular()],
+          b: [file: bodoni_bold()]
+        }
       )
       |> page(size: Page.size(:letter))
 
-    font = Map.fetch!(Mudbrick.Document.root_page_tree(doc).value.fonts, :bodoni).value
-    block = f.(font)
+    fonts = Mudbrick.Document.root_page_tree(doc).value.fonts
+    regular_font = Map.fetch!(fonts, :a).value
+    bold_font = Map.fetch!(fonts, :b).value
+    block = f.(regular_font, bold_font)
 
     ops = Output.from(block)
 

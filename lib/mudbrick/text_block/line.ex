@@ -7,6 +7,7 @@ defmodule Mudbrick.TextBlock.Line do
     @moduledoc false
 
     defstruct colour: {0, 0, 0},
+              font: nil,
               text: ""
 
     def wrap(text, opts) do
