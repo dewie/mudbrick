@@ -1,6 +1,7 @@
 defmodule Mudbrick.TestHelper do
   @bodoni_regular System.fetch_env!("FONT_LIBRE_BODONI_REGULAR") |> File.read!()
   @bodoni_bold System.fetch_env!("FONT_LIBRE_BODONI_BOLD") |> File.read!()
+  @franklin_regular System.fetch_env!("FONT_LIBRE_FRANKLIN_REGULAR") |> File.read!()
   @flower Path.join(__DIR__, "fixtures/JPEG_example_flower.jpg") |> File.read!()
   @example_png Path.join(__DIR__, "fixtures/Example.png") |> File.read!()
 
@@ -20,6 +21,10 @@ defmodule Mudbrick.TestHelper do
 
   def bodoni_bold do
     @bodoni_bold
+  end
+
+  def franklin_regular do
+    @franklin_regular
   end
 
   def flower do

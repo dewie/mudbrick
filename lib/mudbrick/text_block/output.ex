@@ -45,7 +45,10 @@ defmodule Mudbrick.TextBlock.Output do
 
     def add_part(output, part, operator) do
       output
-      |> Output.with_font(struct!(operator, font: output.font, text: part.text), part)
+      |> Output.with_font(
+        struct!(operator, font: part.font || output.font, text: part.text),
+        part
+      )
       |> Output.colour(part.colour)
     end
   end
@@ -88,7 +91,7 @@ defmodule Mudbrick.TextBlock.Output do
 
     def add_part(output, part) do
       output
-      |> Output.with_font(%Tj{font: output.font, text: part.text}, part)
+      |> Output.with_font(%Tj{font: part.font || output.font, text: part.text}, part)
       |> Output.colour(part.colour)
     end
   end

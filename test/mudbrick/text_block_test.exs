@@ -1,7 +1,12 @@
 defmodule Mudbrick.TextBlockTest do
   use ExUnit.Case, async: true
 
-  import Mudbrick.TestHelper, only: [bodoni_regular: 0, bodoni_bold: 0]
+  import Mudbrick.TestHelper,
+    only: [
+      bodoni_regular: 0,
+      bodoni_bold: 0,
+      franklin_regular: 0
+    ]
 
   alias Mudbrick.Page
   alias Mudbrick.TextBlock
@@ -67,7 +72,7 @@ defmodule Mudbrick.TextBlockTest do
                "() '",
                "ET"
              ] =
-               output(fn font, _ ->
+               output(fn font, _, _ ->
                  TextBlock.new(
                    font: font,
                    font_size: 10,
@@ -100,7 +105,7 @@ defmodule Mudbrick.TextBlockTest do
                "<00C0> Tj",
                "ET"
              ] =
-               output(fn font, _ ->
+               output(fn font, _, _ ->
                  TextBlock.new(
                    font: font,
                    font_size: 10,
@@ -125,10 +130,13 @@ defmodule Mudbrick.TextBlockTest do
                "/F2 10 Tf",
                "<00B400FC00ED00BB01B7> Tj",
                "/F1 10 Tf",
-               "<00B40121011D01B7011D00D500D9011601B700D9011600F4019E011D> Tj",
+               "<00B40121011D01B7011D00D500D9011601B700D9011600F4019E011D01B7> Tj",
+               "/F3 10 Tf",
+               "<015A01050109015201F00109015201F000FF014B00C30125011B011E01090125> Tj",
+               "/F1 10 Tf",
                "ET"
              ] =
-               output(fn regular, bold ->
+               output(fn regular, bold, franklin ->
                  TextBlock.new(
                    font: regular,
                    font_size: 10,
@@ -136,7 +144,8 @@ defmodule Mudbrick.TextBlockTest do
                  )
                  |> TextBlock.write("this is ")
                  |> TextBlock.write("bold ", font: bold)
-                 |> TextBlock.write("but this isn't")
+                 |> TextBlock.write("but this isn't ")
+                 |> TextBlock.write("this is franklin", font: franklin)
                end)
                |> operations()
     end
@@ -179,7 +188,7 @@ defmodule Mudbrick.TextBlockTest do
                "<00D500D9> Tj",
                "ET"
              ] =
-               output(fn font, _ ->
+               output(fn font, _, _ ->
                  Mudbrick.TextBlock.new(
                    font: font,
                    font_size: 10,
@@ -218,16 +227,19 @@ defmodule Mudbrick.TextBlockTest do
                "12.0 TL",
                "400 500 Td",
                "BT",
-               "293.34000000000003 500.0 Td",
+               "225.89999999999998 500.0 Td",
                "0 0 0 rg",
                "<011D00D500D9011601B700D9011601B7> Tj",
                "/F2 10 Tf",
                "<00B400FC00ED00BB01B7> Tj",
                "/F1 10 Tf",
-               "<00B40121011D01B7011D00D500D9011601B700D9011600F4019E011D> Tj",
+               "<00B40121011D01B7011D00D500D9011601B700D9011600F4019E011D01B7> Tj",
+               "/F3 10 Tf",
+               "<015A01050109015201F00109015201F000FF014B00C30125011B011E01090125> Tj",
+               "/F1 10 Tf",
                "ET"
              ] =
-               output(fn regular, bold ->
+               output(fn regular, bold, franklin ->
                  TextBlock.new(
                    font: regular,
                    font_size: 10,
@@ -236,7 +248,8 @@ defmodule Mudbrick.TextBlockTest do
                  )
                  |> TextBlock.write("this is ")
                  |> TextBlock.write("bold ", font: bold)
-                 |> TextBlock.write("but this isn't")
+                 |> TextBlock.write("but this isn't ")
+                 |> TextBlock.write("this is franklin", font: franklin)
                end)
                |> operations()
     end
@@ -256,7 +269,8 @@ defmodule Mudbrick.TextBlockTest do
         compress: false,
         fonts: %{
           a: [file: bodoni_regular()],
-          b: [file: bodoni_bold()]
+          b: [file: bodoni_bold()],
+          c: [file: franklin_regular()]
         }
       )
       |> page(size: Page.size(:letter))
@@ -264,7 +278,8 @@ defmodule Mudbrick.TextBlockTest do
     fonts = Mudbrick.Document.root_page_tree(doc).value.fonts
     regular_font = Map.fetch!(fonts, :a).value
     bold_font = Map.fetch!(fonts, :b).value
-    block = f.(regular_font, bold_font)
+    franklin_regular_font = Map.fetch!(fonts, :c).value
+    block = f.(regular_font, bold_font, franklin_regular_font)
 
     ops = Output.from(block)
 
