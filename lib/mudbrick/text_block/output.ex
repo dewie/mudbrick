@@ -58,15 +58,11 @@ defmodule Mudbrick.TextBlock.Output do
 
     alias Mudbrick.TextBlock.Output
 
-    defp text(line) do
-      Enum.map_join(line.parts, "", & &1.text)
-    end
-
     def reduce_lines(output, [line], measure) do
       output
       |> Output.end_block()
       |> reduce_parts(line)
-      |> measure.(text(line), 1)
+      |> measure.(Line.text(line), 1)
       |> Output.start_block()
     end
 
@@ -74,7 +70,7 @@ defmodule Mudbrick.TextBlock.Output do
       output
       |> Output.end_block()
       |> reduce_parts(line)
-      |> measure.(text(line), length(lines) + 1)
+      |> measure.(Line.text(line), length(lines) + 1)
       |> Output.start_block()
       |> reduce_lines(lines, measure)
     end

@@ -18,4 +18,8 @@ defmodule Mudbrick.TextBlock.Line do
   def wrap(text, opts) do
     %__MODULE__{parts: [Part.wrap(text, opts)]}
   end
+
+  def text(line) do
+    Enum.map_join(line.parts, "", & &1.text)
+  end
 end
