@@ -133,7 +133,7 @@ defmodule Mudbrick.TextBlock.Output do
   end
 
   def colour(output, {r, g, b}) do
-    new_colour = %Rg{r: r, g: g, b: b}
+    new_colour = Rg.new(r: r, g: g, b: b)
     latest_colour = Enum.find(output.operations, &match?(%Rg{}, &1)) || %Rg{r: 0, g: 0, b: 0}
 
     if latest_colour == new_colour do

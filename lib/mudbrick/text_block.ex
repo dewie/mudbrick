@@ -1,7 +1,7 @@
 defmodule Mudbrick.TextBlock do
   defstruct align: :left,
             font: nil,
-            font_size: nil,
+            font_size: 12,
             lines: [],
             position: {0, 0},
             leading: nil

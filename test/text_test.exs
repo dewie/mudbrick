@@ -4,6 +4,7 @@ defmodule Mudbrick.TextTest do
 
   import Mudbrick
   import Mudbrick.TestHelper
+  import Mudbrick.TextBlock, only: [write: 2, write: 3]
 
   alias Mudbrick.ContentStream.Tj
   alias Mudbrick.Font
@@ -24,14 +25,12 @@ defmodule Mudbrick.TextTest do
       {_doc, compressed_content_stream} =
         new(compress: true, fonts: @fonts_helvetica)
         |> page()
-        |> font(:helvetica, size: 10)
-        |> text(text)
+        |> text(&write(&1, text), font: :helvetica, font_size: 10)
 
       {_doc, uncompressed_content_stream} =
         new(compress: false, fonts: @fonts_helvetica)
         |> page()
-        |> font(:helvetica, size: 10)
-        |> text(text)
+        |> text(&write(&1, text), font: :helvetica, font_size: 10)
 
       assert IO.iodata_length(Mudbrick.Object.from(compressed_content_stream)) <
                IO.iodata_length(Mudbrick.Object.from(uncompressed_content_stream))
@@ -39,8 +38,6 @@ defmodule Mudbrick.TextTest do
   end
 
   test "can set leading" do
-    import Mudbrick.TextBlock, only: [write: 2]
-
     assert [
              "BT",
              "/F1 10 Tf",
@@ -77,7 +74,7 @@ defmodule Mudbrick.TextTest do
           assert_raise(Mudbrick.ContentStream.InvalidColour, fn ->
             new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
             |> page()
-            |> colour(colour)
+            |> text(&write(&1, "hi there", colour: colour), font: :my_bodoni)
           end)
 
         assert e.message == "tuple must be made of floats or integers between 0 and 1"
