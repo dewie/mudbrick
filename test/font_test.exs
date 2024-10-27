@@ -103,29 +103,6 @@ defmodule Mudbrick.FontTest do
     end
   end
 
-  test "forgetting to set the font is an error" do
-    import Mudbrick
-
-    chain =
-      new(
-        fonts: %{
-          helvetica: [
-            name: :Helvetica,
-            type: :TrueType,
-            encoding: :PDFDocEncoding
-          ]
-        }
-      )
-      |> page()
-
-    e =
-      assert_raise Font.NotSet, fn ->
-        chain |> text("hi there")
-      end
-
-    assert e.message == "No font chosen"
-  end
-
   describe "serialisation" do
     test "without encoding" do
       assert %Font{

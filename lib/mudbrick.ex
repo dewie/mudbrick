@@ -8,6 +8,7 @@ defmodule Mudbrick do
 
       iex> import Mudbrick.TestHelper                 # import some example fonts and images
       ...> import Mudbrick
+      ...> import Mudbrick.TextBlock, only: [write: 3]
       ...> alias Mudbrick.Page
       ...> new(
       ...>   compress: true,                          # flate compression for fonts, text etc.
@@ -20,11 +21,14 @@ defmodule Mudbrick do
       ...>   scale: {100, 100},
       ...>   position: {50, 600}                      # in points (1/72 inch), starts at bottom left
       ...> )
-      ...> |> text_position(200, 700)                 # set text start position from bottom left
-      ...> |> font(:bodoni, size: 14)                 # choose preregistered font
-      ...> |> colour({1, 0, 0})                       # make text red
-      ...> |> text("CO₂", align: :right)              # write text in current font, with right side
-      ...>                                            # anchored to 200 points from left of page
+      ...> # write right-aligned text in Bodoni 14, with right side anchored 200 points from left of page
+      ...> |> text(
+      ...>   &write(&1, "CO₂", colour: {1, 0, 0}),
+      ...>   align: :right,
+      ...>   font: :bodoni,
+      ...>   font_size: 14,
+      ...>   position: {200, 700}
+      ...> )
       ...> |> render()                                # produces iodata, can go straight to File.write/2
       ...> |> IO.iodata_to_binary()                   # or turned into a (non-String) binary
   """
@@ -105,55 +109,6 @@ defmodule Mudbrick do
   end
 
   @doc """
-  Set the current font using a name previously registered in `new/1`.
-
-  ## Example
-
-      iex> Mudbrick.new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
-      ...> |> Mudbrick.page()
-      ...> |> Mudbrick.font(:my_bodoni, size: 14)
-
-  Forgetting to set the font is an error:
-
-      iex> Mudbrick.new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
-      ...> |> Mudbrick.page()
-      ...> |> Mudbrick.text("oops!")
-      ** (Mudbrick.Font.NotSet) No font chosen
-
-  Forgetting to register the font is an error:
-
-      iex> Mudbrick.new()
-      ...> |> Mudbrick.page()
-      ...> |> Mudbrick.font(:helvetica, size: 21)
-      ** (Mudbrick.Font.Unregistered) Unregistered font: helvetica
-  """
-  def font({doc, _content_stream_obj} = context, user_identifier, opts) do
-    import ContentStream
-
-    {leading, opts} = Keyword.pop(opts, :leading, Keyword.fetch!(opts, :size) * 1.2)
-
-    case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
-      {:ok, font} ->
-        context
-        |> ContentStream.put(
-          current_tf:
-            struct!(
-              ContentStream.Tf,
-              Keyword.put(
-                opts,
-                :font,
-                font.value
-              )
-            )
-        )
-        |> ContentStream.put(current_tl: %ContentStream.TL{leading: leading})
-
-      :error ->
-        raise Font.Unregistered, "Unregistered font: #{user_identifier}"
-    end
-  end
-
-  @doc """
   Insert image previously registered in `new/1` at the given coordinates.
 
   ## Options
@@ -194,54 +149,9 @@ defmodule Mudbrick do
     end
   end
 
-  @doc """
-  Set the position for future calls to `text/3`, relative to the current page's
-  bottom left corner.
-  """
-  def text_position(context, x, y) do
-    td = %ContentStream.Td{tx: x, ty: y}
-
-    context
-    |> ContentStream.put(current_base_td: td)
-  end
-
-  @doc """
-  Set the current fill colour (currently only for text).
-
-  Takes an `{r, g, b}` tuple.
-
-  ## Examples
-
-  Green text:
-
-      iex> Mudbrick.new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
-      ...> |> Mudbrick.page()
-      ...> |> Mudbrick.colour({0, 1, 0})
-
-  Invalid:
-
-      iex> Mudbrick.new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni()]})
-      ...> |> Mudbrick.page()
-      ...> |> Mudbrick.colour({2, 0, 0})
-      ** (Mudbrick.ContentStream.InvalidColour) tuple must be made of floats or integers between 0 and 1
-  """
-  def colour(context, {r, g, b}) do
-    operation = ContentStream.Rg.new(r: r, g: g, b: b)
-
-    ContentStream.update_operations(context, fn
-      [%ContentStream.ET{} = et | operations] ->
-        [et, operation | operations]
-
-      operations ->
-        [operation | operations]
-    end)
-  end
-
-  def text(context, text_or_function, opts \\ [])
-
-  def text({doc, _contents_obj} = context, f, opts) when is_function(f) do
+  def text({doc, _contents_obj} = context, f, opts \\ []) do
     opts =
-      Keyword.update!(opts, :font, fn user_identifier ->
+      Keyword.update(opts, :font, nil, fn user_identifier ->
         case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
           {:ok, font} ->
             font.value
@@ -259,18 +169,6 @@ defmodule Mudbrick do
     |> ContentStream.update_operations(fn ops ->
       Enum.reverse(TextBlock.Output.from(text_block)) ++ ops
     end)
-  end
-
-  @doc """
-  Write text at the current position. Repeated calls to this do not produce newlines.
-
-  ## Options
-
-  - `:align` - either `:left` or `:right`. When `:right`, text is right-aligned
-    to the current position set with `text_position/3`. Default: `:left`.
-  """
-  def text(context, text, opts) do
-    ContentStream.write_text(context, text, opts)
   end
 
   @doc """

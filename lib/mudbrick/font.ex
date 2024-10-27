@@ -21,10 +21,6 @@ defmodule Mudbrick.Font do
     defexception [:message]
   end
 
-  defmodule NotSet do
-    defexception [:message]
-  end
-
   defmodule Unregistered do
     defexception [:message]
   end

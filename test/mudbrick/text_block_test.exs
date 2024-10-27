@@ -183,20 +183,6 @@ defmodule Mudbrick.TextBlockTest do
                end)
                |> operations()
     end
-
-    # test "is unsupported for built-in fonts" do
-    #   assert_raise(Font.NotMeasured, fn ->
-    #     output(fn font ->
-    #       Mudbrick.TextBlock.new(
-    #         font: font,
-    #         font_size: 10,
-    #         position: {400, 500},
-    #         align: :right
-    #       )
-    #       |> Mudbrick.TextBlock.write("a")
-    #     end)
-    #   end)
-    # end
   end
 
   defp operations(ops) do
@@ -206,7 +192,7 @@ defmodule Mudbrick.TextBlockTest do
   defp output(f) when is_function(f) do
     import Mudbrick
 
-    {_doc, contents_obj} =
+    {doc, _contents_obj} =
       context =
       Mudbrick.new(
         title: "My thing",
@@ -214,9 +200,9 @@ defmodule Mudbrick.TextBlockTest do
         fonts: %{bodoni: [file: bodoni()]}
       )
       |> page(size: Page.size(:letter))
-      |> font(:bodoni, size: 14)
 
-    block = f.(contents_obj.value.current_tf.font)
+    font = Map.fetch!(Mudbrick.Document.root_page_tree(doc).value.fonts, :bodoni).value
+    block = f.(font)
 
     ops = Output.from(block)
 

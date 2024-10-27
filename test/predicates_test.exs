@@ -5,15 +5,20 @@ defmodule Mudbrick.PredicatesTest do
   import Mudbrick
   import Mudbrick.Predicates
   import Mudbrick.TestHelper
+  import Mudbrick.TextBlock, only: [write: 2]
 
   describe "with direct glyph encoding" do
     test "with compression, can assert/refute that a piece of text appears" do
       raw_pdf =
         new(compress: true, fonts: %{bodoni: [file: bodoni()]})
         |> page()
-        |> font(:bodoni, size: 100)
         |> text(
-          "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWhello, CO₂!WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+          &write(
+            &1,
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWhello, CO₂!WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+          ),
+          font: :bodoni,
+          font_size: 100
         )
         |> render()
         |> IO.iodata_to_binary()
@@ -26,8 +31,11 @@ defmodule Mudbrick.PredicatesTest do
       raw_pdf =
         new(fonts: %{bodoni: [file: bodoni()]})
         |> page()
-        |> font(:bodoni, size: 100)
-        |> text("hello, world!")
+        |> text(
+          &write(&1, "hello, world!"),
+          font: :bodoni,
+          font_size: 100
+        )
         |> render()
 
       assert raw_pdf |> has_text?("hello, world!", in_font: bodoni())
@@ -49,9 +57,13 @@ defmodule Mudbrick.PredicatesTest do
           }
         )
         |> page()
-        |> font(:helvetica, size: 100)
         |> text(
-          "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWhello, world!WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+          &write(
+            &1,
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWhello, world!WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+          ),
+          font: :helvetica,
+          font_size: 100
         )
         |> render()
 
@@ -71,8 +83,11 @@ defmodule Mudbrick.PredicatesTest do
           }
         )
         |> page()
-        |> font(:helvetica, size: 100)
-        |> text("hello, world!")
+        |> text(
+          &write(&1, "hello, world!"),
+          font: :helvetica,
+          font_size: 100
+        )
         |> render()
 
       assert raw_pdf |> has_text?("hello, world!")
