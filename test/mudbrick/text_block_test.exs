@@ -61,7 +61,9 @@ defmodule Mudbrick.TextBlockTest do
                "400 500 Td",
                "0 0 0 rg",
                "<014C010F0116011D01B700ED00D900F400C0> Tj",
+               "() '",
                "<011600C000B500FC00F400BB01B700ED00D900F400C0> '",
+               "() '",
                "ET"
              ] =
                output(fn font, _, _ ->
@@ -73,6 +75,7 @@ defmodule Mudbrick.TextBlockTest do
                  )
                  |> TextBlock.write("""
                  first line
+
                  second line
                  """)
                end)

@@ -37,6 +37,7 @@ defmodule Mudbrick.TextBlock.Output do
 
     defp reduce_parts(output, %Line{parts: []}, _operator, nil) do
       output
+      |> Output.add(%Apostrophe{font: output.font, text: ""})
     end
 
     defp reduce_parts(output, %Line{parts: [part]}, _operator, nil) do
