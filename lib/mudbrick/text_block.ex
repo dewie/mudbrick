@@ -29,15 +29,23 @@ defmodule Mudbrick.TextBlock do
             leading: nil
 
   alias Mudbrick.TextBlock.Line
-  alias Mudbrick.TextBlock.Line.Part
 
   @spec new(options()) :: t()
   def new(opts \\ []) do
-    struct!(__MODULE__, opts)
+    block = struct!(__MODULE__, opts)
+
+    Map.update!(block, :leading, fn
+      nil ->
+        block.font_size * 1.2
+
+      leading ->
+        leading
+    end)
   end
 
   def write(tb, text, opts \\ []) do
     line_texts = String.split(text, "\n")
+    opts = Keyword.put_new(opts, :leading, tb.leading)
 
     Map.update!(tb, :lines, fn
       [] ->
@@ -45,10 +53,12 @@ defmodule Mudbrick.TextBlock do
 
       existing_lines ->
         case line_texts do
+          # \n at beginning of new line
           ["" | new_line_texts] ->
             existing_lines
             |> add_texts(new_line_texts, opts)
 
+          # didn't start with \n, so first part belongs to previous line
           [first_new_line_text | new_line_texts] ->
             existing_lines
             |> update_previous_line(first_new_line_text, opts)
@@ -59,7 +69,7 @@ defmodule Mudbrick.TextBlock do
 
   defp update_previous_line([previous_line | existing_lines], first_new_line_text, opts) do
     [
-      Map.update!(previous_line, :parts, &[Part.wrap(first_new_line_text, opts) | &1])
+      Line.append(previous_line, first_new_line_text, opts)
       | existing_lines
     ]
   end

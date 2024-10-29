@@ -17,12 +17,23 @@ defmodule Mudbrick.TextBlock.Output do
 
     alias Mudbrick.TextBlock.Output
 
+    defp leading(output, %Line{leading: nil}) do
+      output
+    end
+
+    defp leading(output, line) do
+      Output.add(output, %TL{leading: line.leading})
+    end
+
     def reduce_lines(output, [line]) do
-      reduce_parts(output, line, Tj, :first_line)
+      output
+      |> leading(line)
+      |> reduce_parts(line, Tj, :first_line)
     end
 
     def reduce_lines(output, [line | lines]) do
       output
+      |> leading(line)
       |> reduce_parts(line, Tj, nil)
       |> reduce_lines(lines)
     end
@@ -96,13 +107,16 @@ defmodule Mudbrick.TextBlock.Output do
           position: {x, y}
         } = tb
       ) do
+    tl = %TL{leading: leading(tb)}
+
     %__MODULE__{font: font, font_size: font_size}
     |> end_block()
     |> LeftAlign.reduce_lines(tb.lines)
     |> add(%Td{tx: x, ty: y})
-    |> add(%TL{leading: leading(tb)})
+    |> add(tl)
     |> add(%Tf{font: font, size: font_size})
     |> start_block()
+    |> deduplicate_leading(tl)
   end
 
   def from(
@@ -172,6 +186,29 @@ defmodule Mudbrick.TextBlock.Output do
       tx: x - Font.width(tb.font, tb.font_size, text),
       ty: y - leading(tb) * n
     })
+  end
+
+  defp deduplicate_leading(output, tl) do
+    Map.update!(output, :operations, fn ops ->
+      {_, ops} = List.foldl(ops, {tl, []}, &deduplicate_leading_step/2)
+      Enum.reverse(ops)
+    end)
+  end
+
+  defp deduplicate_leading_step(current_tl, {current_tl, acc}) do
+    if current_tl in acc do
+      {current_tl, acc}
+    else
+      {current_tl, [current_tl | acc]}
+    end
+  end
+
+  defp deduplicate_leading_step(%TL{} = new_tl, {_current_tl, acc}) do
+    {new_tl, [new_tl | acc]}
+  end
+
+  defp deduplicate_leading_step(op, {current_tl, acc}) do
+    {current_tl, [op | acc]}
   end
 
   defp remove(output, operation) do

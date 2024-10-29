@@ -23,9 +23,9 @@ defmodule Mudbrick.TextBlockTest do
       |> TextBlock.write("first\nsecond\nthird", colour: {0, 0, 0})
 
     assert block.lines == [
-             %Line{parts: [%Part{text: "third"}]},
-             %Line{parts: [%Part{text: "second"}]},
-             %Line{parts: [%Part{text: "first"}]}
+             %Line{leading: 12, parts: [%Part{text: "third"}]},
+             %Line{leading: 12, parts: [%Part{text: "second"}]},
+             %Line{leading: 12, parts: [%Part{text: "first"}]}
            ]
   end
 
@@ -33,23 +33,44 @@ defmodule Mudbrick.TextBlockTest do
     block =
       TextBlock.new(
         font_size: 10,
-        position: {400, 500}
+        position: {400, 500},
+        leading: 14
       )
       |> TextBlock.write("first ", colour: {1, 0, 0})
       |> TextBlock.write("""
       line
       second line
       """)
-      |> TextBlock.write("third ")
+      |> TextBlock.write("third ", leading: 16)
       |> TextBlock.write("line")
       |> TextBlock.write("\nfourth", colour: {0, 1, 0}, font_size: 24)
 
     assert block.lines == [
-             %Line{parts: [%Part{text: "fourth", colour: {0, 1, 0}, font_size: 24}]},
-             %Line{parts: [%Part{text: "line"}, %Part{text: "third "}]},
-             %Line{parts: [%Part{text: "second line"}]},
-             %Line{parts: [%Part{text: "line"}, %Part{text: "first ", colour: {1, 0, 0}}]}
+             %Line{leading: 14, parts: [%Part{text: "fourth", colour: {0, 1, 0}, font_size: 24}]},
+             %Line{leading: 16, parts: [%Part{text: "line"}, %Part{text: "third "}]},
+             %Line{leading: 14, parts: [%Part{text: "second line"}]},
+             %Line{
+               leading: 14,
+               parts: [%Part{text: "line"}, %Part{text: "first ", colour: {1, 0, 0}}]
+             }
            ]
+  end
+
+  describe "leading" do
+    test "can be set per line" do
+      block =
+        TextBlock.new(
+          font_size: 10,
+          position: {400, 500}
+        )
+        |> TextBlock.write("this is 14\n", leading: 14)
+        |> TextBlock.write("this is 12")
+
+      assert block.lines == [
+               %Line{leading: 12, parts: [%Part{text: "this is 12"}]},
+               %Line{leading: 14, parts: [%Part{text: "this is 14"}]}
+             ]
+    end
   end
 
   describe "left-aligned" do
@@ -142,6 +163,31 @@ defmodule Mudbrick.TextBlockTest do
                  |> TextBlock.write("bold ", font: bold)
                  |> TextBlock.write("but this isn't ")
                  |> TextBlock.write("this is franklin", font: franklin)
+               end)
+               |> operations()
+    end
+
+    test "inline leading is written with TL, before ' that changes matrix" do
+      assert [
+               "BT",
+               "/F1 10 Tf",
+               "12.0 TL",
+               "400 500 Td",
+               "0 0 0 rg",
+               "<011D00D500D9011601B700D9011601B701550158> Tj",
+               "14 TL",
+               "<011D00D500D9011601B700D9011601B701550156> '",
+               "12.0 TL",
+               "ET"
+             ] =
+               output(fn regular, _bold, _franklin ->
+                 TextBlock.new(
+                   font: regular,
+                   font_size: 10,
+                   position: {400, 500}
+                 )
+                 |> TextBlock.write("this is 14\n", leading: 14)
+                 |> TextBlock.write("this is 12")
                end)
                |> operations()
     end
@@ -273,7 +319,7 @@ defmodule Mudbrick.TextBlockTest do
     ops = Output.from(block).operations
 
     context
-    |> Mudbrick.ContentStream.put(operations: Enum.reverse(ops))
+    |> Mudbrick.ContentStream.put(operations: ops)
     |> render()
     |> output()
 

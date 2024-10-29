@@ -1,7 +1,7 @@
 defmodule Mudbrick.TextBlock.Line do
   @moduledoc false
 
-  defstruct parts: []
+  defstruct leading: nil, parts: []
 
   defmodule Part do
     @moduledoc false
@@ -12,16 +12,27 @@ defmodule Mudbrick.TextBlock.Line do
               text: ""
 
     def wrap(text, opts) when text != "" do
-      struct!(%Part{text: text}, opts)
+      struct(%Part{text: text}, opts)
     end
   end
 
-  def wrap("", _opts) do
+  def wrap("", _prefer_options_from_subsequent_appends) do
     %__MODULE__{}
   end
 
   def wrap(text, opts) do
-    %__MODULE__{parts: [Part.wrap(text, opts)]}
+    struct(%__MODULE__{parts: [Part.wrap(text, opts)]}, opts)
+  end
+
+  def append(line, text, opts) do
+    line = Map.update!(line, :parts, &[Part.wrap(text, opts) | &1])
+    new_leading = Keyword.fetch!(opts, :leading)
+
+    if line.leading == nil or new_leading > line.leading do
+      Map.put(line, :leading, new_leading)
+    else
+      line
+    end
   end
 
   def text(line) do

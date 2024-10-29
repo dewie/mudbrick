@@ -27,37 +27,42 @@ defmodule MudbrickTest do
              position: {200, 700}
            )
            |> text(
-             {
-               """
-               is Carbon Dioxide
-               and HNO₃ is Nitric Acid
-               for sure
-               """,
-               colour: {0, 0, 0}
-             },
+             [
+               {"is Carbon Dioxide\n", leading: 64},
+               {
+                 """
+                 and HNO₃ is Nitric Acid
+                 for sure
+                 """,
+                 colour: {0, 0, 0}, leading: 24
+               }
+             ],
              font: :bodoni,
              font_size: 14,
              position: {200, 700}
            )
            |> text(
              [
-               "wide stuff",
-               "wider stuff",
+               "wide stuff\n",
+               "wider stuff\n",
                "z"
              ],
              align: :right,
              font: :bodoni,
-             font_size: 14,
+             font_size: 24,
+             leading: 100,
              position: {200, 649.6}
            )
            |> text(
              """
              I am left again
+             I am left again
+             I am left again
 
              """,
              font: :bodoni,
              font_size: 14,
-             leading: 14,
+             leading: 33,
              position: {400, 600}
            )
            |> render()
