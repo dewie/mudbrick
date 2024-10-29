@@ -166,6 +166,8 @@ defmodule Mudbrick do
 
   - `:colour` - `{r, g, b}` tuple. Each element is a number between 0 and 1. Default: `{0, 0, 0}`.
   - `:font` - Name of a font previously registered with `new/1`. Overrides the top-level option.
+  - `:font_size` - Size in points. Overrides the top-level option.
+  - `:leading` - The number of points to move down the page on the following linebreak. Overrides the top-level option.
 
   ## Examples
 
