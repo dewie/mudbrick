@@ -1,6 +1,6 @@
 defmodule Mudbrick do
   @moduledoc """
-  Top-level API for creating documents.
+  API for creating and exporting PDF documents.
 
   ## Example
 
@@ -206,6 +206,7 @@ defmodule Mudbrick do
       ...> |> text(["I am ", {"bold", font: :bold}], font: :regular, position: {200, 200})
   """
 
+  @spec text(context(), Mudbrick.TextBlock.write(), Mudbrick.TextBlock.options()) :: context()
   def text(context, write_or_writes, opts \\ [])
 
   def text({doc, _contents_obj} = context, writes, opts) when is_list(writes) do
@@ -246,6 +247,7 @@ defmodule Mudbrick do
   @doc """
   Produce `iodata` from the current document.
   """
+  @spec render(Document.t() | context()) :: iodata()
   def render({doc, _page}) do
     render(doc)
   end
@@ -282,6 +284,7 @@ defmodule Mudbrick do
       iex> Mudbrick.compress(["hi", "there", ["you"]])
       [<<120, 156, 203, 200, 44, 201, 72, 45, 74, 173, 204, 47, 5, 0, 23, 45, 4, 71>>]
   """
+  @spec compress(iodata()) :: iodata()
   def compress(data) do
     z = :zlib.open()
     :ok = :zlib.deflateInit(z)
@@ -299,6 +302,7 @@ defmodule Mudbrick do
       iex> Mudbrick.decompress([<<120, 156, 203, 200, 44, 201, 72, 45, 74, 173, 204, 47, 5, 0, 23, 45, 4, 71>>])
       ["hithereyou"]
   """
+  @spec decompress(iodata()) :: iodata()
   def decompress(data) do
     z = :zlib.open()
     :zlib.inflateInit(z)

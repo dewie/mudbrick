@@ -1,6 +1,4 @@
 defmodule Mudbrick.TextBlock do
-  @moduledoc false
-
   @type alignment :: :left | :right
 
   @type option ::
@@ -11,6 +9,20 @@ defmodule Mudbrick.TextBlock do
           | {:leading, number()}
 
   @type options :: [option()]
+
+  @type part_option ::
+          {:font, atom()}
+          | {:font_size, number()}
+          | {:leading, number()}
+
+  @type part_options :: [part_option()]
+
+  @type write_tuple :: {String.t(), part_options()}
+
+  @type write ::
+          String.t()
+          | write_tuple()
+          | list(write_tuple())
 
   @type t :: %__MODULE__{
           align: alignment(),
@@ -30,6 +42,7 @@ defmodule Mudbrick.TextBlock do
 
   alias Mudbrick.TextBlock.Line
 
+  @doc false
   @spec new(options()) :: t()
   def new(opts \\ []) do
     block = struct!(__MODULE__, opts)
@@ -43,6 +56,7 @@ defmodule Mudbrick.TextBlock do
     end)
   end
 
+  @doc false
   def write(tb, text, opts \\ []) do
     line_texts = String.split(text, "\n")
     opts = Keyword.put_new(opts, :leading, tb.leading)
