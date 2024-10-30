@@ -1,4 +1,6 @@
 defmodule Mudbrick.Metadata do
+  @moduledoc false
+
   def render(opts) do
     document_id = id(opts)
     instance_id = id([:x | opts])
