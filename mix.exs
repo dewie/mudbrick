@@ -17,7 +17,10 @@ defmodule Mudbrick.MixProject do
       source_url: @scm_url,
       docs: [
         main: "Mudbrick",
-        extras: ["README.md"]
+        extras: ["README.md"],
+        assets: %{
+          "examples" => "examples"
+        }
       ]
     ]
   end

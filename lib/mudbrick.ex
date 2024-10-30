@@ -6,29 +6,32 @@ defmodule Mudbrick do
 
   Compression, OTF font with special characters and image placement:
 
-      iex> import Mudbrick.TestHelper                 # import some example fonts and images
+      iex> import Mudbrick.TestHelper                     # import some example fonts and images
       ...> import Mudbrick
       ...> alias Mudbrick.Page
       ...> new(
-      ...>   compress: true,                          # flate compression for fonts, text etc.
-      ...>   fonts: %{bodoni: [file: bodoni_regular()]},      # register an OTF font
-      ...>   images: %{flower: [file: flower()]}      # register a JPEG
+      ...>   compress: true,                              # flate compression for fonts, text etc.
+      ...>   fonts: %{bodoni: [file: bodoni_regular()]},  # register an OTF font
+      ...>   images: %{flower: [file: flower()]}          # register a JPEG
       ...> )
-      ...> |> page(size: Page.size(:letter))
-      ...> |> image(                                  # place preregistered JPEG
+      ...> |> page(size: {100, 100})
+      ...> |> image(                                      # place preregistered JPEG
       ...>   :flower,
-      ...>   scale: {100, 100},
-      ...>   position: {50, 600}                      # in points (1/72 inch), starts at bottom left
+      ...>   scale: {100, 100},                           # full page size
+      ...>   position: {0, 0}                             # in points (1/72 inch), starts at bottom left
       ...> )
-      ...> |> text(                                   # write red, right-aligned text in Bodoni 14, with
-      ...>   {"CO₂", colour: {1, 0, 0}},              # right side anchored 200 points from left of page
-      ...>   align: :right,
-      ...>   font: :bodoni,
-      ...>   font_size: 14,
-      ...>   position: {200, 700}
+      ...> |> text(
+      ...>   {"CO₂", colour: {0, 0, 1}},                  # write blue text
+      ...>   font: :bodoni,                               # in the bodoni font
+      ...>   font_size: 14,                               # size 14 points
+      ...>   position: {35, 45}                           # 60 points from left, 45 from bottom of page
       ...> )
-      ...> |> render()                                # produces iodata, can go straight to File.write/2
-      ...> |> IO.iodata_to_binary()                   # or turned into a (non-String) binary
+      ...> |> render()                                    # produce iodata, ready for File.write/2
+      ...> |> then(&File.write("examples/compression_font_special_chars.pdf", &1))
+
+  Produces this:
+
+  <object width="400" height="215" data="examples/compression_font_special_chars.pdf?#navpanes=0" type="application/pdf"></object>
   """
 
   @type coords :: {number(), number()}
