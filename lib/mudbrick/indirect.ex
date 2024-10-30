@@ -2,10 +2,13 @@ defmodule Mudbrick.Indirect do
   @moduledoc false
 
   defmodule Ref do
-    @moduledoc false
+    @type t :: %__MODULE__{
+            number: number()
+          }
 
     defstruct [:number]
 
+    @doc false
     def new(number) do
       %__MODULE__{number: number}
     end
@@ -18,10 +21,14 @@ defmodule Mudbrick.Indirect do
   end
 
   defmodule Object do
-    @moduledoc false
+    @type t :: %__MODULE__{
+            value: term(),
+            ref: Ref.t()
+          }
 
     defstruct [:value, :ref]
 
+    @doc false
     def new(ref, value) do
       %__MODULE__{value: value, ref: ref}
     end

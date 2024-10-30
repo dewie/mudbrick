@@ -34,14 +34,18 @@ defmodule Mudbrick do
   <object width="400" height="215" data="examples/compression_font_special_chars.pdf?#navpanes=0" type="application/pdf"></object>
   """
 
-  @type coords :: {number(), number()}
+  alias Mudbrick.{
+    ContentStream,
+    Document,
+    Font,
+    Image,
+    Indirect,
+    Page,
+    TextBlock
+  }
 
-  alias Mudbrick.ContentStream
-  alias Mudbrick.Document
-  alias Mudbrick.Font
-  alias Mudbrick.Image
-  alias Mudbrick.Page
-  alias Mudbrick.TextBlock
+  @type context :: {Document.t(), Indirect.Object.t()}
+  @type coords :: {number(), number()}
 
   @doc """
   Start a new document.
@@ -93,9 +97,10 @@ defmodule Mudbrick do
 
   - `:size` - a tuple of `{width, height}`. Some standard sizes available in `Mudbrick.Page.size/1`.
   """
+  @spec page(Document.t() | context(), Keyword.t()) :: context()
   def page(context, opts \\ [])
 
-  def page({doc, _page}, opts) do
+  def page({doc, _contents_obj}, opts) do
     page(doc, opts)
   end
 
@@ -136,6 +141,8 @@ defmodule Mudbrick do
   Tip: to make the image fit the page, pass e.g. `Page.size(:a4)` as the
   `scale` and `{0, 0}` as the `position`.
   """
+
+  @spec image(context(), atom(), ContentStream.Cm.options()) :: context()
   def image({doc, _content_stream_obj} = context, user_identifier, opts \\ []) do
     import ContentStream
 
@@ -143,7 +150,7 @@ defmodule Mudbrick do
       {:ok, image} ->
         context
         |> add(%ContentStream.QPush{})
-        |> add(ContentStream.Cm, opts)
+        |> add(ContentStream.Cm.new(opts))
         |> add(%ContentStream.Do{image: image.value})
         |> add(%ContentStream.QPop{})
 
