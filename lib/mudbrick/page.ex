@@ -32,6 +32,8 @@ defmodule Mudbrick.Page do
       iex> Mudbrick.Page.size(:letter)
       {612.0, 792}
   """
+
+  @spec size(name :: atom()) :: Mudbrick.coords()
   def size(name) do
     @page_sizes[name]
   end
