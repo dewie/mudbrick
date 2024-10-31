@@ -5,6 +5,9 @@ defmodule Mudbrick.TestHelper do
   @flower Path.join(__DIR__, "fixtures/JPEG_example_flower.jpg") |> File.read!()
   @example_png Path.join(__DIR__, "fixtures/Example.png") |> File.read!()
 
+  alias Mudbrick.Page
+  alias Mudbrick.TextBlock.Output
+
   def show(o) do
     Mudbrick.Object.from(o) |> to_string()
   end
@@ -33,6 +36,49 @@ defmodule Mudbrick.TestHelper do
 
   def example_png do
     @example_png
+  end
+
+  def output(f) when is_function(f) do
+    import Mudbrick
+
+    {doc, _contents_obj} =
+      context =
+      Mudbrick.new(
+        title: "My thing",
+        compress: false,
+        fonts: %{
+          a: [file: bodoni_regular()],
+          b: [file: bodoni_bold()],
+          c: [file: franklin_regular()]
+        }
+      )
+      |> page(size: Page.size(:letter))
+
+    fonts = Mudbrick.Document.root_page_tree(doc).value.fonts
+
+    block =
+      f.(%{
+        fonts: %{
+          regular: Map.fetch!(fonts, :a).value,
+          bold: Map.fetch!(fonts, :b).value,
+          franklin_regular: Map.fetch!(fonts, :c).value
+        }
+      })
+
+    ops = Output.from(block).operations
+
+    context
+    |> Mudbrick.ContentStream.put(operations: ops)
+    |> render()
+    |> output()
+
+    ops
+  end
+
+  def output(chain) do
+    tap(chain, fn rendered ->
+      File.write("test.pdf", rendered)
+    end)
   end
 end
 

@@ -1,18 +1,11 @@
 defmodule Mudbrick.TextBlockTest do
   use ExUnit.Case, async: true
 
-  import Mudbrick.TestHelper,
-    only: [
-      bodoni_regular: 0,
-      bodoni_bold: 0,
-      franklin_regular: 0
-    ]
+  import Mudbrick.TestHelper, only: [output: 1]
 
-  alias Mudbrick.Page
   alias Mudbrick.TextBlock
   alias Mudbrick.TextBlock.Line
   alias Mudbrick.TextBlock.Line.Part
-  alias Mudbrick.TextBlock.Output
 
   test "single write is divided into lines" do
     block =
@@ -292,48 +285,5 @@ defmodule Mudbrick.TextBlockTest do
 
   defp operations(ops) do
     Enum.map(ops, &Mudbrick.TestHelper.show/1)
-  end
-
-  defp output(f) when is_function(f) do
-    import Mudbrick
-
-    {doc, _contents_obj} =
-      context =
-      Mudbrick.new(
-        title: "My thing",
-        compress: false,
-        fonts: %{
-          a: [file: bodoni_regular()],
-          b: [file: bodoni_bold()],
-          c: [file: franklin_regular()]
-        }
-      )
-      |> page(size: Page.size(:letter))
-
-    fonts = Mudbrick.Document.root_page_tree(doc).value.fonts
-
-    block =
-      f.(%{
-        fonts: %{
-          regular: Map.fetch!(fonts, :a).value,
-          bold: Map.fetch!(fonts, :b).value,
-          franklin_regular: Map.fetch!(fonts, :c).value
-        }
-      })
-
-    ops = Output.from(block).operations
-
-    context
-    |> Mudbrick.ContentStream.put(operations: ops)
-    |> render()
-    |> output()
-
-    ops
-  end
-
-  defp output(chain) do
-    tap(chain, fn rendered ->
-      File.write("test.pdf", rendered)
-    end)
   end
 end

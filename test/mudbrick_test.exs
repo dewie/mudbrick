@@ -399,10 +399,4 @@ defmodule MudbrickTest do
       "<xmpMM:\\1ID>0000000000000000000000000000000000000000000</xmpMM:\\2ID>"
     )
   end
-
-  def output(chain) do
-    tap(chain, fn rendered ->
-      File.write("test.pdf", rendered)
-    end)
-  end
 end
