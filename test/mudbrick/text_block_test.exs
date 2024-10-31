@@ -87,9 +87,9 @@ defmodule Mudbrick.TextBlockTest do
                "() '",
                "ET"
              ] =
-               output(fn font, _, _ ->
+               output(fn %{fonts: fonts} ->
                  TextBlock.new(
-                   font: font,
+                   font: fonts.regular,
                    font_size: 10,
                    position: {400, 500},
                    leading: 14
@@ -120,9 +120,9 @@ defmodule Mudbrick.TextBlockTest do
                "<00C0> Tj",
                "ET"
              ] =
-               output(fn font, _, _ ->
+               output(fn %{fonts: fonts} ->
                  TextBlock.new(
-                   font: font,
+                   font: fonts.regular,
                    font_size: 10,
                    position: {400, 500}
                  )
@@ -153,16 +153,16 @@ defmodule Mudbrick.TextBlockTest do
                "/F1 10 Tf",
                "ET"
              ] =
-               output(fn regular, bold, franklin ->
+               output(fn %{fonts: fonts} ->
                  TextBlock.new(
-                   font: regular,
+                   font: fonts.regular,
                    font_size: 10,
                    position: {400, 500}
                  )
                  |> TextBlock.write("this is ", font_size: 14)
-                 |> TextBlock.write("bold ", font: bold)
+                 |> TextBlock.write("bold ", font: fonts.bold)
                  |> TextBlock.write("but this isn't ")
-                 |> TextBlock.write("this is franklin", font: franklin)
+                 |> TextBlock.write("this is franklin", font: fonts.franklin_regular)
                end)
                |> operations()
     end
@@ -180,9 +180,9 @@ defmodule Mudbrick.TextBlockTest do
                "12.0 TL",
                "ET"
              ] =
-               output(fn regular, _bold, _franklin ->
+               output(fn %{fonts: fonts} ->
                  TextBlock.new(
-                   font: regular,
+                   font: fonts.regular,
                    font_size: 10,
                    position: {400, 500}
                  )
@@ -225,9 +225,9 @@ defmodule Mudbrick.TextBlockTest do
                "<00D500D9> Tj",
                "ET"
              ] =
-               output(fn font, _, _ ->
+               output(fn %{fonts: fonts} ->
                  Mudbrick.TextBlock.new(
-                   font: font,
+                   font: fonts.regular,
                    font_size: 10,
                    position: {400, 500},
                    align: :right
@@ -274,17 +274,17 @@ defmodule Mudbrick.TextBlockTest do
                "/F1 10 Tf",
                "ET"
              ] =
-               output(fn regular, bold, franklin ->
+               output(fn %{fonts: fonts} ->
                  TextBlock.new(
-                   font: regular,
+                   font: fonts.regular,
                    font_size: 10,
                    position: {400, 500},
                    align: :right
                  )
                  |> TextBlock.write("this is ")
-                 |> TextBlock.write("bold ", font: bold)
+                 |> TextBlock.write("bold ", font: fonts.bold)
                  |> TextBlock.write("but this isn't ")
-                 |> TextBlock.write("this is franklin", font: franklin)
+                 |> TextBlock.write("this is franklin", font: fonts.franklin_regular)
                end)
                |> operations()
     end
@@ -311,10 +311,15 @@ defmodule Mudbrick.TextBlockTest do
       |> page(size: Page.size(:letter))
 
     fonts = Mudbrick.Document.root_page_tree(doc).value.fonts
-    regular_font = Map.fetch!(fonts, :a).value
-    bold_font = Map.fetch!(fonts, :b).value
-    franklin_regular_font = Map.fetch!(fonts, :c).value
-    block = f.(regular_font, bold_font, franklin_regular_font)
+
+    block =
+      f.(%{
+        fonts: %{
+          regular: Map.fetch!(fonts, :a).value,
+          bold: Map.fetch!(fonts, :b).value,
+          franklin_regular: Map.fetch!(fonts, :c).value
+        }
+      })
 
     ops = Output.from(block).operations
 
