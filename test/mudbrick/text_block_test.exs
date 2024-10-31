@@ -1,7 +1,7 @@
 defmodule Mudbrick.TextBlockTest do
   use ExUnit.Case, async: true
 
-  import Mudbrick.TestHelper, only: [output: 1]
+  import Mudbrick.TestHelper, only: [output: 2]
 
   alias Mudbrick.TextBlock
   alias Mudbrick.TextBlock.Line
@@ -282,6 +282,8 @@ defmodule Mudbrick.TextBlockTest do
                |> operations()
     end
   end
+
+  defp output(f), do: output(f, Mudbrick.TextBlock.Output)
 
   defp operations(ops) do
     Enum.map(ops, &Mudbrick.TestHelper.show/1)

@@ -6,7 +6,6 @@ defmodule Mudbrick.TestHelper do
   @example_png Path.join(__DIR__, "fixtures/Example.png") |> File.read!()
 
   alias Mudbrick.Page
-  alias Mudbrick.TextBlock.Output
 
   def show(o) do
     Mudbrick.Object.from(o) |> to_string()
@@ -38,7 +37,7 @@ defmodule Mudbrick.TestHelper do
     @example_png
   end
 
-  def output(f) when is_function(f) do
+  def output(f, output_mod) when is_function(f) do
     import Mudbrick
 
     {doc, _contents_obj} =
@@ -65,7 +64,7 @@ defmodule Mudbrick.TestHelper do
         }
       })
 
-    ops = Output.from(block).operations
+    ops = output_mod.from(block).operations
 
     context
     |> Mudbrick.ContentStream.put(operations: ops)
