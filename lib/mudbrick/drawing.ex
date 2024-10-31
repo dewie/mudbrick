@@ -10,7 +10,7 @@ defmodule Mudbrick.Drawing do
     end
   end
 
-  def new() do
+  def new do
     struct!(__MODULE__, [])
   end
 
