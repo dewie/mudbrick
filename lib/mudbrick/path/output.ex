@@ -6,7 +6,7 @@ defmodule Mudbrick.Path.Output do
   alias Mudbrick.ContentStream.{
     L,
     M,
-    RgStroking,
+    Rg,
     S,
     W
   }
@@ -17,7 +17,7 @@ defmodule Mudbrick.Path.Output do
         {r, g, b} = sub_path.colour
 
         acc
-        |> add(RgStroking.new(r: r, g: g, b: b))
+        |> add(Rg.new(stroking: true, r: r, g: g, b: b))
         |> add(%W{width: sub_path.line_width})
         |> add(%M{coords: sub_path.from})
         |> add(%L{coords: sub_path.to})
