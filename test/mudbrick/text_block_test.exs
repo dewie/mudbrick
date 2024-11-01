@@ -210,7 +210,7 @@ defmodule Mudbrick.TextBlockTest do
                "<0088005500880055008800550088> Tj",
                "ET",
                "BT",
-               "400 464.0 Td",
+               "400.0 464.0 Td",
                "ET",
                "BT",
                "390.74 452.0 Td",
@@ -255,7 +255,7 @@ defmodule Mudbrick.TextBlockTest do
                "/F1 10 Tf",
                "12.0 TL",
                "BT",
-               "225.89999999999998 500.0 Td",
+               "225.67999999999998 500.0 Td",
                "0 0 0 rg",
                "<011D00D500D9011601B700D9011601B7> Tj",
                "/F2 10 Tf",
@@ -280,6 +280,27 @@ defmodule Mudbrick.TextBlockTest do
                  |> TextBlock.write("this is franklin", font: fonts.franklin_regular)
                end)
                |> operations()
+    end
+
+    test "inline font sizes affect alignment offset of whole line" do
+      assert offset_with_partial_font_size(50) < offset_with_partial_font_size(12)
+    end
+
+    defp offset_with_partial_font_size(font_size) do
+      operations =
+        output(fn %{fonts: fonts} ->
+          TextBlock.new(font: fonts.regular, align: :right)
+          |> TextBlock.write("this is ")
+          |> TextBlock.write("one line", font_size: font_size)
+        end)
+        |> operations()
+
+      [offset, _y_offset, _operator] =
+        operations |> Enum.find(&String.ends_with?(&1, "Td")) |> String.split(" ")
+
+      {offset, ""} = Float.parse(offset)
+
+      offset
     end
   end
 

@@ -9,7 +9,6 @@ defmodule Mudbrick.TextBlock.Output do
   alias Mudbrick.ContentStream.Tf
   alias Mudbrick.ContentStream.{Apostrophe, Tj}
   alias Mudbrick.ContentStream.TL
-  alias Mudbrick.Font
   alias Mudbrick.TextBlock.Line
 
   defmodule LeftAlign do
@@ -71,7 +70,7 @@ defmodule Mudbrick.TextBlock.Output do
       output
       |> Output.end_block()
       |> reduce_parts(line)
-      |> measure.(Line.text(line), 1)
+      |> measure.(line, 1)
       |> Output.start_block()
     end
 
@@ -79,7 +78,7 @@ defmodule Mudbrick.TextBlock.Output do
       output
       |> Output.end_block()
       |> reduce_parts(line)
-      |> measure.(Line.text(line), length(lines) + 1)
+      |> measure.(line, length(lines) + 1)
       |> Output.start_block()
       |> reduce_lines(lines, measure)
     end
@@ -127,8 +126,8 @@ defmodule Mudbrick.TextBlock.Output do
         } = tb
       ) do
     %__MODULE__{font: font, font_size: font_size}
-    |> RightAlign.reduce_lines(tb.lines, fn output, text, line ->
-      right_offset(output, tb, text, line)
+    |> RightAlign.reduce_lines(tb.lines, fn output, line, line_number ->
+      right_offset(output, tb, line, line_number)
     end)
     |> add(%TL{leading: leading(tb)})
     |> add(%Tf{font: font, size: font_size})
@@ -178,12 +177,12 @@ defmodule Mudbrick.TextBlock.Output do
     add(output, %ET{})
   end
 
-  def right_offset(output, tb, text, line) do
-    n = line - 1
+  def right_offset(output, tb, line, line_number) do
+    n = line_number - 1
     {x, y} = tb.position
 
     add(output, %Td{
-      tx: x - Font.width(tb.font, tb.font_size, text),
+      tx: x - Line.width(line, tb),
       ty: y - leading(tb) * n
     })
   end

@@ -38,4 +38,16 @@ defmodule Mudbrick.TextBlock.Line do
   def text(line) do
     Enum.map_join(line.parts, "", & &1.text)
   end
+
+  def width(line, text_block) do
+    for part <- line.parts, reduce: 0.0 do
+      acc ->
+        acc +
+          Mudbrick.Font.width(
+            part.font || text_block.font,
+            part.font_size || text_block.font_size,
+            part.text
+          )
+    end
+  end
 end
