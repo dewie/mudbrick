@@ -3,23 +3,23 @@ defmodule Mudbrick.DrawingTest do
 
   import Mudbrick.TestHelper, only: [output: 2]
 
-  alias Mudbrick.Drawing
-  alias Mudbrick.Drawing.Path
+  alias Mudbrick.Path
+  alias Mudbrick.Path.SubPath
 
   test "can construct a path" do
-    import Drawing
+    import Path
 
-    drawing =
+    path =
       new()
-      |> path(from: {0, 0}, to: {50, 50})
+      |> sub_path(from: {0, 0}, to: {50, 50})
 
-    assert drawing.paths == [
-             Path.new(from: {0, 0}, to: {50, 50})
+    assert path.sub_paths == [
+             SubPath.new(from: {0, 0}, to: {50, 50}, line_width: 1)
            ]
   end
 
-  test "can make an empty drawing" do
-    import Drawing
+  test "can make an empty path" do
+    import Path
 
     assert [] =
              output(fn ->
@@ -29,21 +29,38 @@ defmodule Mudbrick.DrawingTest do
   end
 
   test "can draw one path" do
-    import Drawing
+    import Path
 
     assert [
-             "0 50 m",
-             "60 50 l",
+             "1 w",
+             "0 650 m",
+             "460 750 l",
              "S"
            ] =
              output(fn ->
                new()
-               |> path(from: {0, 50}, to: {60, 50})
+               |> sub_path(from: {0, 650}, to: {460, 750})
              end)
              |> operations()
   end
 
-  defp output(f), do: output(fn _ -> f.() end, Mudbrick.Drawing.Output)
+  test "can choose line width" do
+    import Path
+
+    assert [
+             "4.0 w",
+             "0 650 m",
+             "460 750 l",
+             "S"
+           ] =
+             output(fn ->
+               new()
+               |> sub_path(from: {0, 650}, to: {460, 750}, line_width: 4.0)
+             end)
+             |> operations()
+  end
+
+  defp output(f), do: output(fn _ -> f.() end, Mudbrick.Path.Output)
 
   defp operations(ops) do
     Enum.map(ops, &Mudbrick.TestHelper.show/1) |> Enum.reverse()

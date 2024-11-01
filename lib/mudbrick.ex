@@ -4,7 +4,7 @@ defmodule Mudbrick do
 
   ## Example
 
-  Compression, OTF font with special characters and image placement:
+  Compression, OTF font with special characters, JPEG and line drawing:
 
       iex> import Mudbrick.TestHelper                     # import some example fonts and images
       ...> import Mudbrick
@@ -20,6 +20,7 @@ defmodule Mudbrick do
       ...>   scale: {100, 100},                           # full page size
       ...>   position: {0, 0}                             # in points (1/72 inch), starts at bottom left
       ...> )
+      ...> |> path(from: {55, 40}, to: {95, 5}, line_width: 6.0)
       ...> |> text(
       ...>   {"CO₂", colour: {0, 0, 1}},                  # write blue text
       ...>   font: :bodoni,                               # in the bodoni font
@@ -41,6 +42,7 @@ defmodule Mudbrick do
     Image,
     Indirect,
     Page,
+    Path,
     TextBlock
   }
 
@@ -230,6 +232,18 @@ defmodule Mudbrick do
 
   def text(context, write, opts) do
     text(context, [write], opts)
+  end
+
+  @spec path(context(), Path.SubPath.options()) :: context()
+  def path(context, opts) do
+    path =
+      Path.new()
+      |> Path.sub_path(opts)
+
+    context
+    |> ContentStream.update_operations(fn ops ->
+      Path.Output.from(path).operations ++ ops
+    end)
   end
 
   defp fetch_font(doc, opts) do
