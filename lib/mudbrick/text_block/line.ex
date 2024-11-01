@@ -35,10 +35,6 @@ defmodule Mudbrick.TextBlock.Line do
     end
   end
 
-  def text(line) do
-    Enum.map_join(line.parts, "", & &1.text)
-  end
-
   def width(line, text_block) do
     for part <- line.parts, reduce: 0.0 do
       acc ->
