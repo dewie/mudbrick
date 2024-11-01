@@ -1,4 +1,6 @@
 defmodule Mudbrick.ContentStream.M do
+  @moduledoc false
+
   @enforce_keys :coords
   defstruct [:coords]
 

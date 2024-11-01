@@ -1,4 +1,6 @@
 defmodule Mudbrick.ContentStream.W do
+  @moduledoc false
+
   defstruct [:width]
 
   defimpl Mudbrick.Object do

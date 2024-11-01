@@ -1,4 +1,6 @@
 defmodule Mudbrick.Path do
+  @moduledoc false
+
   defmodule SubPath do
     @type option ::
             {:from, Mudbrick.coords()}
@@ -18,6 +20,7 @@ defmodule Mudbrick.Path do
               to: nil,
               line_width: 1
 
+    @doc false
     @spec new(options()) :: t()
     def new(opts) do
       struct!(__MODULE__, opts)

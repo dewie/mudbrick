@@ -1,4 +1,6 @@
 defmodule Mudbrick.Path.Output do
+  @moduledoc false
+
   defstruct operations: []
 
   alias Mudbrick.ContentStream.{
