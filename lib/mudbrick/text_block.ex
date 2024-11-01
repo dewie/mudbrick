@@ -14,6 +14,7 @@ defmodule Mudbrick.TextBlock do
           {:font, atom()}
           | {:font_size, number()}
           | {:leading, number()}
+          | {:colour, Mudbrick.colour()}
 
   @type part_options :: [part_option()]
 
@@ -57,6 +58,7 @@ defmodule Mudbrick.TextBlock do
   end
 
   @doc false
+  @spec write(t(), String.t(), options()) :: t()
   def write(tb, text, opts \\ []) do
     line_texts = String.split(text, "\n")
     opts = Keyword.put_new(opts, :leading, tb.leading)

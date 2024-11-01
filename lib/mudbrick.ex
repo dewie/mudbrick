@@ -48,6 +48,7 @@ defmodule Mudbrick do
 
   @type context :: {Document.t(), Indirect.Object.t()}
   @type coords :: {number(), number()}
+  @type colour :: {number(), number(), number()}
 
   @doc """
   Start a new document.
