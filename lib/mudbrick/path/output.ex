@@ -6,17 +6,21 @@ defmodule Mudbrick.Path.Output do
   alias Mudbrick.ContentStream.{
     L,
     M,
+    RgStroking,
     S,
     W
   }
 
   def from(%Mudbrick.Path{} = path) do
-    for path <- Enum.reverse(path.sub_paths), reduce: %__MODULE__{} do
+    for sub_path <- Enum.reverse(path.sub_paths), reduce: %__MODULE__{} do
       acc ->
+        {r, g, b} = sub_path.colour
+
         acc
-        |> add(%W{width: path.line_width})
-        |> add(%M{coords: path.from})
-        |> add(%L{coords: path.to})
+        |> add(RgStroking.new(r: r, g: g, b: b))
+        |> add(%W{width: sub_path.line_width})
+        |> add(%M{coords: sub_path.from})
+        |> add(%L{coords: sub_path.to})
         |> add(%S{})
     end
   end

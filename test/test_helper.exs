@@ -7,6 +7,20 @@ defmodule Mudbrick.TestHelper do
 
   alias Mudbrick.Page
 
+  def invalid_colour do
+    import StreamData
+
+    valid_component = float(min: 0, max: 1)
+
+    {integer(0..2), float(min: 1.00001), list_of(valid_component, length: 2)}
+    |> bind(fn {insertion_point, invalid_component, initial_list} ->
+      initial_list
+      |> List.insert_at(insertion_point, invalid_component)
+      |> List.to_tuple()
+      |> constant()
+    end)
+  end
+
   def show(o) do
     Mudbrick.Object.from(o) |> to_string()
   end

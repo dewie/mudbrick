@@ -6,19 +6,22 @@ defmodule Mudbrick.Path do
             {:from, Mudbrick.coords()}
             | {:to, Mudbrick.coords()}
             | {:line_width, number()}
+            | {:colour, Mudbrick.colour()}
 
     @type options :: [option()]
 
     @type t :: %__MODULE__{
             from: Mudbrick.coords(),
             to: Mudbrick.coords(),
-            line_width: number()
+            line_width: number(),
+            colour: Mudbrick.colour()
           }
 
     @enforce_keys [:from, :to]
     defstruct from: nil,
               to: nil,
-              line_width: 1
+              line_width: 1,
+              colour: {0, 0, 0}
 
     @doc false
     @spec new(options()) :: t()

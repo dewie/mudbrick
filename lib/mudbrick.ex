@@ -20,7 +20,12 @@ defmodule Mudbrick do
       ...>   scale: {100, 100},                           # full page size
       ...>   position: {0, 0}                             # in points (1/72 inch), starts at bottom left
       ...> )
-      ...> |> path(from: {55, 40}, to: {95, 5}, line_width: 6.0)
+      ...> |> path(                                       # draw a line
+      ...>   from: {55, 40},                              # starting near the middle of the page
+      ...>   to: {95, 5},                                 # ending near at bottom right
+      ...>   line_width: 6.0,                             # make it fat
+      ...>   colour: {1, 0, 0}                            # make it red
+      ...> )
       ...> |> text(
       ...>   {"CO₂", colour: {0, 0, 1}},                  # write blue text
       ...>   font: :bodoni,                               # in the bodoni font

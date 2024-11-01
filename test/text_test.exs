@@ -59,16 +59,7 @@ defmodule Mudbrick.TextTest do
 
   describe "colour" do
     property "it's an error to set a colour above 1" do
-      valid_colour = float(min: 0, max: 1)
-
-      check all initial_list <- list_of(valid_colour, length: 2),
-                insertion_point <- integer(0..2),
-                invalid_colour <- float(min: 1.00001),
-                colour <-
-                  initial_list
-                  |> List.insert_at(insertion_point, invalid_colour)
-                  |> List.to_tuple()
-                  |> constant() do
+      check all colour <- invalid_colour() do
         e =
           assert_raise(Mudbrick.ContentStream.InvalidColour, fn ->
             new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni_regular()]})
