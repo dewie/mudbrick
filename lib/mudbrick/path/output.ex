@@ -6,6 +6,8 @@ defmodule Mudbrick.Path.Output do
   alias Mudbrick.ContentStream.{
     L,
     M,
+    QPop,
+    QPush,
     Re,
     Rg,
     S,
@@ -18,10 +20,12 @@ defmodule Mudbrick.Path.Output do
         {r, g, b} = sub_path.colour
 
         acc
+        |> add(%QPush{})
         |> add(Rg.new(stroking: true, r: r, g: g, b: b))
         |> add(%W{width: sub_path.line_width})
         |> draw(sub_path)
         |> add(%S{})
+        |> add(%QPop{})
     end
   end
 

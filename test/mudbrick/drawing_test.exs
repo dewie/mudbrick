@@ -16,21 +16,33 @@ defmodule Mudbrick.DrawingTest do
     StraightLine
   }
 
-  test "can add a drawing to a page" do
+  test "can add drawings to a page" do
     import Mudbrick
 
     assert [
-             "0 0 0 RG",
+             "q",
+             "1 0 0 RG",
              "1 w",
              "0 0 m",
              "50 60 l",
-             "S"
+             "S",
+             "Q",
+             "q",
+             "0 0 0 RG",
+             "1 w",
+             "0 0 50 60 re",
+             "S",
+             "Q"
            ] =
              new()
              |> page()
              |> path(fn path ->
-               Path.straight_line(path, from: {0, 0}, to: {50, 60})
+               Path.straight_line(path, from: {0, 0}, to: {50, 60}, colour: {1, 0, 0})
              end)
+             |> path(fn path ->
+               Path.rectangle(path, lower_left: {0, 0}, dimensions: {50, 60})
+             end)
+             |> Mudbrick.TestHelper.output()
              |> Mudbrick.TestHelper.operations()
   end
 
@@ -50,7 +62,7 @@ defmodule Mudbrick.DrawingTest do
            ]
   end
 
-  test "can construct a path" do
+  test "can construct a path with one straight line" do
     import Path
 
     path =
@@ -79,10 +91,12 @@ defmodule Mudbrick.DrawingTest do
     import Path
 
     assert [
+             "q",
              "0 0 0 RG",
              "1 w",
              "0 0 50 75 re",
-             "S"
+             "S",
+             "Q"
            ] =
              operations(fn ->
                new()
@@ -94,11 +108,13 @@ defmodule Mudbrick.DrawingTest do
     import Path
 
     assert [
+             "q",
              "0 0 0 RG",
              "1 w",
              "0 650 m",
              "460 750 l",
-             "S"
+             "S",
+             "Q"
            ] =
              operations(fn ->
                new()
@@ -110,11 +126,13 @@ defmodule Mudbrick.DrawingTest do
     import Path
 
     assert [
+             "q",
              "0 0 0 RG",
              "4.0 w",
              "0 650 m",
              "460 750 l",
-             "S"
+             "S",
+             "Q"
            ] =
              operations(fn ->
                new()
@@ -126,11 +144,13 @@ defmodule Mudbrick.DrawingTest do
     import Path
 
     assert [
+             "q",
              "0 1 0 RG",
              "1 w",
              "0 650 m",
              "460 750 l",
-             "S"
+             "S",
+             "Q"
            ] =
              operations(fn ->
                new()
