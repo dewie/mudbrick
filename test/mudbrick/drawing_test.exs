@@ -70,13 +70,12 @@ defmodule Mudbrick.DrawingTest do
     import Path
 
     assert [] =
-             output(fn ->
+             operations(fn ->
                new()
              end)
-             |> operations()
   end
 
-  test "can fill a rectangle" do
+  test "can render a rectangle" do
     import Path
 
     assert [
@@ -85,11 +84,10 @@ defmodule Mudbrick.DrawingTest do
              "0 0 50 75 re",
              "S"
            ] =
-             output(fn ->
+             operations(fn ->
                new()
                |> rectangle(lower_left: {0, 0}, dimensions: {50, 75})
              end)
-             |> operations()
   end
 
   test "can draw one path" do
@@ -102,11 +100,10 @@ defmodule Mudbrick.DrawingTest do
              "460 750 l",
              "S"
            ] =
-             output(fn ->
+             operations(fn ->
                new()
                |> straight_line(from: {0, 650}, to: {460, 750})
              end)
-             |> operations()
   end
 
   test "can choose line width" do
@@ -119,11 +116,10 @@ defmodule Mudbrick.DrawingTest do
              "460 750 l",
              "S"
            ] =
-             output(fn ->
+             operations(fn ->
                new()
                |> straight_line(from: {0, 650}, to: {460, 750}, line_width: 4.0)
              end)
-             |> operations()
   end
 
   test "can choose colour" do
@@ -136,11 +132,10 @@ defmodule Mudbrick.DrawingTest do
              "460 750 l",
              "S"
            ] =
-             output(fn ->
+             operations(fn ->
                new()
                |> straight_line(from: {0, 650}, to: {460, 750}, colour: {0, 1, 0})
              end)
-             |> operations()
   end
 
   property "it's an error to set a colour above 1" do
@@ -158,9 +153,9 @@ defmodule Mudbrick.DrawingTest do
     end
   end
 
-  defp output(f), do: output(fn _ -> f.() end, Mudbrick.Path.Output)
-
-  defp operations(ops) do
-    Enum.map(ops, &Mudbrick.TestHelper.show/1) |> Enum.reverse()
+  defp operations(f) do
+    output(fn _ -> f.() end, Mudbrick.Path.Output)
+    |> Enum.map(&Mudbrick.TestHelper.show/1)
+    |> Enum.reverse()
   end
 end
