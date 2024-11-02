@@ -8,7 +8,7 @@ defmodule Mudbrick do
 
       iex> import Mudbrick.TestHelper                     # import some example fonts and images
       ...> import Mudbrick
-      ...> alias Mudbrick.Page
+      ...> alias Mudbrick.{Page, Path}
       ...> new(
       ...>   compress: true,                              # flate compression for fonts, text etc.
       ...>   fonts: %{bodoni: [file: bodoni_regular()]},  # register an OTF font
@@ -20,12 +20,14 @@ defmodule Mudbrick do
       ...>   scale: {100, 100},                           # full page size
       ...>   position: {0, 0}                             # in points (1/72 inch), starts at bottom left
       ...> )
-      ...> |> path(                                       # draw a line
-      ...>   from: {55, 40},                              # starting near the middle of the page
-      ...>   to: {95, 5},                                 # ending near at bottom right
-      ...>   line_width: 6.0,                             # make it fat
-      ...>   colour: {1, 0, 0}                            # make it red
-      ...> )
+      ...> |> path(fn p ->
+      ...>   Path.straight_line(p,                        # draw a line
+      ...>     from: {55, 40},                            # starting near the middle of the page
+      ...>     to: {95, 5},                               # ending near at bottom right
+      ...>     line_width: 6.0,                           # make it fat
+      ...>     colour: {1, 0, 0}                          # make it red
+      ...>   )
+      ...> end)
       ...> |> text(
       ...>   {"CO₂", colour: {0, 0, 1}},                  # write blue text
       ...>   font: :bodoni,                               # in the bodoni font
@@ -241,11 +243,9 @@ defmodule Mudbrick do
     text(context, [write], opts)
   end
 
-  @spec path(context(), Path.StraightLine.options()) :: context()
-  def path(context, opts) do
-    path =
-      Path.new()
-      |> Path.straight_line(opts)
+  @spec path(context(), function()) :: context()
+  def path(context, f) do
+    path = f.(Path.new())
 
     context
     |> ContentStream.update_operations(fn ops ->

@@ -16,6 +16,24 @@ defmodule Mudbrick.DrawingTest do
     StraightLine
   }
 
+  test "can add a drawing to a page" do
+    import Mudbrick
+
+    assert [
+             "0 0 0 RG",
+             "1 w",
+             "0 0 m",
+             "50 60 l",
+             "S"
+           ] =
+             new()
+             |> page()
+             |> path(fn path ->
+               Path.straight_line(path, from: {0, 0}, to: {50, 60})
+             end)
+             |> Mudbrick.TestHelper.operations()
+  end
+
   test "can construct a rectangle" do
     import Path
 
