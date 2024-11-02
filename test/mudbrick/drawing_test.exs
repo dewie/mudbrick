@@ -9,18 +9,42 @@ defmodule Mudbrick.DrawingTest do
     ]
 
   alias Mudbrick.Path
-  alias Mudbrick.Path.Output
-  alias Mudbrick.Path.SubPath
+
+  alias Mudbrick.Path.{
+    Output,
+    Rectangle,
+    StraightLine
+  }
+
+  test "can construct a rectangle" do
+    import Path
+
+    path =
+      new()
+      |> rectangle(lower_left: {0, 0}, dimensions: {50, 75})
+
+    assert path.sub_paths == [
+             Rectangle.new(
+               lower_left: {0, 0},
+               dimensions: {50, 75},
+               line_width: 1
+             )
+           ]
+  end
 
   test "can construct a path" do
     import Path
 
     path =
       new()
-      |> sub_path(from: {0, 0}, to: {50, 50})
+      |> straight_line(from: {0, 0}, to: {50, 50})
 
     assert path.sub_paths == [
-             SubPath.new(from: {0, 0}, to: {50, 50}, line_width: 1)
+             StraightLine.new(
+               from: {0, 0},
+               to: {50, 50},
+               line_width: 1
+             )
            ]
   end
 
@@ -30,6 +54,22 @@ defmodule Mudbrick.DrawingTest do
     assert [] =
              output(fn ->
                new()
+             end)
+             |> operations()
+  end
+
+  test "can fill a rectangle" do
+    import Path
+
+    assert [
+             "0 0 0 RG",
+             "1 w",
+             "0 0 50 75 re",
+             "S"
+           ] =
+             output(fn ->
+               new()
+               |> rectangle(lower_left: {0, 0}, dimensions: {50, 75})
              end)
              |> operations()
   end
@@ -46,7 +86,7 @@ defmodule Mudbrick.DrawingTest do
            ] =
              output(fn ->
                new()
-               |> sub_path(from: {0, 650}, to: {460, 750})
+               |> straight_line(from: {0, 650}, to: {460, 750})
              end)
              |> operations()
   end
@@ -63,7 +103,7 @@ defmodule Mudbrick.DrawingTest do
            ] =
              output(fn ->
                new()
-               |> sub_path(from: {0, 650}, to: {460, 750}, line_width: 4.0)
+               |> straight_line(from: {0, 650}, to: {460, 750}, line_width: 4.0)
              end)
              |> operations()
   end
@@ -80,7 +120,7 @@ defmodule Mudbrick.DrawingTest do
            ] =
              output(fn ->
                new()
-               |> sub_path(from: {0, 650}, to: {460, 750}, colour: {0, 1, 0})
+               |> straight_line(from: {0, 650}, to: {460, 750}, colour: {0, 1, 0})
              end)
              |> operations()
   end
@@ -92,7 +132,7 @@ defmodule Mudbrick.DrawingTest do
       e =
         assert_raise(Mudbrick.ContentStream.InvalidColour, fn ->
           new()
-          |> sub_path(from: {0, 0}, to: {0, 0}, colour: colour)
+          |> straight_line(from: {0, 0}, to: {0, 0}, colour: colour)
           |> Output.from()
         end)
 

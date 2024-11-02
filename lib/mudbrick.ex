@@ -241,11 +241,11 @@ defmodule Mudbrick do
     text(context, [write], opts)
   end
 
-  @spec path(context(), Path.SubPath.options()) :: context()
+  @spec path(context(), Path.StraightLine.options()) :: context()
   def path(context, opts) do
     path =
       Path.new()
-      |> Path.sub_path(opts)
+      |> Path.straight_line(opts)
 
     context
     |> ContentStream.update_operations(fn ops ->
