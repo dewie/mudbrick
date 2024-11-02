@@ -25,6 +25,7 @@ defmodule Mudbrick.TextBlockTest do
   test "writes get divided into lines and parts" do
     block =
       TextBlock.new(
+        colour: {0, 0, 1},
         font_size: 10,
         position: {400, 500},
         leading: 14
@@ -40,11 +41,20 @@ defmodule Mudbrick.TextBlockTest do
 
     assert block.lines == [
              %Line{leading: 14, parts: [%Part{text: "fourth", colour: {0, 1, 0}, font_size: 24}]},
-             %Line{leading: 16, parts: [%Part{text: "line"}, %Part{text: "third "}]},
-             %Line{leading: 14, parts: [%Part{text: "second line"}]},
+             %Line{
+               leading: 16,
+               parts: [
+                 %Part{text: "line", colour: {0, 0, 1}},
+                 %Part{text: "third ", colour: {0, 0, 1}}
+               ]
+             },
+             %Line{leading: 14, parts: [%Part{text: "second line", colour: {0, 0, 1}}]},
              %Line{
                leading: 14,
-               parts: [%Part{text: "line"}, %Part{text: "first ", colour: {1, 0, 0}}]
+               parts: [
+                 %Part{text: "line", colour: {0, 0, 1}},
+                 %Part{text: "first ", colour: {1, 0, 0}}
+               ]
              }
            ]
   end

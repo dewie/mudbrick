@@ -172,6 +172,7 @@ defmodule Mudbrick do
 
   ## Top-level options
 
+  - `:colour` - `{r, g, b}` tuple. Each element is a number between 0 and 1. Default: `{0, 0, 0}`.
   - `:font` - *Required*. Name of a font previously registered with `new/1`.
   - `:position` - Coordinates from bottom-left of page in points. Default: `{0, 0}`.
   - `:font_size` - Size in points. Default: `12`.
@@ -182,7 +183,7 @@ defmodule Mudbrick do
 
   When passing a `{text, opts}` tuple or list of tuples to this function, `opts` are:
 
-  - `:colour` - `{r, g, b}` tuple. Each element is a number between 0 and 1. Default: `{0, 0, 0}`.
+  - `:colour` - `{r, g, b}` tuple. Each element is a number between 0 and 1. Overrides the top-level option.
   - `:font` - Name of a font previously registered with `new/1`. Overrides the top-level option.
   - `:font_size` - Size in points. Overrides the top-level option.
   - `:leading` - The number of points to move down the page on the following linebreak. Overrides the top-level option.

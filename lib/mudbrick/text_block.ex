@@ -3,18 +3,19 @@ defmodule Mudbrick.TextBlock do
 
   @type option ::
           {:align, alignment()}
+          | {:colour, Mudbrick.colour()}
           | {:font, atom()}
           | {:font_size, number()}
-          | {:position, Mudbrick.coords()}
           | {:leading, number()}
+          | {:position, Mudbrick.coords()}
 
   @type options :: [option()]
 
   @type part_option ::
-          {:font, atom()}
+          {:colour, Mudbrick.colour()}
+          | {:font, atom()}
           | {:font_size, number()}
           | {:leading, number()}
-          | {:colour, Mudbrick.colour()}
 
   @type part_options :: [part_option()]
 
@@ -27,6 +28,7 @@ defmodule Mudbrick.TextBlock do
 
   @type t :: %__MODULE__{
           align: alignment(),
+          colour: Mudbrick.colour(),
           font: atom(),
           font_size: number(),
           lines: list(),
@@ -35,6 +37,7 @@ defmodule Mudbrick.TextBlock do
         }
 
   defstruct align: :left,
+            colour: {0, 0, 0},
             font: nil,
             font_size: 12,
             lines: [],
@@ -61,7 +64,11 @@ defmodule Mudbrick.TextBlock do
   @spec write(t(), String.t(), options()) :: t()
   def write(tb, text, opts \\ []) do
     line_texts = String.split(text, "\n")
-    opts = Keyword.put_new(opts, :leading, tb.leading)
+
+    opts =
+      opts
+      |> Keyword.put_new(:colour, tb.colour)
+      |> Keyword.put_new(:leading, tb.leading)
 
     Map.update!(tb, :lines, fn
       [] ->

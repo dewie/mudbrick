@@ -71,7 +71,38 @@ defmodule Mudbrick.TextTest do
       end
     end
 
-    test "can be set on a piece of text" do
+    test "can be set on a text block" do
+      {_doc, content_stream} =
+        new(fonts: @fonts_helvetica)
+        |> page()
+        |> text(
+          [
+            "this is all ",
+            """
+            red
+            text\
+            """
+          ],
+          font: :helvetica,
+          font_size: 10,
+          colour: {1.0, 0.0, 0.0}
+        )
+
+      assert show(content_stream) =~
+               """
+               BT
+               /F1 10 Tf
+               12.0 TL
+               0 0 Td
+               1.0 0.0 0.0 rg
+               (this is all ) Tj
+               (red) Tj
+               (text) '
+               ET
+               """
+    end
+
+    test "can be set on part of a text block" do
       {_doc, content_stream} =
         new(fonts: @fonts_helvetica)
         |> page()
