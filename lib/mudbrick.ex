@@ -39,7 +39,7 @@ defmodule Mudbrick do
       ...> |> render()                                    # produce iodata, ready for File.write/2
       ...> |> then(&File.write("examples/compression_font_special_chars.pdf", &1))
 
-  Produces this:
+  Produces [this](examples/compression_font_special_chars.pdf).
 
   <object width="400" height="215" data="examples/compression_font_special_chars.pdf?#navpanes=0" type="application/pdf"></object>
   """
@@ -267,7 +267,7 @@ defmodule Mudbrick do
       ...> |> render()
       ...> |> then(&File.write("examples/drawing.pdf", &1))
 
-  Produces this:
+  Produces [this drawing](examples/drawing.pdf).
 
   <object width="400" height="215" data="examples/drawing.pdf?#navpanes=0" type="application/pdf"></object>
   """
