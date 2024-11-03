@@ -11,10 +11,10 @@ defmodule Mudbrick.DrawingTest do
   alias Mudbrick.Path
 
   alias Mudbrick.Path.{
-    Output,
-    Rectangle,
     Line,
-    Move
+    Move,
+    Output,
+    Rectangle
   }
 
   test "can add drawings to a page" do

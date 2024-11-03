@@ -245,7 +245,34 @@ defmodule Mudbrick do
     text(context, [write], opts)
   end
 
-  @spec path(context(), function()) :: context()
+  @doc """
+  Vector drawing. *f* is a function that takes a `Mudbrick.Path` and
+  returns a `Mudbrick.Path`. See the functions in that module.
+
+  ## Example
+
+  A thick diagonal red line and a black rectangle with a thinner (default)
+  line on top.
+
+      iex> import Mudbrick
+      ...> new()
+      ...> |> page(size: {100, 100})
+      ...> |> path(fn path ->
+      ...>   import Mudbrick.Path
+      ...>   path
+      ...>   |> move(to: {0, 0})
+      ...>   |> line(to: {50, 50}, colour: {1, 0, 0}, line_width: 9)
+      ...>   |> rectangle(lower_left: {0, 0}, dimensions: {50, 60})
+      ...> end)
+      ...> |> render()
+      ...> |> then(&File.write("examples/drawing.pdf", &1))
+
+  Produces this:
+
+  <object width="400" height="215" data="examples/drawing.pdf?#navpanes=0" type="application/pdf"></object>
+  """
+
+  @spec path(context(), (Path.t() -> Path.t())) :: context()
   def path(context, f) do
     path = f.(Path.new())
 

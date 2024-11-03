@@ -1,6 +1,4 @@
 defmodule Mudbrick.Path do
-  @moduledoc false
-
   defmodule Rectangle do
     @type option ::
             {:lower_left, Mudbrick.coords()}
@@ -75,7 +73,10 @@ defmodule Mudbrick.Path do
     end
   end
 
-  @type sub_path :: Rectangle.t() | Line.t()
+  @type sub_path ::
+          Move.t()
+          | Rectangle.t()
+          | Line.t()
 
   @type t :: %__MODULE__{
           sub_paths: [sub_path()]
@@ -83,11 +84,13 @@ defmodule Mudbrick.Path do
 
   defstruct sub_paths: []
 
+  @doc false
   @spec new :: t()
   def new do
     struct!(__MODULE__, [])
   end
 
+  @spec move(t(), Move.options()) :: t()
   def move(path, opts) do
     add(path, Move.new(opts))
   end
