@@ -30,25 +30,41 @@ defmodule Mudbrick.Path do
     end
   end
 
-  defmodule StraightLine do
+  defmodule Move do
+    @type option :: {:to, Mudbrick.coords()}
+
+    @type options :: [option()]
+
+    @type t :: %__MODULE__{
+            to: Mudbrick.coords()
+          }
+
+    @enforce_keys [:to]
+    defstruct to: nil
+
+    @doc false
+    @spec new(options()) :: t()
+    def new(opts) do
+      struct!(__MODULE__, opts)
+    end
+  end
+
+  defmodule Line do
     @type option ::
-            {:from, Mudbrick.coords()}
-            | {:to, Mudbrick.coords()}
+            {:to, Mudbrick.coords()}
             | {:line_width, number()}
             | {:colour, Mudbrick.colour()}
 
     @type options :: [option()]
 
     @type t :: %__MODULE__{
-            from: Mudbrick.coords(),
             to: Mudbrick.coords(),
             line_width: number(),
             colour: Mudbrick.colour()
           }
 
-    @enforce_keys [:from, :to]
-    defstruct from: nil,
-              to: nil,
+    @enforce_keys [:to]
+    defstruct to: nil,
               line_width: 1,
               colour: {0, 0, 0}
 
@@ -59,7 +75,7 @@ defmodule Mudbrick.Path do
     end
   end
 
-  @type sub_path :: Rectangle.t() | StraightLine.t()
+  @type sub_path :: Rectangle.t() | Line.t()
 
   @type t :: %__MODULE__{
           sub_paths: [sub_path()]
@@ -72,9 +88,13 @@ defmodule Mudbrick.Path do
     struct!(__MODULE__, [])
   end
 
-  @spec straight_line(t(), StraightLine.options()) :: t()
-  def straight_line(path, opts) do
-    add(path, StraightLine.new(opts))
+  def move(path, opts) do
+    add(path, Move.new(opts))
+  end
+
+  @spec line(t(), Line.options()) :: t()
+  def line(path, opts) do
+    add(path, Line.new(opts))
   end
 
   @spec rectangle(t(), Rectangle.options()) :: t()

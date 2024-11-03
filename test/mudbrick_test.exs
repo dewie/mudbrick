@@ -6,6 +6,7 @@ defmodule MudbrickTest do
   import Mudbrick.TestHelper
 
   alias Mudbrick.Page
+  alias Mudbrick.Path
 
   test "playground" do
     assert new(

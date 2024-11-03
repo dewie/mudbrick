@@ -20,10 +20,12 @@ defmodule Mudbrick do
       ...>   scale: {100, 100},                           # full page size
       ...>   position: {0, 0}                             # in points (1/72 inch), starts at bottom left
       ...> )
-      ...> |> path(fn p ->
-      ...>   Path.straight_line(p,                        # draw a line
-      ...>     from: {55, 40},                            # starting near the middle of the page
-      ...>     to: {95, 5},                               # ending near at bottom right
+      ...> |> path(fn path ->                             # draw a line
+      ...>   import Path
+      ...>   path
+      ...>   |> move(to: {55, 40})                        # starting near the middle of the page
+      ...>   |> line(
+      ...>     to: {95, 5},                               # ending near the bottom right
       ...>     line_width: 6.0,                           # make it fat
       ...>     colour: {1, 0, 0}                          # make it red
       ...>   )

@@ -14,36 +14,48 @@ defmodule Mudbrick.Path.Output do
     W
   }
 
-  def from(%Mudbrick.Path{} = path) do
-    for sub_path <- Enum.reverse(path.sub_paths), reduce: %__MODULE__{} do
-      acc ->
-        {r, g, b} = sub_path.colour
+  def from(%Mudbrick.Path{sub_paths: []}) do
+    %__MODULE__{}
+  end
 
-        acc
-        |> add(%QPush{})
-        |> add(Rg.new(stroking: true, r: r, g: g, b: b))
-        |> add(%W{width: sub_path.line_width})
-        |> draw(sub_path)
-        |> add(%S{})
-        |> add(%QPop{})
-    end
+  def from(%Mudbrick.Path{} = path) do
+    %__MODULE__{}
+    |> add(%QPush{})
+    |> then(fn output ->
+      for sub_path <- Enum.reverse(path.sub_paths), reduce: output do
+        acc ->
+          case sub_path do
+            %Mudbrick.Path.Move{} = move ->
+              acc
+              |> add(%M{coords: move.to})
+
+            %Mudbrick.Path.Line{} = line ->
+              {r, g, b} = line.colour
+
+              acc
+              |> add(Rg.new(stroking: true, r: r, g: g, b: b))
+              |> add(%W{width: line.line_width})
+              |> add(%L{coords: line.to})
+              |> add(%S{})
+
+            %Mudbrick.Path.Rectangle{} = rect ->
+              {r, g, b} = rect.colour
+
+              acc
+              |> add(Rg.new(stroking: true, r: r, g: g, b: b))
+              |> add(%W{width: rect.line_width})
+              |> add(%Re{
+                lower_left: rect.lower_left,
+                dimensions: rect.dimensions
+              })
+              |> add(%S{})
+          end
+      end
+    end)
+    |> add(%QPop{})
   end
 
   def add(%__MODULE__{} = output, op) do
     %{output | operations: [op | output.operations]}
-  end
-
-  defp draw(path, %Mudbrick.Path.Rectangle{} = sub_path) do
-    path
-    |> add(%Re{
-      lower_left: sub_path.lower_left,
-      dimensions: sub_path.dimensions
-    })
-  end
-
-  defp draw(path, %Mudbrick.Path.StraightLine{} = sub_path) do
-    path
-    |> add(%M{coords: sub_path.from})
-    |> add(%L{coords: sub_path.to})
   end
 end

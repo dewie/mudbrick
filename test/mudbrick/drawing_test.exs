@@ -13,7 +13,8 @@ defmodule Mudbrick.DrawingTest do
   alias Mudbrick.Path.{
     Output,
     Rectangle,
-    StraightLine
+    Line,
+    Move
   }
 
   test "can add drawings to a page" do
@@ -21,13 +22,11 @@ defmodule Mudbrick.DrawingTest do
 
     assert [
              "q",
+             "0 0 m",
              "1 0 0 RG",
              "1 w",
-             "0 0 m",
              "50 60 l",
              "S",
-             "Q",
-             "q",
              "0 0 0 RG",
              "1 w",
              "0 0 50 60 re",
@@ -37,10 +36,10 @@ defmodule Mudbrick.DrawingTest do
              new()
              |> page()
              |> path(fn path ->
-               Path.straight_line(path, from: {0, 0}, to: {50, 60}, colour: {1, 0, 0})
-             end)
-             |> path(fn path ->
-               Path.rectangle(path, lower_left: {0, 0}, dimensions: {50, 60})
+               path
+               |> Path.move(to: {0, 0})
+               |> Path.line(to: {50, 60}, colour: {1, 0, 0})
+               |> Path.rectangle(lower_left: {0, 0}, dimensions: {50, 60})
              end)
              |> Mudbrick.TestHelper.output()
              |> Mudbrick.TestHelper.operations()
@@ -67,14 +66,12 @@ defmodule Mudbrick.DrawingTest do
 
     path =
       new()
-      |> straight_line(from: {0, 0}, to: {50, 50})
+      |> move(to: {50, 50})
+      |> line(to: {50, 50})
 
     assert path.sub_paths == [
-             StraightLine.new(
-               from: {0, 0},
-               to: {50, 50},
-               line_width: 1
-             )
+             Line.new(to: {50, 50}, line_width: 1),
+             Move.new(to: {50, 50})
            ]
   end
 
@@ -109,16 +106,17 @@ defmodule Mudbrick.DrawingTest do
 
     assert [
              "q",
+             "0 650 m",
              "0 0 0 RG",
              "1 w",
-             "0 650 m",
              "460 750 l",
              "S",
              "Q"
            ] =
              operations(fn ->
                new()
-               |> straight_line(from: {0, 650}, to: {460, 750})
+               |> move(to: {0, 650})
+               |> line(to: {460, 750})
              end)
   end
 
@@ -127,16 +125,17 @@ defmodule Mudbrick.DrawingTest do
 
     assert [
              "q",
+             "0 650 m",
              "0 0 0 RG",
              "4.0 w",
-             "0 650 m",
              "460 750 l",
              "S",
              "Q"
            ] =
              operations(fn ->
                new()
-               |> straight_line(from: {0, 650}, to: {460, 750}, line_width: 4.0)
+               |> move(to: {0, 650})
+               |> line(to: {460, 750}, line_width: 4.0)
              end)
   end
 
@@ -145,16 +144,17 @@ defmodule Mudbrick.DrawingTest do
 
     assert [
              "q",
+             "0 650 m",
              "0 1 0 RG",
              "1 w",
-             "0 650 m",
              "460 750 l",
              "S",
              "Q"
            ] =
              operations(fn ->
                new()
-               |> straight_line(from: {0, 650}, to: {460, 750}, colour: {0, 1, 0})
+               |> move(to: {0, 650})
+               |> line(to: {460, 750}, colour: {0, 1, 0})
              end)
   end
 
@@ -165,7 +165,8 @@ defmodule Mudbrick.DrawingTest do
       e =
         assert_raise(Mudbrick.ContentStream.InvalidColour, fn ->
           new()
-          |> straight_line(from: {0, 0}, to: {0, 0}, colour: colour)
+          |> move(to: {0, 0})
+          |> line(to: {100, 0}, colour: colour)
           |> Output.from()
         end)
 
