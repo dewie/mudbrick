@@ -4,7 +4,7 @@ defmodule Mudbrick.ContentStream.Cm do
           | {:scale, Mudbrick.coords()}
           | {:skew, Mudbrick.coords()}
 
-  @type options :: [options()]
+  @type options :: [option()]
 
   @type t :: %__MODULE__{
           position: Mudbrick.coords(),

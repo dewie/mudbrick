@@ -1,5 +1,20 @@
 defmodule Mudbrick.Image do
-  @moduledoc false
+  @type t :: %__MODULE__{
+          file: iodata(),
+          resource_identifier: atom(),
+          width: number(),
+          height: number(),
+          bits_per_component: number(),
+          filter: :DCTDecode
+        }
+
+  @type scale_dimension :: number() | :auto
+  @type scale :: {scale_dimension(), scale_dimension()}
+  @type image_option ::
+          {:position, Mudbrick.coords()}
+          | {:scale, scale()}
+          | {:skew, Mudbrick.coords()}
+  @type image_options :: [image_option()]
 
   @enforce_keys [:file, :resource_identifier]
   defstruct [
@@ -8,9 +23,12 @@ defmodule Mudbrick.Image do
     :width,
     :height,
     :bits_per_component,
-    :colour_space,
     :filter
   ]
+
+  defmodule AutoScalingError do
+    defexception [:message]
+  end
 
   defmodule Unregistered do
     defexception [:message]
@@ -23,6 +41,8 @@ defmodule Mudbrick.Image do
   alias Mudbrick.Document
   alias Mudbrick.Stream
 
+  @doc false
+  @spec new(Keyword.t()) :: t()
   def new(opts) do
     struct!(
       __MODULE__,
@@ -33,6 +53,7 @@ defmodule Mudbrick.Image do
     )
   end
 
+  @doc false
   def add_objects(doc, images) do
     {doc, image_objects, _id} =
       for {human_name, image_opts} <- images, reduce: {doc, %{}, 0} do

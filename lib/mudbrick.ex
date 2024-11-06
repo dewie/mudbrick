@@ -134,7 +134,7 @@ defmodule Mudbrick do
   ## Options
 
   - `:position` - `{x, y}` in points, relative to bottom-left corner.
-  - `:scale` - `{w, h}` in points.
+  - `:scale` - `{w, h}` in points. To preserve aspect ratio, set either, but not both, to `:auto`.
   - `:skew` - `{x, y}`, passed through to PDF `cm` operator.
 
   All options default to `{0, 0}`.
@@ -145,16 +145,35 @@ defmodule Mudbrick do
       ...> |> Mudbrick.page()
       ...> |> Mudbrick.image(:lovely_flower, position: {100, 100}, scale: {100, 100})
 
+  Forgetting to register the image:
+
       iex> Mudbrick.new()
       ...> |> Mudbrick.page()
       ...> |> Mudbrick.image(:my_face, position: {100, 100}, scale: {100, 100})
       ** (Mudbrick.Image.Unregistered) Unregistered image: my_face
 
+  Auto height:
+
+      iex> Mudbrick.new(images: %{lovely_flower: [file: Mudbrick.TestHelper.flower()]})
+      ...> |> Mudbrick.page(size: {50, 50})
+      ...> |> Mudbrick.image(:lovely_flower, position: {0, 0}, scale: {50, :auto})
+      ...> |> Mudbrick.render()
+      ...> |> then(&File.write("examples/image_auto_aspect_scale.pdf", &1))
+
+  <object width="400" height="100" data="examples/image_auto_aspect_scale.pdf?#navpanes=0" type="application/pdf"></object>
+
+  Attempting to set both width and height to `:auto`:
+
+      iex> Mudbrick.new(images: %{lovely_flower: [file: Mudbrick.TestHelper.flower()]})
+      ...> |> Mudbrick.page()
+      ...> |> Mudbrick.image(:lovely_flower, position: {100, 100}, scale: {:auto, :auto})
+      ** (Mudbrick.Image.AutoScalingError) Auto scaling works with width or height, but not both.
+
   Tip: to make the image fit the page, pass e.g. `Page.size(:a4)` as the
   `scale` and `{0, 0}` as the `position`.
   """
 
-  @spec image(context(), atom(), ContentStream.Cm.options()) :: context()
+  @spec image(context(), atom(), Image.image_options()) :: context()
   def image({doc, _content_stream_obj} = context, user_identifier, opts \\ []) do
     import ContentStream
 
@@ -162,7 +181,7 @@ defmodule Mudbrick do
       {:ok, image} ->
         context
         |> add(%ContentStream.QPush{})
-        |> add(ContentStream.Cm.new(opts))
+        |> add(ContentStream.Cm.new(cm_opts(image.value, opts)))
         |> add(%ContentStream.Do{image: image.value})
         |> add(%ContentStream.QPop{})
 
@@ -280,6 +299,29 @@ defmodule Mudbrick do
     |> ContentStream.update_operations(fn ops ->
       Path.Output.from(path).operations ++ ops
     end)
+  end
+
+  @spec cm_opts(Mudbrick.Image.t(), Image.image_options()) :: Mudbrick.ContentStream.Cm.options()
+  defp cm_opts(image, image_opts) do
+    scale =
+      case image_opts[:scale] do
+        {:auto, :auto} ->
+          raise Mudbrick.Image.AutoScalingError,
+                "Auto scaling works with width or height, but not both."
+
+        {w, :auto} ->
+          ratio = w / image.width
+          {w, image.height * ratio}
+
+        {:auto, h} ->
+          ratio = h / image.height
+          {image.width * ratio, h}
+
+        otherwise ->
+          otherwise
+      end
+
+    Keyword.put(image_opts, :scale, scale)
   end
 
   defp fetch_font(doc, opts) do

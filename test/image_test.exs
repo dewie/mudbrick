@@ -30,6 +30,40 @@ defmodule Mudbrick.ImageTest do
     end
   end
 
+  test "specifying :auto height maintains aspect ratio" do
+    assert [
+             "q",
+             "100 0 0 95.4 123 456 cm",
+             "/I1 Do",
+             "Q"
+           ] =
+             new(images: %{flower: [file: flower()]})
+             |> page()
+             |> image(
+               :flower,
+               position: {123, 456},
+               scale: {100, :auto}
+             )
+             |> operations()
+  end
+
+  test "specifying :auto width maintains aspect ratio" do
+    assert [
+             "q",
+             "52.41090146750524 0 0 50 123 456 cm",
+             "/I1 Do",
+             "Q"
+           ] =
+             new(images: %{flower: [file: flower()]})
+             |> page()
+             |> image(
+               :flower,
+               position: {123, 456},
+               scale: {:auto, 50}
+             )
+             |> operations()
+  end
+
   test "asking for a registered image produces an isolated cm/Do operation" do
     assert [
              "q",
