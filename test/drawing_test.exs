@@ -70,7 +70,7 @@ defmodule Mudbrick.DrawingTest do
       |> line(to: {50, 50})
 
     assert path.sub_paths == [
-             Line.new(to: {50, 50}, line_width: 1),
+             Line.new(to: {50, 50}, width: 1),
              Move.new(to: {50, 50})
            ]
   end
@@ -135,7 +135,7 @@ defmodule Mudbrick.DrawingTest do
              operations(fn ->
                new()
                |> move(to: {0, 650})
-               |> line(to: {460, 750}, line_width: 4.0)
+               |> line(to: {460, 750}, width: 4.0)
              end)
   end
 

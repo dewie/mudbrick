@@ -26,7 +26,7 @@ defmodule Mudbrick do
       ...>   |> move(to: {55, 40})                        # starting near the middle of the page
       ...>   |> line(
       ...>     to: {95, 5},                               # ending near the bottom right
-      ...>     line_width: 6.0,                           # make it fat
+      ...>     width: 6.0,                                # make it fat
       ...>     colour: {1, 0, 0}                          # make it red
       ...>   )
       ...> end)
@@ -280,7 +280,7 @@ defmodule Mudbrick do
       ...>   import Mudbrick.Path
       ...>   path
       ...>   |> move(to: {0, 0})
-      ...>   |> line(to: {50, 50}, colour: {1, 0, 0}, line_width: 9)
+      ...>   |> line(to: {50, 50}, colour: {1, 0, 0}, width: 9)
       ...>   |> rectangle(lower_left: {0, 0}, dimensions: {50, 60})
       ...> end)
       ...> |> render()

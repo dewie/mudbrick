@@ -50,20 +50,20 @@ defmodule Mudbrick.Path do
   defmodule Line do
     @type option ::
             {:to, Mudbrick.coords()}
-            | {:line_width, number()}
+            | {:width, number()}
             | {:colour, Mudbrick.colour()}
 
     @type options :: [option()]
 
     @type t :: %__MODULE__{
             to: Mudbrick.coords(),
-            line_width: number(),
+            width: number(),
             colour: Mudbrick.colour()
           }
 
     @enforce_keys [:to]
     defstruct to: nil,
-              line_width: 1,
+              width: 1,
               colour: {0, 0, 0}
 
     @doc false

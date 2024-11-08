@@ -34,7 +34,7 @@ defmodule Mudbrick.Path.Output do
 
               acc
               |> add(Rg.new(stroking: true, r: r, g: g, b: b))
-              |> add(%W{width: line.line_width})
+              |> add(%W{width: line.width})
               |> add(%L{coords: line.to})
               |> add(%S{})
 
