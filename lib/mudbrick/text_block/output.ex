@@ -107,15 +107,17 @@ defmodule Mudbrick.TextBlock.Output do
         } = tb
       ) do
     tl = %TL{leading: leading(tb)}
+    tf = %Tf{font: font, size: font_size}
 
     %__MODULE__{font: font, font_size: font_size}
     |> end_block()
     |> LeftAlign.reduce_lines(tb.lines)
     |> add(%Td{tx: x, ty: y})
     |> add(tl)
-    |> add(%Tf{font: font, size: font_size})
+    |> add(tf)
     |> start_block()
-    |> deduplicate_leading(tl)
+    |> deduplicate(tl)
+    |> deduplicate(tf)
   end
 
   def from(
@@ -125,12 +127,15 @@ defmodule Mudbrick.TextBlock.Output do
           font_size: font_size
         } = tb
       ) do
+    tf = %Tf{font: font, size: font_size}
+
     %__MODULE__{font: font, font_size: font_size}
     |> RightAlign.reduce_lines(tb.lines, fn output, line, line_number ->
       right_offset(output, tb, line, line_number)
     end)
     |> add(%TL{leading: leading(tb)})
-    |> add(%Tf{font: font, size: font_size})
+    |> add(tf)
+    |> deduplicate(tf)
   end
 
   def add(%__MODULE__{} = output, op) do
@@ -182,32 +187,32 @@ defmodule Mudbrick.TextBlock.Output do
     {x, y} = tb.position
 
     add(output, %Td{
-      tx: x - Line.width(line, tb),
+      tx: x - Line.width(line),
       ty: y - leading(tb) * n
     })
   end
 
-  defp deduplicate_leading(output, tl) do
+  defp deduplicate(output, initial_operator) do
     Map.update!(output, :operations, fn ops ->
-      {_, ops} = List.foldl(ops, {tl, []}, &deduplicate_leading_step/2)
+      {_, ops} =
+        List.foldl(ops, {initial_operator, []}, fn
+          current_operator, {current_operator, acc} ->
+            if current_operator in acc do
+              {current_operator, acc}
+            else
+              {current_operator, [current_operator | acc]}
+            end
+
+          op, {current_operator, acc} ->
+            if op.__struct__ == initial_operator.__struct__ do
+              {op, [op | acc]}
+            else
+              {current_operator, [op | acc]}
+            end
+        end)
+
       Enum.reverse(ops)
     end)
-  end
-
-  defp deduplicate_leading_step(current_tl, {current_tl, acc}) do
-    if current_tl in acc do
-      {current_tl, acc}
-    else
-      {current_tl, [current_tl | acc]}
-    end
-  end
-
-  defp deduplicate_leading_step(%TL{} = new_tl, {_current_tl, acc}) do
-    {new_tl, [new_tl | acc]}
-  end
-
-  defp deduplicate_leading_step(op, {current_tl, acc}) do
-    {current_tl, [op | acc]}
   end
 
   defp remove(output, operation) do

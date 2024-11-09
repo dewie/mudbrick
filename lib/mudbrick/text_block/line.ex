@@ -6,21 +6,27 @@ defmodule Mudbrick.TextBlock.Line do
   defmodule Part do
     @moduledoc false
 
+    @enforce_keys [
+      :colour,
+      :font,
+      :font_size,
+      :text
+    ]
     defstruct colour: {0, 0, 0},
               font: nil,
               font_size: nil,
               text: ""
 
-    def width(part, default_font, default_font_size) do
+    def width(part) do
       Mudbrick.Font.width(
-        part.font || default_font,
-        part.font_size || default_font_size,
+        part.font,
+        part.font_size,
         part.text
       )
     end
 
     def wrap(text, opts) when text != "" do
-      struct(%Part{text: text}, opts)
+      struct(__MODULE__, Keyword.put_new(opts, :text, text))
     end
   end
 
@@ -43,11 +49,11 @@ defmodule Mudbrick.TextBlock.Line do
     end
   end
 
-  def width(line, text_block) do
+  def width(line) do
     for part <- line.parts, reduce: 0.0 do
       acc ->
         acc +
-          Part.width(part, text_block.font, text_block.font_size)
+          Part.width(part)
     end
   end
 end

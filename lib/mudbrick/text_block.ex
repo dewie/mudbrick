@@ -66,9 +66,16 @@ defmodule Mudbrick.TextBlock do
     line_texts = String.split(text, "\n")
 
     opts =
-      opts
-      |> Keyword.put_new(:colour, tb.colour)
-      |> Keyword.put_new(:leading, tb.leading)
+      Keyword.merge(
+        [
+          colour: tb.colour,
+          font_size: tb.font_size,
+          font: tb.font,
+          leading: tb.leading
+        ],
+        opts,
+        &prefer_lhs_over_nil/3
+      )
 
     Map.update!(tb, :lines, fn
       [] ->
@@ -102,4 +109,7 @@ defmodule Mudbrick.TextBlock do
       acc -> [Line.wrap(text, opts) | acc]
     end
   end
+
+  defp prefer_lhs_over_nil(_key, lhs, nil), do: lhs
+  defp prefer_lhs_over_nil(_key, _lhs, rhs), do: rhs
 end

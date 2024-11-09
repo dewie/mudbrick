@@ -16,9 +16,18 @@ defmodule Mudbrick.TextBlockTest do
       |> TextBlock.write("first\nsecond\nthird", colour: {0, 0, 0})
 
     assert block.lines == [
-             %Line{leading: 12, parts: [%Part{text: "third"}]},
-             %Line{leading: 12, parts: [%Part{text: "second"}]},
-             %Line{leading: 12, parts: [%Part{text: "first"}]}
+             %Line{
+               leading: 12,
+               parts: [%Part{font: nil, colour: {0, 0, 0}, text: "third", font_size: 10}]
+             },
+             %Line{
+               leading: 12,
+               parts: [%Part{font: nil, colour: {0, 0, 0}, text: "second", font_size: 10}]
+             },
+             %Line{
+               leading: 12,
+               parts: [%Part{font: nil, colour: {0, 0, 0}, text: "first", font_size: 10}]
+             }
            ]
   end
 
@@ -40,20 +49,33 @@ defmodule Mudbrick.TextBlockTest do
       |> TextBlock.write("\nfourth", colour: {0, 1, 0}, font_size: 24)
 
     assert block.lines == [
-             %Line{leading: 14, parts: [%Part{text: "fourth", colour: {0, 1, 0}, font_size: 24}]},
-             %Line{
-               leading: 16,
-               parts: [
-                 %Part{text: "line", colour: {0, 0, 1}},
-                 %Part{text: "third ", colour: {0, 0, 1}}
-               ]
-             },
-             %Line{leading: 14, parts: [%Part{text: "second line", colour: {0, 0, 1}}]},
              %Line{
                leading: 14,
                parts: [
-                 %Part{text: "line", colour: {0, 0, 1}},
-                 %Part{text: "first ", colour: {1, 0, 0}}
+                 %Part{
+                   colour: {0, 1, 0},
+                   font: nil,
+                   font_size: 24,
+                   text: "fourth"
+                 }
+               ]
+             },
+             %Line{
+               leading: 16,
+               parts: [
+                 %Part{font: nil, font_size: 10, text: "line", colour: {0, 0, 1}},
+                 %Part{font: nil, font_size: 10, text: "third ", colour: {0, 0, 1}}
+               ]
+             },
+             %Line{
+               leading: 14,
+               parts: [%Part{font: nil, font_size: 10, text: "second line", colour: {0, 0, 1}}]
+             },
+             %Line{
+               leading: 14,
+               parts: [
+                 %Part{font: nil, font_size: 10, text: "line", colour: {0, 0, 1}},
+                 %Part{font: nil, font_size: 10, text: "first ", colour: {1, 0, 0}}
                ]
              }
            ]
@@ -70,8 +92,14 @@ defmodule Mudbrick.TextBlockTest do
         |> TextBlock.write("this is 12")
 
       assert block.lines == [
-               %Line{leading: 12, parts: [%Part{text: "this is 12"}]},
-               %Line{leading: 14, parts: [%Part{text: "this is 14"}]}
+               %Line{
+                 leading: 12,
+                 parts: [%Part{colour: {0, 0, 0}, font: nil, font_size: 10, text: "this is 12"}]
+               },
+               %Line{
+                 leading: 14,
+                 parts: [%Part{colour: {0, 0, 0}, font: nil, font_size: 10, text: "this is 14"}]
+               }
              ]
     end
   end

@@ -17,6 +17,30 @@ defmodule Mudbrick.TextTest do
     ]
   }
 
+  test "parts inherit fonts" do
+    assert [
+             "/F1 14 Tf",
+             "16.8 TL",
+             "BT",
+             "171.65 700.0 Td",
+             "1 0 0 rg",
+             "<00110055017401B7> Tj",
+             "ET"
+           ] =
+             new(
+               compress: false,
+               fonts: %{bodoni: [file: bodoni_regular()]}
+             )
+             |> page()
+             |> text({"CO₂ ", colour: {1, 0, 0}},
+               font: :bodoni,
+               font_size: 14,
+               align: :right,
+               position: {200, 700}
+             )
+             |> operations()
+  end
+
   describe "with compression enabled" do
     test "compresses text stream" do
       text = "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
