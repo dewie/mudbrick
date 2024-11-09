@@ -16,6 +16,7 @@ defmodule Mudbrick.TextBlock.Line do
     defstruct colour: {0, 0, 0},
               font: nil,
               font_size: nil,
+              left_offset: nil,
               text: ""
 
     def width(part) do

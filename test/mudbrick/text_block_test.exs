@@ -18,15 +18,39 @@ defmodule Mudbrick.TextBlockTest do
     assert [
              %Line{
                leading: 12.0,
-               parts: [%Part{colour: {0, 0, 0}, font: nil, font_size: 10, text: "third"}]
+               parts: [
+                 %Part{
+                   colour: {0, 0, 0},
+                   font: nil,
+                   font_size: 10,
+                   left_offset: {+0.0, -24.0},
+                   text: "third"
+                 }
+               ]
              },
              %Line{
                leading: 12.0,
-               parts: [%Part{colour: {0, 0, 0}, font: nil, font_size: 10, text: "second"}]
+               parts: [
+                 %Part{
+                   colour: {0, 0, 0},
+                   font: nil,
+                   font_size: 10,
+                   left_offset: {+0.0, -12.0},
+                   text: "second"
+                 }
+               ]
              },
              %Line{
                leading: 12.0,
-               parts: [%Part{colour: {0, 0, 0}, font: nil, font_size: 10, text: "first"}]
+               parts: [
+                 %Part{
+                   colour: {0, 0, 0},
+                   font: nil,
+                   font_size: 10,
+                   left_offset: {+0.0, -0.0},
+                   text: "first"
+                 }
+               ]
              }
            ] = block.lines
   end
@@ -48,7 +72,7 @@ defmodule Mudbrick.TextBlockTest do
       |> TextBlock.write("line")
       |> TextBlock.write("\nfourth", colour: {0, 1, 0}, font_size: 24)
 
-    assert block.lines == [
+    assert [
              %Line{
                leading: 14,
                parts: [
@@ -73,7 +97,7 @@ defmodule Mudbrick.TextBlockTest do
                  %Part{colour: {1, 0, 0}, font: nil, font_size: 10, text: "first "}
                ]
              }
-           ]
+           ] = block.lines
   end
 
   describe "leading" do

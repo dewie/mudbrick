@@ -63,6 +63,32 @@ defmodule Mudbrick.TextBlock do
   @doc false
   @spec write(t(), String.t(), options()) :: t()
   def write(tb, text, opts \\ []) do
+    tb
+    |> write_lines(text, opts)
+    |> assign_offsets()
+  end
+
+  defp assign_offsets(tb) do
+    {_, lines} =
+      for line <- Enum.reverse(tb.lines), reduce: {0.0, []} do
+        {y, lines} ->
+          {y - line.leading,
+           [
+             %{
+               line
+               | parts:
+                   for part <- line.parts do
+                     %{part | left_offset: {0.0, y}}
+                   end
+             }
+             | lines
+           ]}
+      end
+
+    %{tb | lines: lines}
+  end
+
+  defp write_lines(tb, text, opts) do
     line_texts = String.split(text, "\n")
 
     text_block_opts = [
