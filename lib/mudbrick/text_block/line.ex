@@ -11,6 +11,14 @@ defmodule Mudbrick.TextBlock.Line do
               font_size: nil,
               text: ""
 
+    def width(part, default_font, default_font_size) do
+      Mudbrick.Font.width(
+        part.font || default_font,
+        part.font_size || default_font_size,
+        part.text
+      )
+    end
+
     def wrap(text, opts) when text != "" do
       struct(%Part{text: text}, opts)
     end
@@ -39,11 +47,7 @@ defmodule Mudbrick.TextBlock.Line do
     for part <- line.parts, reduce: 0.0 do
       acc ->
         acc +
-          Mudbrick.Font.width(
-            part.font || text_block.font,
-            part.font_size || text_block.font_size,
-            part.text
-          )
+          Part.width(part, text_block.font, text_block.font_size)
     end
   end
 end
