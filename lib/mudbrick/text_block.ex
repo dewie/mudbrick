@@ -29,7 +29,7 @@ defmodule Mudbrick.TextBlock do
   @type t :: %__MODULE__{
           align: alignment(),
           colour: Mudbrick.colour(),
-          font: atom(),
+          font: Mudbrick.Font.t(),
           font_size: number(),
           lines: list(),
           position: Mudbrick.coords(),

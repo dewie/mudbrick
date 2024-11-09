@@ -1,6 +1,16 @@
 defmodule Mudbrick.Font do
   @moduledoc false
 
+  @type t :: %__MODULE__{
+          descendant: Mudbrick.Indirect.Object.t(),
+          encoding: atom(),
+          name: atom(),
+          resource_identifier: atom(),
+          to_unicode: Mudbrick.Indirect.Object.t(),
+          type: atom(),
+          parsed: map()
+        }
+
   @enforce_keys [
     :name,
     :resource_identifier,
