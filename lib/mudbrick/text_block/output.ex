@@ -194,25 +194,31 @@ defmodule Mudbrick.TextBlock.Output do
 
   defp deduplicate(output, initial_operator) do
     Map.update!(output, :operations, fn ops ->
-      {_, ops} =
-        List.foldl(ops, {initial_operator, []}, fn
-          current_operator, {current_operator, acc} ->
-            if current_operator in acc do
-              {current_operator, acc}
-            else
-              {current_operator, [current_operator | acc]}
-            end
-
-          op, {current_operator, acc} ->
-            if op.__struct__ == initial_operator.__struct__ do
-              {op, [op | acc]}
-            else
-              {current_operator, [op | acc]}
-            end
-        end)
-
-      Enum.reverse(ops)
+      ops
+      |> deduplicate_update(initial_operator)
+      |> Enum.reverse()
     end)
+  end
+
+  defp deduplicate_update(ops, initial_operator) do
+    {_, ops} =
+      List.foldl(ops, {initial_operator, []}, fn
+        current_operator, {current_operator, acc} ->
+          if current_operator in acc do
+            {current_operator, acc}
+          else
+            {current_operator, [current_operator | acc]}
+          end
+
+        op, {current_operator, acc} ->
+          if op.__struct__ == initial_operator.__struct__ do
+            {op, [op | acc]}
+          else
+            {current_operator, [op | acc]}
+          end
+      end)
+
+    ops
   end
 
   defp remove(output, operation) do
