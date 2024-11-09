@@ -1,6 +1,7 @@
 defmodule Mudbrick.TextBlock.Line do
   @moduledoc false
 
+  @enforce_keys [:leading, :parts]
   defstruct leading: nil, parts: []
 
   defmodule Part do
@@ -25,24 +26,24 @@ defmodule Mudbrick.TextBlock.Line do
       )
     end
 
-    def wrap(text, opts) when text != "" do
+    def new(text, opts) when text != "" do
       struct(__MODULE__, Keyword.put_new(opts, :text, text))
     end
   end
 
-  def wrap("", _prefer_options_from_subsequent_appends) do
-    %__MODULE__{}
+  def wrap("", opts) do
+    struct(__MODULE__, opts)
   end
 
   def wrap(text, opts) do
-    struct(%__MODULE__{parts: [Part.wrap(text, opts)]}, opts)
+    struct(__MODULE__, Keyword.put(opts, :parts, [Part.new(text, opts)]))
   end
 
   def append(line, text, opts) do
-    line = Map.update!(line, :parts, &[Part.wrap(text, opts) | &1])
+    line = Map.update!(line, :parts, &[Part.new(text, opts) | &1])
     new_leading = Keyword.fetch!(opts, :leading)
 
-    if line.leading == nil or new_leading > line.leading do
+    if new_leading > line.leading do
       Map.put(line, :leading, new_leading)
     else
       line
@@ -51,9 +52,7 @@ defmodule Mudbrick.TextBlock.Line do
 
   def width(line) do
     for part <- line.parts, reduce: 0.0 do
-      acc ->
-        acc +
-          Part.width(part)
+      acc -> acc + Part.width(part)
     end
   end
 end

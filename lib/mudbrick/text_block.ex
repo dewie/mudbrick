@@ -65,34 +65,36 @@ defmodule Mudbrick.TextBlock do
   def write(tb, text, opts \\ []) do
     line_texts = String.split(text, "\n")
 
+    text_block_opts = [
+      colour: tb.colour,
+      font_size: tb.font_size,
+      font: tb.font,
+      leading: tb.leading
+    ]
+
     opts =
       Keyword.merge(
-        [
-          colour: tb.colour,
-          font_size: tb.font_size,
-          font: tb.font,
-          leading: tb.leading
-        ],
+        text_block_opts,
         opts,
         &prefer_lhs_over_nil/3
       )
 
     Map.update!(tb, :lines, fn
       [] ->
-        add_texts([], line_texts, opts)
+        add_texts([], line_texts, opts, text_block_opts)
 
       existing_lines ->
         case line_texts do
           # \n at beginning of new line
           ["" | new_line_texts] ->
             existing_lines
-            |> add_texts(new_line_texts, opts)
+            |> add_texts(new_line_texts, opts, text_block_opts)
 
           # didn't start with \n, so first part belongs to previous line
           [first_new_line_text | new_line_texts] ->
             existing_lines
             |> update_previous_line(first_new_line_text, opts)
-            |> add_texts(new_line_texts, opts)
+            |> add_texts(new_line_texts, opts, text_block_opts)
         end
     end)
   end
@@ -104,9 +106,14 @@ defmodule Mudbrick.TextBlock do
     ]
   end
 
-  defp add_texts(existing_lines, new_line_texts, opts) do
+  defp add_texts(existing_lines, new_line_texts, opts, opts_for_empty_lines) do
     for text <- new_line_texts, reduce: existing_lines do
-      acc -> [Line.wrap(text, opts) | acc]
+      acc ->
+        if text == "" do
+          [Line.wrap(text, opts_for_empty_lines) | acc]
+        else
+          [Line.wrap(text, opts) | acc]
+        end
     end
   end
 
