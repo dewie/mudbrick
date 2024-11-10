@@ -87,12 +87,8 @@ defmodule Mudbrick.TextBlock do
                      {_, parts} =
                        for part <- Enum.reverse(line.parts), reduce: {0.0, []} do
                          {x, parts} ->
-                           if part.font && part.font.parsed do
-                             width = Line.Part.width(part)
-                             {x + width, [%{part | left_offset: {x, y}} | parts]}
-                           else
-                             {x, [part | parts]}
-                           end
+                           width = Line.Part.width(part)
+                           {x + width, [%{part | left_offset: {x, y}} | parts]}
                        end
 
                      parts

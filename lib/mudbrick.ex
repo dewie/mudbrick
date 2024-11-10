@@ -8,7 +8,7 @@ defmodule Mudbrick do
 
       iex> import Mudbrick.TestHelper                     # import some example fonts and images
       ...> import Mudbrick
-      ...> alias Mudbrick.{Page, Path}
+      ...> alias Mudbrick.Path
       ...> new(
       ...>   compress: true,                              # flate compression for fonts, text etc.
       ...>   fonts: %{bodoni: [file: bodoni_regular()]},  # register an OTF font
@@ -83,10 +83,6 @@ defmodule Mudbrick do
   Register an OTF font. Pass the file's raw data to the `:file` option.
 
       iex> Mudbrick.new(fonts: %{bodoni: [file: Mudbrick.TestHelper.bodoni_regular()]})
-
-  Or a built-in font. Note that these don't support right-alignment or special characters.
-
-      iex> Mudbrick.new(fonts: %{helvetica: [name: :Helvetica, type: :TrueType, encoding: :PDFDocEncoding]})
 
   Register an image.
 

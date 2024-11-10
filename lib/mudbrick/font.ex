@@ -25,10 +25,6 @@ defmodule Mudbrick.Font do
     :parsed
   ]
 
-  defmodule NotMeasured do
-    defexception [:message]
-  end
-
   defmodule Unregistered do
     defexception [:message]
   end
@@ -88,10 +84,6 @@ defmodule Mudbrick.Font do
   end
 
   @doc false
-  def width(%Font{parsed: nil}, _size, _text) do
-    raise Font.NotMeasured, "Built-in fonts aren't alignable yet"
-  end
-
   def width(_font, _size, "") do
     0
   end
@@ -170,30 +162,14 @@ defmodule Mudbrick.Font do
 
   defimpl Mudbrick.Object do
     def from(font) do
-      Object.from(
-        %{
-          Type: :Font,
-          BaseFont: font.name,
-          Subtype: font.type
-        }
-        |> optional(:Encoding, font.encoding)
-        |> Map.merge(
-          if font.descendant,
-            do: %{
-              DescendantFonts: [font.descendant.ref],
-              ToUnicode: font.to_unicode.ref
-            },
-            else: %{}
-        )
-      )
-    end
-
-    defp optional(orig, _name, nil) do
-      orig
-    end
-
-    defp optional(orig, name, value) do
-      Map.put(orig, name, value)
+      Object.from(%{
+        Type: :Font,
+        BaseFont: font.name,
+        Subtype: font.type,
+        Encoding: font.encoding,
+        DescendantFonts: [font.descendant.ref],
+        ToUnicode: font.to_unicode.ref
+      })
     end
   end
 end

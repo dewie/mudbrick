@@ -6,81 +6,30 @@ defmodule Mudbrick.PredicatesTest do
   import Mudbrick.Predicates
   import Mudbrick.TestHelper
 
-  describe "with direct glyph encoding" do
-    test "with compression, can assert/refute that a piece of text appears" do
-      raw_pdf =
-        new(compress: true, fonts: %{bodoni: [file: bodoni_regular()]})
-        |> page()
-        |> text(
-          "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWhello, CO₂!WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-          font: :bodoni,
-          font_size: 100
-        )
-        |> render()
-        |> IO.iodata_to_binary()
+  test "with compression, can assert/refute that a piece of text appears" do
+    raw_pdf =
+      new(compress: true, fonts: %{bodoni: [file: bodoni_regular()]})
+      |> page()
+      |> text(
+        "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWhello, CO₂!WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+        font: :bodoni,
+        font_size: 100
+      )
+      |> render()
+      |> IO.iodata_to_binary()
 
-      assert raw_pdf |> has_text?("hello, CO₂!", in_font: bodoni_regular())
-      refute raw_pdf |> has_text?("good morning!", in_font: bodoni_regular())
-    end
-
-    test "without compression, can assert/refute that a piece of text appears" do
-      raw_pdf =
-        new(fonts: %{bodoni: [file: bodoni_regular()]})
-        |> page()
-        |> text("hello, world!", font: :bodoni, font_size: 100)
-        |> render()
-
-      assert raw_pdf |> has_text?("hello, world!", in_font: bodoni_regular())
-      refute raw_pdf |> has_text?("good morning!", in_font: bodoni_regular())
-    end
+    assert raw_pdf |> has_text?("hello, CO₂!", in_font: bodoni_regular())
+    refute raw_pdf |> has_text?("good morning!", in_font: bodoni_regular())
   end
 
-  describe "with standard encoding" do
-    test "with compression, can assert/refute that a piece of text appears" do
-      raw_pdf =
-        new(
-          compress: true,
-          fonts: %{
-            helvetica: [
-              name: :Helvetica,
-              type: :TrueType,
-              encoding: :PDFDocEncoding
-            ]
-          }
-        )
-        |> page()
-        |> text(
-          "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWhello, world!WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-          font: :helvetica,
-          font_size: 100
-        )
-        |> render()
+  test "without compression, can assert/refute that a piece of text appears" do
+    raw_pdf =
+      new(fonts: %{bodoni: [file: bodoni_regular()]})
+      |> page()
+      |> text("hello, world!", font: :bodoni, font_size: 100)
+      |> render()
 
-      assert raw_pdf |> has_text?("hello, world!")
-      refute raw_pdf |> has_text?("good morning!")
-    end
-
-    test "without compression, can assert/refute that a piece of text appears" do
-      raw_pdf =
-        new(
-          fonts: %{
-            helvetica: [
-              name: :Helvetica,
-              type: :TrueType,
-              encoding: :PDFDocEncoding
-            ]
-          }
-        )
-        |> page()
-        |> text(
-          "hello, world!",
-          font: :helvetica,
-          font_size: 100
-        )
-        |> render()
-
-      assert raw_pdf |> has_text?("hello, world!")
-      refute raw_pdf |> has_text?("good morning!")
-    end
+    assert raw_pdf |> has_text?("hello, world!", in_font: bodoni_regular())
+    refute raw_pdf |> has_text?("good morning!", in_font: bodoni_regular())
   end
 end

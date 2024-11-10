@@ -9,14 +9,6 @@ defmodule Mudbrick.TextTest do
   alias Mudbrick.Font
   alias Mudbrick.Indirect
 
-  @fonts_helvetica %{
-    helvetica: [
-      name: :Helvetica,
-      type: :TrueType,
-      encoding: :PDFDocEncoding
-    ]
-  }
-
   test "parts inherit fonts" do
     assert [
              "/F1 14 Tf",
@@ -46,14 +38,14 @@ defmodule Mudbrick.TextTest do
       text = "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
 
       {_doc, compressed_content_stream} =
-        new(compress: true, fonts: @fonts_helvetica)
+        new(fonts: %{bodoni: [file: bodoni_regular()]}, compress: true)
         |> page()
-        |> text(text, font: :helvetica, font_size: 10)
+        |> text(text, font: :bodoni, font_size: 10)
 
       {_doc, uncompressed_content_stream} =
-        new(compress: false, fonts: @fonts_helvetica)
+        new(fonts: %{bodoni: [file: bodoni_regular()]}, compress: false)
         |> page()
-        |> text(text, font: :helvetica, font_size: 10)
+        |> text(text, font: :bodoni, font_size: 10)
 
       assert IO.iodata_length(Mudbrick.Object.from(compressed_content_stream)) <
                IO.iodata_length(Mudbrick.Object.from(uncompressed_content_stream))
@@ -67,14 +59,14 @@ defmodule Mudbrick.TextTest do
              "14 TL",
              "0 0 Td",
              "0 0 0 rg",
-             "(hello there) Tj",
+             "<00D500C000ED00ED00FC01B7011D00D500C0010F00C0> Tj",
              "ET"
            ] =
-             new(fonts: @fonts_helvetica)
+             new(fonts: %{bodoni: [file: bodoni_regular()]})
              |> page()
              |> text(
                "hello there",
-               font: :helvetica,
+               font: :bodoni,
                font_size: 10,
                leading: 14
              )
@@ -97,7 +89,7 @@ defmodule Mudbrick.TextTest do
 
     test "can be set on a text block" do
       {_doc, content_stream} =
-        new(fonts: @fonts_helvetica)
+        new(fonts: %{bodoni: [file: bodoni_regular()]})
         |> page()
         |> text(
           [
@@ -107,7 +99,7 @@ defmodule Mudbrick.TextTest do
             text\
             """
           ],
-          font: :helvetica,
+          font: :bodoni,
           font_size: 10,
           colour: {1.0, 0.0, 0.0}
         )
@@ -119,16 +111,16 @@ defmodule Mudbrick.TextTest do
                12.0 TL
                0 0 Td
                1.0 0.0 0.0 rg
-               (this is all ) Tj
-               (red) Tj
-               (text) '
+               <011D00D500D9011601B700D9011601B700A500ED00ED01B7> Tj
+               <010F00C000BB> Tj
+               <011D00C0013D011D> '
                ET
                """
     end
 
     test "can be set on part of a text block" do
       {_doc, content_stream} =
-        new(fonts: @fonts_helvetica)
+        new(fonts: %{bodoni: [file: bodoni_regular()]})
         |> page()
         |> text(
           [
@@ -138,7 +130,7 @@ defmodule Mudbrick.TextTest do
              text\
              """, colour: {1.0, 0.0, 0.0}}
           ],
-          font: :helvetica,
+          font: :bodoni,
           font_size: 10
         )
 
@@ -149,46 +141,13 @@ defmodule Mudbrick.TextTest do
                12.0 TL
                0 0 Td
                0 0 0 rg
-               (black and ) Tj
+               <00B400ED00A500B500EA01B700A500F400BB01B7> Tj
                1.0 0.0 0.0 rg
-               (red) Tj
-               (text) '
+               <010F00C000BB> Tj
+               <011D00C0013D011D> '
                ET
                """
     end
-  end
-
-  test "right-alignment is unsupported for built-in fonts right now" do
-    assert_raise(Font.NotMeasured, fn ->
-      new(fonts: @fonts_helvetica)
-      |> page(size: :letter)
-      |> text("hi", font: :helvetica, font_size: 10, align: :right)
-    end)
-  end
-
-  test "built-in font linebreaks are converted to the ' operator" do
-    assert [
-             "BT",
-             "/F1 10 Tf",
-             "12.0 TL",
-             "0 700 Td",
-             "0 0 0 rg",
-             "(a) Tj",
-             "(b) '",
-             "ET"
-           ] =
-             new(fonts: @fonts_helvetica)
-             |> page(size: :letter)
-             |> text(
-               """
-               a
-               b\
-               """,
-               font: :helvetica,
-               font_size: 10,
-               position: {0, 700}
-             )
-             |> operations()
   end
 
   test "CID font linebreaks are converted to the ' operator" do

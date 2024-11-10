@@ -8,9 +8,13 @@ defmodule Mudbrick.TextBlockTest do
   alias Mudbrick.TextBlock.Line
   alias Mudbrick.TextBlock.Line.Part
 
+  @font (Mudbrick.new(fonts: %{bodoni: [file: bodoni_regular()]})
+         |> Mudbrick.Document.find_object(&match?(%Font{}, &1))).value
+
   test "single write is divided into lines" do
     block =
       TextBlock.new(
+        font: @font,
         font_size: 10,
         position: {400, 500}
       )
@@ -22,7 +26,6 @@ defmodule Mudbrick.TextBlockTest do
                parts: [
                  %Part{
                    colour: {0, 0, 0},
-                   font: nil,
                    font_size: 10,
                    text: "third"
                  }
@@ -33,7 +36,6 @@ defmodule Mudbrick.TextBlockTest do
                parts: [
                  %Part{
                    colour: {0, 0, 0},
-                   font: nil,
                    font_size: 10,
                    text: "second"
                  }
@@ -44,7 +46,6 @@ defmodule Mudbrick.TextBlockTest do
                parts: [
                  %Part{
                    colour: {0, 0, 0},
-                   font: nil,
                    font_size: 10,
                    text: "first"
                  }
@@ -54,14 +55,10 @@ defmodule Mudbrick.TextBlockTest do
   end
 
   test "offsets from left get set" do
-    font =
-      (Mudbrick.new(fonts: %{bodoni: [file: bodoni_regular()]})
-       |> Mudbrick.Document.find_object(&match?(%Font{}, &1))).value
-
     block =
       TextBlock.new(
         colour: {0, 0, 1},
-        font: font,
+        font: @font,
         font_size: 10,
         position: {400, 500},
         leading: 14
@@ -94,6 +91,7 @@ defmodule Mudbrick.TextBlockTest do
     block =
       TextBlock.new(
         colour: {0, 0, 1},
+        font: @font,
         font_size: 10,
         position: {400, 500},
         leading: 14
@@ -111,25 +109,25 @@ defmodule Mudbrick.TextBlockTest do
              %Line{
                leading: 14,
                parts: [
-                 %Part{colour: {0, 1, 0}, font: nil, font_size: 24, text: "fourth"}
+                 %Part{colour: {0, 1, 0}, font_size: 24, text: "fourth"}
                ]
              },
              %Line{
                leading: 16,
                parts: [
-                 %Part{colour: {0, 0, 1}, font: nil, font_size: 10, text: "line"},
-                 %Part{colour: {0, 0, 1}, font: nil, font_size: 10, text: "third "}
+                 %Part{colour: {0, 0, 1}, font_size: 10, text: "line"},
+                 %Part{colour: {0, 0, 1}, font_size: 10, text: "third "}
                ]
              },
              %Line{
                leading: 14,
-               parts: [%Part{colour: {0, 0, 1}, font: nil, font_size: 10, text: "second line"}]
+               parts: [%Part{colour: {0, 0, 1}, font_size: 10, text: "second line"}]
              },
              %Line{
                leading: 14,
                parts: [
-                 %Part{colour: {0, 0, 1}, font: nil, font_size: 10, text: "line"},
-                 %Part{colour: {1, 0, 0}, font: nil, font_size: 10, text: "first "}
+                 %Part{colour: {0, 0, 1}, font_size: 10, text: "line"},
+                 %Part{colour: {1, 0, 0}, font_size: 10, text: "first "}
                ]
              }
            ] = block.lines
@@ -139,27 +137,27 @@ defmodule Mudbrick.TextBlockTest do
     test "can be set on a single line" do
       block =
         TextBlock.new(
+          font: @font,
           font_size: 10,
           position: {400, 500}
         )
         |> TextBlock.write("this is ")
         |> TextBlock.write("underlined", underline: [width: 1])
 
-      assert block.lines == [
+      assert [
                %Line{
-                 leading: 12,
+                 leading: 12.0,
                  parts: [
                    %Part{
                      colour: {0, 0, 0},
-                     font: nil,
                      font_size: 10,
                      text: "underlined",
                      underline: [width: 1]
                    },
-                   %Part{colour: {0, 0, 0}, font: nil, font_size: 10, text: "this is "}
+                   %Part{colour: {0, 0, 0}, font_size: 10, text: "this is "}
                  ]
                }
-             ]
+             ] = block.lines
     end
   end
 
@@ -214,7 +212,7 @@ defmodule Mudbrick.TextBlockTest do
 
     test "can be set per line" do
       block =
-        TextBlock.new(font_size: 10)
+        TextBlock.new(font: @font, font_size: 10)
         |> TextBlock.write("this is 14\n", leading: 14)
         |> TextBlock.write("this is 12")
 

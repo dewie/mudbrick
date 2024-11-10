@@ -104,38 +104,6 @@ defmodule Mudbrick.FontTest do
   end
 
   describe "serialisation" do
-    test "without encoding" do
-      assert %Font{
-               name: :SomeFont,
-               type: :TrueType,
-               resource_identifier: :F1
-             }
-             |> show() ==
-               """
-               <</Type /Font
-                 /Subtype /TrueType
-                 /BaseFont /SomeFont
-               >>\
-               """
-    end
-
-    test "without descendant" do
-      assert %Font{
-               name: :SomeFont,
-               type: :TrueType,
-               encoding: :PDFDocEncoding,
-               resource_identifier: :F1
-             }
-             |> show() ==
-               """
-               <</Type /Font
-                 /Subtype /TrueType
-                 /BaseFont /SomeFont
-                 /Encoding /PDFDocEncoding
-               >>\
-               """
-    end
-
     test "with descendant" do
       assert %Font{
                name: :"LibreBodoni-Regular",
