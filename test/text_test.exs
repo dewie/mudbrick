@@ -21,7 +21,7 @@ defmodule Mudbrick.TextTest do
            ] =
              new(
                compress: false,
-               fonts: %{bodoni: [file: bodoni_regular()]}
+               fonts: %{bodoni: bodoni_regular()}
              )
              |> page()
              |> text({"CO₂ ", colour: {1, 0, 0}},
@@ -38,12 +38,12 @@ defmodule Mudbrick.TextTest do
       text = "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
 
       {_doc, compressed_content_stream} =
-        new(fonts: %{bodoni: [file: bodoni_regular()]}, compress: true)
+        new(fonts: %{bodoni: bodoni_regular()}, compress: true)
         |> page()
         |> text(text, font: :bodoni, font_size: 10)
 
       {_doc, uncompressed_content_stream} =
-        new(fonts: %{bodoni: [file: bodoni_regular()]}, compress: false)
+        new(fonts: %{bodoni: bodoni_regular()}, compress: false)
         |> page()
         |> text(text, font: :bodoni, font_size: 10)
 
@@ -62,7 +62,7 @@ defmodule Mudbrick.TextTest do
              "<00D500C000ED00ED00FC01B7011D00D500C0010F00C0> Tj",
              "ET"
            ] =
-             new(fonts: %{bodoni: [file: bodoni_regular()]})
+             new(fonts: %{bodoni: bodoni_regular()})
              |> page()
              |> text(
                "hello there",
@@ -78,7 +78,7 @@ defmodule Mudbrick.TextTest do
       check all colour <- invalid_colour() do
         e =
           assert_raise(Mudbrick.ContentStream.InvalidColour, fn ->
-            new(fonts: %{my_bodoni: [file: Mudbrick.TestHelper.bodoni_regular()]})
+            new(fonts: %{my_bodoni: Mudbrick.TestHelper.bodoni_regular()})
             |> page()
             |> text({"hi there", colour: colour}, font: :my_bodoni)
           end)
@@ -89,7 +89,7 @@ defmodule Mudbrick.TextTest do
 
     test "can be set on a text block" do
       {_doc, content_stream} =
-        new(fonts: %{bodoni: [file: bodoni_regular()]})
+        new(fonts: %{bodoni: bodoni_regular()})
         |> page()
         |> text(
           [
@@ -120,7 +120,7 @@ defmodule Mudbrick.TextTest do
 
     test "can be set on part of a text block" do
       {_doc, content_stream} =
-        new(fonts: %{bodoni: [file: bodoni_regular()]})
+        new(fonts: %{bodoni: bodoni_regular()})
         |> page()
         |> text(
           [
@@ -156,7 +156,7 @@ defmodule Mudbrick.TextTest do
              "<00B4> '"
              | _
            ] =
-             new(fonts: %{bodoni: [file: bodoni_regular()]})
+             new(fonts: %{bodoni: bodoni_regular()})
              |> page(size: :letter)
              |> text(
                """
@@ -173,7 +173,7 @@ defmodule Mudbrick.TextTest do
 
   test "font is assigned to the operator struct when font descendant present" do
     {_doc, content_stream} =
-      new(fonts: %{bodoni: [file: bodoni_regular()]})
+      new(fonts: %{bodoni: bodoni_regular()})
       |> page(size: :letter)
       |> text("CO₂", font: :bodoni, font_size: 24, position: {0, 700})
 
@@ -191,7 +191,7 @@ defmodule Mudbrick.TextTest do
   describe "serialisation" do
     test "converts Tj text to the assigned font's glyph IDs in hex" do
       assert ["<001100550174> Tj" | _] =
-               new(fonts: %{bodoni: [file: bodoni_regular()]})
+               new(fonts: %{bodoni: bodoni_regular()})
                |> page()
                |> text("CO₂", font: :bodoni, font_size: 24, position: {0, 700})
                |> operations()
@@ -199,7 +199,7 @@ defmodule Mudbrick.TextTest do
     end
 
     test "copes with trailing newlines in CID font text" do
-      assert new(fonts: %{bodoni: [file: bodoni_regular()]})
+      assert new(fonts: %{bodoni: bodoni_regular()})
              |> page()
              |> text("\n", font: :bodoni, font_size: 13)
              |> render()

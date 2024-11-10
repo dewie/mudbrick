@@ -8,7 +8,7 @@ defmodule Mudbrick.TextBlockTest do
   alias Mudbrick.TextBlock.Line
   alias Mudbrick.TextBlock.Line.Part
 
-  @font (Mudbrick.new(fonts: %{bodoni: [file: bodoni_regular()]})
+  @font (Mudbrick.new(fonts: %{bodoni: bodoni_regular()})
          |> Mudbrick.Document.find_object(&match?(%Font{}, &1))).value
 
   test "single write is divided into lines" do

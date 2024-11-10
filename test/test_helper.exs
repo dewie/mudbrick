@@ -60,9 +60,9 @@ defmodule Mudbrick.TestHelper do
         title: "My thing",
         compress: false,
         fonts: %{
-          a: [file: bodoni_regular()],
-          b: [file: bodoni_bold()],
-          c: [file: franklin_regular()]
+          a: bodoni_regular(),
+          b: bodoni_bold(),
+          c: franklin_regular()
         }
       )
       |> page(size: Page.size(:letter))

@@ -56,15 +56,12 @@ defmodule Mudbrick.Image do
   @doc false
   def add_objects(doc, images) do
     {doc, image_objects, _id} =
-      for {human_name, image_opts} <- images, reduce: {doc, %{}, 0} do
+      for {human_name, image_data} <- images, reduce: {doc, %{}, 0} do
         {doc, image_objects, id} ->
-          image_opts =
-            Keyword.put(image_opts, :resource_identifier, :"I#{id + 1}")
-
           {doc, image} =
             Document.add(
               doc,
-              new(Keyword.put(image_opts, :file, Keyword.fetch!(image_opts, :file)))
+              new(file: image_data, resource_identifier: :"I#{id + 1}")
             )
 
           {doc, Map.put(image_objects, human_name, image), id + 1}

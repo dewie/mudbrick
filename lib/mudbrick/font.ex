@@ -53,29 +53,23 @@ defmodule Mudbrick.Font do
   @doc false
   def add_objects(doc, fonts) do
     {doc, font_objects, _id} =
-      for {human_name, font_opts} <- fonts, reduce: {doc, %{}, 0} do
+      for {human_name, file_contents} <- fonts, reduce: {doc, %{}, 0} do
         {doc, font_objects, id} ->
           font_opts =
-            Keyword.put(font_opts, :resource_identifier, :"F#{id + 1}")
+            [resource_identifier: :"F#{id + 1}"]
+
+          opentype =
+            OpenType.new()
+            |> OpenType.parse(file_contents)
+
+          font_name = String.to_atom(opentype.name)
 
           {doc, font} =
-            case Keyword.pop(font_opts, :file) do
-              {nil, font_opts} ->
-                Document.add(doc, new(font_opts))
-
-              {file_contents, font_opts} ->
-                opentype =
-                  OpenType.new()
-                  |> OpenType.parse(file_contents)
-
-                font_name = String.to_atom(opentype.name)
-
-                doc
-                |> add_font_file(file_contents)
-                |> add_descriptor(opentype, font_name)
-                |> add_cid_font(opentype, font_name)
-                |> add_font(opentype, font_name, font_opts)
-            end
+            doc
+            |> add_font_file(file_contents)
+            |> add_descriptor(opentype, font_name)
+            |> add_cid_font(opentype, font_name)
+            |> add_font(opentype, font_name, font_opts)
 
           {doc, Map.put(font_objects, human_name, font), id + 1}
       end

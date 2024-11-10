@@ -11,8 +11,8 @@ defmodule Mudbrick do
       ...> alias Mudbrick.Path
       ...> new(
       ...>   compress: true,                              # flate compression for fonts, text etc.
-      ...>   fonts: %{bodoni: [file: bodoni_regular()]},  # register an OTF font
-      ...>   images: %{flower: [file: flower()]}          # register a JPEG
+      ...>   fonts: %{bodoni: bodoni_regular()},          # register an OTF font
+      ...>   images: %{flower: flower()}                  # register a JPEG
       ...> )
       ...> |> page(size: {100, 100})
       ...> |> image(                                      # place preregistered JPEG
@@ -82,11 +82,11 @@ defmodule Mudbrick do
 
   Register an OTF font. Pass the file's raw data to the `:file` option.
 
-      iex> Mudbrick.new(fonts: %{bodoni: [file: Mudbrick.TestHelper.bodoni_regular()]})
+      iex> Mudbrick.new(fonts: %{bodoni: Mudbrick.TestHelper.bodoni_regular()})
 
   Register an image.
 
-      iex> Mudbrick.new(images: %{flower: [file: Mudbrick.TestHelper.flower()]})
+      iex> Mudbrick.new(images: %{flower: Mudbrick.TestHelper.flower()})
 
   Set document metadata.
 
@@ -137,7 +137,7 @@ defmodule Mudbrick do
 
   ## Examples
 
-      iex> Mudbrick.new(images: %{lovely_flower: [file: Mudbrick.TestHelper.flower()]})
+      iex> Mudbrick.new(images: %{lovely_flower: Mudbrick.TestHelper.flower()})
       ...> |> Mudbrick.page()
       ...> |> Mudbrick.image(:lovely_flower, position: {100, 100}, scale: {100, 100})
 
@@ -150,7 +150,7 @@ defmodule Mudbrick do
 
   Auto height:
 
-      iex> Mudbrick.new(images: %{lovely_flower: [file: Mudbrick.TestHelper.flower()]})
+      iex> Mudbrick.new(images: %{lovely_flower: Mudbrick.TestHelper.flower()})
       ...> |> Mudbrick.page(size: {50, 50})
       ...> |> Mudbrick.image(:lovely_flower, position: {0, 0}, scale: {50, :auto})
       ...> |> Mudbrick.render()
@@ -160,7 +160,7 @@ defmodule Mudbrick do
 
   Attempting to set both width and height to `:auto`:
 
-      iex> Mudbrick.new(images: %{lovely_flower: [file: Mudbrick.TestHelper.flower()]})
+      iex> Mudbrick.new(images: %{lovely_flower: Mudbrick.TestHelper.flower()})
       ...> |> Mudbrick.page()
       ...> |> Mudbrick.image(:lovely_flower, position: {100, 100}, scale: {:auto, :auto})
       ** (Mudbrick.Image.AutoScalingError) Auto scaling works with width or height, but not both.
@@ -213,7 +213,7 @@ defmodule Mudbrick do
 
       iex> import Mudbrick.TestHelper
       ...> import Mudbrick
-      ...> new(fonts: %{bodoni: [file: bodoni_regular()]})
+      ...> new(fonts: %{bodoni: bodoni_regular()})
       ...> |> page()
       ...> |> text("CO₂", font: :bodoni)
 
@@ -221,7 +221,7 @@ defmodule Mudbrick do
 
       iex> import Mudbrick.TestHelper
       ...> import Mudbrick
-      ...> new(fonts: %{bodoni: [file: bodoni_regular()]})
+      ...> new(fonts: %{bodoni: bodoni_regular()})
       ...> |> page()
       ...> |> text(["I am ", {"red", colour: {1, 0, 0}}], font: :bodoni, position: {200, 200})
 
@@ -229,7 +229,7 @@ defmodule Mudbrick do
 
       iex> import Mudbrick.TestHelper
       ...> import Mudbrick
-      ...> new(fonts: %{regular: [file: bodoni_regular()], bold: [file: bodoni_bold()]})
+      ...> new(fonts: %{regular: bodoni_regular(), bold: bodoni_bold()})
       ...> |> page()
       ...> |> text(["I am ", {"bold", font: :bold}], font: :regular, position: {200, 200})
 
@@ -237,7 +237,7 @@ defmodule Mudbrick do
 
       iex> import Mudbrick.TestHelper
       ...> import Mudbrick
-      ...> new(fonts: %{bodoni: [file: bodoni_regular()]})
+      ...> new(fonts: %{bodoni: bodoni_regular()})
       ...> |> page(size: {100, 40})
       ...> |> text(["nounderline\\n", {"underline!", underline: [width: 1]}], position: {8, 20}, font: :bodoni, font_size: 8)
       ...> |> render()

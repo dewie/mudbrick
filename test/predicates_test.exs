@@ -8,7 +8,7 @@ defmodule Mudbrick.PredicatesTest do
 
   test "with compression, can assert/refute that a piece of text appears" do
     raw_pdf =
-      new(compress: true, fonts: %{bodoni: [file: bodoni_regular()]})
+      new(compress: true, fonts: %{bodoni: bodoni_regular()})
       |> page()
       |> text(
         "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWhello, CO₂!WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -24,7 +24,7 @@ defmodule Mudbrick.PredicatesTest do
 
   test "without compression, can assert/refute that a piece of text appears" do
     raw_pdf =
-      new(fonts: %{bodoni: [file: bodoni_regular()]})
+      new(fonts: %{bodoni: bodoni_regular()})
       |> page()
       |> text("hello, world!", font: :bodoni, font_size: 100)
       |> render()

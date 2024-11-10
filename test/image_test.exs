@@ -9,7 +9,7 @@ defmodule Mudbrick.ImageTest do
 
   test "embedding an image adds it to the document" do
     data = flower()
-    doc = new(images: %{flower: [file: data]})
+    doc = new(images: %{flower: data})
 
     expected_image = %Image{
       file: data,
@@ -26,7 +26,7 @@ defmodule Mudbrick.ImageTest do
 
   test "PNGs are currently not supported" do
     assert_raise Image.NotSupported, fn ->
-      new(images: %{my_png: [file: example_png()]})
+      new(images: %{my_png: example_png()})
     end
   end
 
@@ -37,7 +37,7 @@ defmodule Mudbrick.ImageTest do
              "/I1 Do",
              "Q"
            ] =
-             new(images: %{flower: [file: flower()]})
+             new(images: %{flower: flower()})
              |> page()
              |> image(
                :flower,
@@ -54,7 +54,7 @@ defmodule Mudbrick.ImageTest do
              "/I1 Do",
              "Q"
            ] =
-             new(images: %{flower: [file: flower()]})
+             new(images: %{flower: flower()})
              |> page()
              |> image(
                :flower,
@@ -71,7 +71,7 @@ defmodule Mudbrick.ImageTest do
              "/I1 Do",
              "Q"
            ] =
-             new(images: %{flower: [file: flower()]})
+             new(images: %{flower: flower()})
              |> page()
              |> image(
                :flower,

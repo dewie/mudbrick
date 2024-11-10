@@ -10,7 +10,7 @@ defmodule Mudbrick.FontTest do
   alias Mudbrick.Stream
 
   test "embedded OTF fonts have a glyph-unicode mapping to enable copy+paste" do
-    doc = Mudbrick.new(fonts: %{bodoni: [file: bodoni_regular()]})
+    doc = Mudbrick.new(fonts: %{bodoni: bodoni_regular()})
 
     font = Document.find_object(doc, &match?(%Font{}, &1))
 
@@ -43,7 +43,7 @@ defmodule Mudbrick.FontTest do
 
   test "embedded OTF fonts create descendant, descriptor and file objects" do
     data = bodoni_regular()
-    doc = Mudbrick.new(fonts: %{bodoni: [file: data]})
+    doc = Mudbrick.new(fonts: %{bodoni: data})
     font = Document.find_object(doc, &match?(%Font{}, &1))
 
     assert %Font{
@@ -84,7 +84,7 @@ defmodule Mudbrick.FontTest do
     test "Length is compressed size, Length1 is uncompressed size" do
       data = bodoni_regular()
       compressed = Mudbrick.compress(data)
-      doc = Mudbrick.new(compress: true, fonts: %{bodoni: [file: data]})
+      doc = Mudbrick.new(compress: true, fonts: %{bodoni: data})
       stream = Document.find_object(doc, &match?(%Stream{data: ^compressed}, &1)).value
 
       assert IO.iodata_length(stream.data) < IO.iodata_length(data)
@@ -93,8 +93,8 @@ defmodule Mudbrick.FontTest do
     end
 
     test "cmap is compressed" do
-      uncompressed_doc = Mudbrick.new(compress: false, fonts: %{bodoni: [file: bodoni_regular()]})
-      compressed_doc = Mudbrick.new(compress: true, fonts: %{bodoni: [file: bodoni_regular()]})
+      uncompressed_doc = Mudbrick.new(compress: false, fonts: %{bodoni: bodoni_regular()})
+      compressed_doc = Mudbrick.new(compress: true, fonts: %{bodoni: bodoni_regular()})
       uncompressed_stream = Document.find_object(uncompressed_doc, &match?(%CMap{}, &1)).value
       compressed_stream = Document.find_object(compressed_doc, &match?(%CMap{}, &1)).value
 
