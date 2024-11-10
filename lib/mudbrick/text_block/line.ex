@@ -20,6 +20,10 @@ defmodule Mudbrick.TextBlock.Line do
               text: "",
               underline: nil
 
+    def width(%__MODULE__{font: nil}) do
+      raise Mudbrick.Font.MustBeChosen
+    end
+
     def width(part) do
       Mudbrick.Font.width(
         part.font,

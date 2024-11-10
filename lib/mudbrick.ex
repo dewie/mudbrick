@@ -192,7 +192,7 @@ defmodule Mudbrick do
   ## Top-level options
 
   - `:colour` - `{r, g, b}` tuple. Each element is a number between 0 and 1. Default: `{0, 0, 0}`.
-  - `:font` - *Required*. Name of a font previously registered with `new/1`.
+  - `:font` - Name of a font previously registered with `new/1`. Required unless you've only registered one font.
   - `:position` - Coordinates from bottom-left of page in points. Default: `{0, 0}`.
   - `:font_size` - Size in points. Default: `12`.
   - `:leading` - Leading in points. Default is 120% of `:font_size`.
@@ -215,7 +215,7 @@ defmodule Mudbrick do
       ...> import Mudbrick
       ...> new(fonts: %{bodoni: bodoni_regular()})
       ...> |> page()
-      ...> |> text("CO₂", font: :bodoni)
+      ...> |> text("CO₂")
 
   Write "I am red" at 200, 200, where "red" is in red.
 
@@ -223,7 +223,7 @@ defmodule Mudbrick do
       ...> import Mudbrick
       ...> new(fonts: %{bodoni: bodoni_regular()})
       ...> |> page()
-      ...> |> text(["I am ", {"red", colour: {1, 0, 0}}], font: :bodoni, position: {200, 200})
+      ...> |> text(["I am ", {"red", colour: {1, 0, 0}}], position: {200, 200})
 
   Write "I am bold" at 200, 200, where "bold" is in bold.
 
@@ -239,7 +239,7 @@ defmodule Mudbrick do
       ...> import Mudbrick
       ...> new(fonts: %{bodoni: bodoni_regular()})
       ...> |> page(size: {100, 40})
-      ...> |> text(["nounderline\\n", {"underline!", underline: [width: 1]}], position: {8, 20}, font: :bodoni, font_size: 8)
+      ...> |> text(["nounderline\\n", {"underline!", underline: [width: 1]}], position: {8, 20}, font_size: 8)
       ...> |> render()
       ...> |> then(&File.write("examples/underlined_text.pdf", &1))
 
@@ -252,21 +252,13 @@ defmodule Mudbrick do
   def text(context, write_or_writes, opts \\ [])
 
   def text({doc, _contents_obj} = context, writes, opts) when is_list(writes) do
-    opts = fetch_font(doc, opts)
+    ContentStream.update_operations(context, fn ops ->
+      output =
+        doc
+        |> text_block(writes, fetch_font(doc, opts))
+        |> TextBlock.Output.from()
 
-    text_block =
-      writes
-      |> Enum.reduce(Mudbrick.TextBlock.new(opts), fn
-        {text, opts}, acc ->
-          Mudbrick.TextBlock.write(acc, text, fetch_font(doc, opts))
-
-        text, acc ->
-          Mudbrick.TextBlock.write(acc, text, [])
-      end)
-
-    context
-    |> ContentStream.update_operations(fn ops ->
-      TextBlock.Output.from(text_block).operations ++ ops
+      output.operations ++ ops
     end)
   end
 
@@ -311,6 +303,16 @@ defmodule Mudbrick do
     end)
   end
 
+  defp text_block(doc, writes, top_level_opts) do
+    Enum.reduce(writes, Mudbrick.TextBlock.new(top_level_opts), fn
+      {text, opts}, acc ->
+        Mudbrick.TextBlock.write(acc, text, fetch_font(doc, opts))
+
+      text, acc ->
+        Mudbrick.TextBlock.write(acc, text, [])
+    end)
+  end
+
   @spec cm_opts(Mudbrick.Image.t(), Image.image_options()) :: Mudbrick.ContentStream.Cm.options()
   defp cm_opts(image, image_opts) do
     scale =
@@ -335,7 +337,13 @@ defmodule Mudbrick do
   end
 
   defp fetch_font(doc, opts) do
-    Keyword.update(opts, :font, nil, fn user_identifier ->
+    default_font =
+      case Map.values(Document.root_page_tree(doc).value.fonts) do
+        [font] -> font.value
+        _ -> nil
+      end
+
+    Keyword.update(opts, :font, default_font, fn user_identifier ->
       case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
         {:ok, font} ->
           font.value

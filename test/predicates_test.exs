@@ -12,7 +12,6 @@ defmodule Mudbrick.PredicatesTest do
       |> page()
       |> text(
         "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWhello, CO₂!WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-        font: :bodoni,
         font_size: 100
       )
       |> render()
@@ -26,7 +25,7 @@ defmodule Mudbrick.PredicatesTest do
     raw_pdf =
       new(fonts: %{bodoni: bodoni_regular()})
       |> page()
-      |> text("hello, world!", font: :bodoni, font_size: 100)
+      |> text("hello, world!", font_size: 100)
       |> render()
 
     assert raw_pdf |> has_text?("hello, world!", in_font: bodoni_regular())

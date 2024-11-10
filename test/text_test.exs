@@ -9,6 +9,23 @@ defmodule Mudbrick.TextTest do
   alias Mudbrick.Font
   alias Mudbrick.Indirect
 
+  test "with more than one registered font, it's an error not to choose one" do
+    chain =
+      new(
+        compress: false,
+        fonts: %{regular: bodoni_regular(), bold: bodoni_bold()}
+      )
+      |> page()
+
+    assert_raise Font.MustBeChosen, fn ->
+      text(chain, {"CO₂ ", colour: {1, 0, 0}},
+        font_size: 14,
+        align: :right,
+        position: {200, 700}
+      )
+    end
+  end
+
   test "parts inherit fonts" do
     assert [
              "/F1 14 Tf",
@@ -25,7 +42,6 @@ defmodule Mudbrick.TextTest do
              )
              |> page()
              |> text({"CO₂ ", colour: {1, 0, 0}},
-               font: :bodoni,
                font_size: 14,
                align: :right,
                position: {200, 700}
@@ -40,12 +56,12 @@ defmodule Mudbrick.TextTest do
       {_doc, compressed_content_stream} =
         new(fonts: %{bodoni: bodoni_regular()}, compress: true)
         |> page()
-        |> text(text, font: :bodoni, font_size: 10)
+        |> text(text, font_size: 10)
 
       {_doc, uncompressed_content_stream} =
         new(fonts: %{bodoni: bodoni_regular()}, compress: false)
         |> page()
-        |> text(text, font: :bodoni, font_size: 10)
+        |> text(text, font_size: 10)
 
       assert IO.iodata_length(Mudbrick.Object.from(compressed_content_stream)) <
                IO.iodata_length(Mudbrick.Object.from(uncompressed_content_stream))
@@ -66,7 +82,6 @@ defmodule Mudbrick.TextTest do
              |> page()
              |> text(
                "hello there",
-               font: :bodoni,
                font_size: 10,
                leading: 14
              )
@@ -80,7 +95,7 @@ defmodule Mudbrick.TextTest do
           assert_raise(Mudbrick.ContentStream.InvalidColour, fn ->
             new(fonts: %{my_bodoni: Mudbrick.TestHelper.bodoni_regular()})
             |> page()
-            |> text({"hi there", colour: colour}, font: :my_bodoni)
+            |> text({"hi there", colour: colour})
           end)
 
         assert e.message == "tuple must be made of floats or integers between 0 and 1"
@@ -99,7 +114,6 @@ defmodule Mudbrick.TextTest do
             text\
             """
           ],
-          font: :bodoni,
           font_size: 10,
           colour: {1.0, 0.0, 0.0}
         )
@@ -130,7 +144,6 @@ defmodule Mudbrick.TextTest do
              text\
              """, colour: {1.0, 0.0, 0.0}}
           ],
-          font: :bodoni,
           font_size: 10
         )
 
@@ -163,7 +176,6 @@ defmodule Mudbrick.TextTest do
                a
                b\
                """,
-               font: :bodoni,
                font_size: 10,
                position: {0, 700}
              )
@@ -175,7 +187,7 @@ defmodule Mudbrick.TextTest do
     {_doc, content_stream} =
       new(fonts: %{bodoni: bodoni_regular()})
       |> page(size: :letter)
-      |> text("CO₂", font: :bodoni, font_size: 24, position: {0, 700})
+      |> text("CO₂", font_size: 24, position: {0, 700})
 
     [_et, show_text_operation | _] = content_stream.value.operations
 
@@ -193,7 +205,7 @@ defmodule Mudbrick.TextTest do
       assert ["<001100550174> Tj" | _] =
                new(fonts: %{bodoni: bodoni_regular()})
                |> page()
-               |> text("CO₂", font: :bodoni, font_size: 24, position: {0, 700})
+               |> text("CO₂", font_size: 24, position: {0, 700})
                |> operations()
                |> Enum.take(-2)
     end
@@ -201,7 +213,7 @@ defmodule Mudbrick.TextTest do
     test "copes with trailing newlines in CID font text" do
       assert new(fonts: %{bodoni: bodoni_regular()})
              |> page()
-             |> text("\n", font: :bodoni, font_size: 13)
+             |> text("\n", font_size: 13)
              |> render()
     end
   end
