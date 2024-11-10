@@ -164,6 +164,54 @@ defmodule Mudbrick.TextBlockTest do
   end
 
   describe "leading" do
+    test "is set correctly for lines composed with writes" do
+      output(fn %{fonts: fonts} ->
+        heading_leading = 70
+        overlap_leading = 20
+        # 120% of default 80 font size
+        expected_final_leading = 96.0
+
+        text_block =
+          TextBlock.new(
+            align: :left,
+            font: fonts.regular,
+            font_size: 80,
+            position: {0, 500}
+          )
+          |> TextBlock.write("Warning!\n", font_size: 140, leading: heading_leading)
+          |> TextBlock.write("Leading ", leading: overlap_leading)
+          |> TextBlock.write("changes")
+          |> TextBlock.write("\nthis overlaps")
+
+        assert [
+                 ^expected_final_leading,
+                 ^overlap_leading,
+                 ^heading_leading
+               ] =
+                 Enum.map(text_block.lines, & &1.leading)
+
+        text_block
+      end)
+    end
+
+    test "is set correctly for linebreaks inside writes" do
+      output(fn %{fonts: fonts} ->
+        text_block =
+          TextBlock.new(
+            align: :left,
+            font: fonts.regular,
+            font_size: 80,
+            position: {0, 500}
+          )
+          |> TextBlock.write("Warning!\n", font_size: 140, leading: 20)
+          |> TextBlock.write("Steps under\nconstruction", leading: 70)
+
+        assert [70, 70, 20] = Enum.map(text_block.lines, & &1.leading)
+
+        text_block
+      end)
+    end
+
     test "can be set per line" do
       block =
         TextBlock.new(font_size: 10)

@@ -105,7 +105,7 @@ defmodule Mudbrick.TextBlock do
     %{tb | lines: lines}
   end
 
-  defp write_lines(tb, text, opts) do
+  defp write_lines(tb, text, chosen_opts) do
     line_texts = String.split(text, "\n")
 
     text_block_opts = [
@@ -115,36 +115,43 @@ defmodule Mudbrick.TextBlock do
       leading: tb.leading
     ]
 
-    opts =
+    merged_opts =
       Keyword.merge(
         text_block_opts,
-        opts,
+        chosen_opts,
         &prefer_lhs_over_nil/3
       )
 
     Map.update!(tb, :lines, fn
       [] ->
-        add_texts([], line_texts, opts, text_block_opts)
+        add_texts([], line_texts, merged_opts, text_block_opts)
 
       existing_lines ->
         case line_texts do
           # \n at beginning of new line
           ["" | new_line_texts] ->
             existing_lines
-            |> add_texts(new_line_texts, opts, text_block_opts)
+            |> add_texts(new_line_texts, merged_opts, text_block_opts)
 
           # didn't start with \n, so first part belongs to previous line
           [first_new_line_text | new_line_texts] ->
             existing_lines
-            |> update_previous_line(first_new_line_text, opts)
-            |> add_texts(new_line_texts, opts, text_block_opts)
+            # Update previous line with chosen opts, to allow logic around
+            # choices.
+            |> update_previous_line(first_new_line_text, merged_opts, chosen_opts)
+            |> add_texts(new_line_texts, merged_opts, text_block_opts)
         end
     end)
   end
 
-  defp update_previous_line([previous_line | existing_lines], first_new_line_text, opts) do
+  defp update_previous_line(
+         [previous_line | existing_lines],
+         first_new_line_text,
+         merged_opts,
+         opts
+       ) do
     [
-      Line.append(previous_line, first_new_line_text, opts)
+      Line.append(previous_line, first_new_line_text, merged_opts, opts)
       | existing_lines
     ]
   end
@@ -160,6 +167,11 @@ defmodule Mudbrick.TextBlock do
     end
   end
 
-  defp prefer_lhs_over_nil(_key, lhs, nil), do: lhs
-  defp prefer_lhs_over_nil(_key, _lhs, rhs), do: rhs
+  defp prefer_lhs_over_nil(_key, lhs, nil) do
+    lhs
+  end
+
+  defp prefer_lhs_over_nil(_key, _lhs, rhs) do
+    rhs
+  end
 end

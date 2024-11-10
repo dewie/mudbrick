@@ -146,7 +146,7 @@ defmodule Mudbrick.TextBlock.Output do
           position: position = {x, y}
         } = tb
       ) do
-    tl = %TL{leading: leading(tb)}
+    tl = %TL{leading: tb.leading}
     tf = %Tf{font: font, size: font_size}
 
     %__MODULE__{position: position, font: font, font_size: font_size}
@@ -175,7 +175,7 @@ defmodule Mudbrick.TextBlock.Output do
     |> RightAlign.reduce_lines(tb.lines, fn output, line, line_number ->
       right_offset(output, tb, line, line_number)
     end)
-    |> add(%TL{leading: leading(tb)})
+    |> add(%TL{leading: tb.leading})
     |> add(tf)
     |> deduplicate(tf)
     |> Map.update!(:operations, &Enum.reverse/1)
@@ -227,7 +227,7 @@ defmodule Mudbrick.TextBlock.Output do
 
     add(output, %Td{
       tx: x - Line.width(line),
-      ty: y - leading(tb) * n
+      ty: y - tb.leading * n
     })
   end
 
@@ -262,9 +262,5 @@ defmodule Mudbrick.TextBlock.Output do
 
   defp remove(output, operation) do
     Map.update!(output, :operations, &List.delete(&1, operation))
-  end
-
-  defp leading(tb) do
-    tb.leading || tb.font_size * 1.2
   end
 end

@@ -41,12 +41,11 @@ defmodule Mudbrick.TextBlock.Line do
     struct(__MODULE__, Keyword.put(opts, :parts, [Part.new(text, opts)]))
   end
 
-  def append(line, text, opts) do
-    line = Map.update!(line, :parts, &[Part.new(text, opts) | &1])
-    new_leading = Keyword.fetch!(opts, :leading)
+  def append(line, text, merged_opts, chosen_opts) do
+    line = Map.update!(line, :parts, &[Part.new(text, merged_opts) | &1])
 
-    if new_leading > line.leading do
-      Map.put(line, :leading, new_leading)
+    if chosen_opts[:leading] do
+      Map.put(line, :leading, chosen_opts[:leading])
     else
       line
     end
