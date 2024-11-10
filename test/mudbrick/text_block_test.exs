@@ -365,30 +365,30 @@ defmodule Mudbrick.TextBlockTest do
                "ET"
              ] =
                output(fn %{fonts: fonts} ->
-                 Mudbrick.TextBlock.new(
+                 TextBlock.new(
                    font: fonts.regular,
                    font_size: 10,
                    position: {400, 500},
                    align: :right
                  )
-                 |> Mudbrick.TextBlock.write("a")
-                 |> Mudbrick.TextBlock.write(
+                 |> TextBlock.write("a")
+                 |> TextBlock.write(
                    """
                    aa
                    """,
                    colour: {1, 0, 0}
                  )
-                 |> Mudbrick.TextBlock.write("""
+                 |> TextBlock.write("""
                  www
                  WOW\
                  """)
-                 |> Mudbrick.TextBlock.write(
+                 |> TextBlock.write(
                    """
                    WOWOWOW
                    """,
                    colour: {0, 1, 0}
                  )
-                 |> Mudbrick.TextBlock.write("""
+                 |> TextBlock.write("""
 
                  hi\
                  """)
