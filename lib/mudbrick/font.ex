@@ -1,6 +1,4 @@
 defmodule Mudbrick.Font do
-  @moduledoc false
-
   @type t :: %__MODULE__{
           descendant: Mudbrick.Indirect.Object.t(),
           encoding: atom(),
@@ -41,6 +39,7 @@ defmodule Mudbrick.Font do
   alias Mudbrick.Object
   alias Mudbrick.Stream
 
+  @doc false
   def new(opts) do
     case Keyword.fetch(opts, :parsed) do
       {:ok, parsed} ->
@@ -52,8 +51,10 @@ defmodule Mudbrick.Font do
     end
   end
 
+  @doc false
   def type!(s), do: Map.fetch!(%{"Type0" => :Type0}, s)
 
+  @doc false
   def add_objects(doc, fonts) do
     {doc, font_objects, _id} =
       for {human_name, font_opts} <- fonts, reduce: {doc, %{}, 0} do
@@ -84,6 +85,27 @@ defmodule Mudbrick.Font do
       end
 
     {doc, font_objects}
+  end
+
+  @doc false
+  def width(%Font{parsed: nil}, _size, _text) do
+    raise Font.NotMeasured, "Built-in fonts aren't alignable yet"
+  end
+
+  def width(_font, _size, "") do
+    0
+  end
+
+  def width(font, size, text) do
+    {glyph_ids, _positions} = OpenType.layout_text(font.parsed, text)
+
+    for id <- glyph_ids, reduce: 0 do
+      acc ->
+        glyph_width = Enum.at(font.parsed.glyphWidths, id)
+        width_in_points = glyph_width / 1000 * size
+
+        acc + width_in_points
+    end
   end
 
   defp add_font_file(doc, contents) do
@@ -144,26 +166,6 @@ defmodule Mudbrick.Font do
         )
       )
     end)
-  end
-
-  def width(%Font{parsed: nil}, _size, _text) do
-    raise Font.NotMeasured, "Built-in fonts aren't alignable yet"
-  end
-
-  def width(_font, _size, "") do
-    0
-  end
-
-  def width(font, size, text) do
-    {glyph_ids, _positions} = OpenType.layout_text(font.parsed, text)
-
-    for id <- glyph_ids, reduce: 0 do
-      acc ->
-        glyph_width = Enum.at(font.parsed.glyphWidths, id)
-        width_in_points = glyph_width / 1000 * size
-
-        acc + width_in_points
-    end
   end
 
   defimpl Mudbrick.Object do
