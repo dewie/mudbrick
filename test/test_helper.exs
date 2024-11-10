@@ -51,7 +51,7 @@ defmodule Mudbrick.TestHelper do
     @example_png
   end
 
-  def output(f, output_mod) when is_function(f) do
+  def wrapped_output(f, output_mod) when is_function(f) do
     import Mudbrick
 
     {doc, _contents_obj} =

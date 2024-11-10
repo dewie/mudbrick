@@ -1,7 +1,7 @@
 defmodule Mudbrick.TextBlockTest do
   use ExUnit.Case, async: true
 
-  import Mudbrick.TestHelper, only: [output: 2, bodoni_regular: 0]
+  import Mudbrick.TestHelper, only: [bodoni_regular: 0]
 
   alias Mudbrick.Font
   alias Mudbrick.TextBlock
@@ -451,7 +451,7 @@ defmodule Mudbrick.TextBlockTest do
   end
 
   defp output(f) do
-    output(f, Mudbrick.TextBlock.Output) |> Enum.reverse()
+    Mudbrick.TestHelper.wrapped_output(f, TextBlock.Output) |> Enum.reverse()
   end
 
   defp operations(ops) do

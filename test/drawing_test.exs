@@ -2,12 +2,6 @@ defmodule Mudbrick.DrawingTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
-  import Mudbrick.TestHelper,
-    only: [
-      invalid_colour: 0,
-      output: 2
-    ]
-
   alias Mudbrick.Path
 
   alias Mudbrick.Path.{
@@ -16,6 +10,13 @@ defmodule Mudbrick.DrawingTest do
     Output,
     Rectangle
   }
+
+  alias Mudbrick.TestHelper
+
+  import Mudbrick.TestHelper,
+    only: [
+      invalid_colour: 0
+    ]
 
   test "can add drawings to a page" do
     import Mudbrick
@@ -175,7 +176,7 @@ defmodule Mudbrick.DrawingTest do
   end
 
   defp operations(f) do
-    output(fn _ -> f.() end, Mudbrick.Path.Output)
+    TestHelper.wrapped_output(fn _ -> f.() end, Mudbrick.Path.Output)
     |> Enum.map(&Mudbrick.TestHelper.show/1)
     |> Enum.reverse()
   end
