@@ -66,29 +66,25 @@ defmodule Mudbrick.TextBlock.Output do
       |> reduce_parts(%{line | parts: parts}, Tj, line_kind)
     end
 
+    defp underline(output, %Line.Part{underline: nil}), do: output
+
     defp underline(output, part) do
-      output
-      |> then(fn output ->
-        if part.underline do
-          {x, y} = output.position
-          {offset_x, offset_y} = part.left_offset
-
-          x = x + offset_x
-          y = y + offset_y - 2
-
-          path_output =
-            Path.new()
-            |> Path.move(to: {x, y})
-            |> Path.line(to: {x + Line.Part.width(part), y})
-            |> Path.Output.from()
-
-          Map.update!(output, :drawings, fn drawings ->
-            [path_output | drawings]
-          end)
-        else
-          output
-        end
+      Map.update!(output, :drawings, fn drawings ->
+        [underline_path(output, part) | drawings]
       end)
+    end
+
+    defp underline_path(output, part) do
+      {x, y} = output.position
+      {offset_x, offset_y} = part.left_offset
+
+      x = x + offset_x
+      y = y + offset_y - 2
+
+      Path.new()
+      |> Path.move(to: {x, y})
+      |> Path.line(Keyword.put(part.underline, :to, {x + Line.Part.width(part), y}))
+      |> Path.Output.from()
     end
   end
 

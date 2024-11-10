@@ -353,8 +353,8 @@ defmodule Mudbrick.TextBlockTest do
                "Q",
                "q",
                "0.0 498.0 m",
-               "0 0 0 RG",
-               "1 w",
+               "1 0 0 RG",
+               "0.6 w",
                "62.064 498.0 l",
                "S",
                "Q",
@@ -370,7 +370,7 @@ defmodule Mudbrick.TextBlockTest do
              ] =
                output(fn %{fonts: fonts} ->
                  TextBlock.new(font: fonts.regular, position: {0, 500})
-                 |> TextBlock.write("underlined ", underline: [width: 1])
+                 |> TextBlock.write("underlined ", underline: [width: 0.6, colour: {1, 0, 0}])
                  |> TextBlock.write("\nnot underlined ")
                  |> TextBlock.write("\nunderlined again", underline: [width: 1])
                end)
