@@ -1,8 +1,9 @@
 defmodule Mudbrick.TextBlockTest do
   use ExUnit.Case, async: true
 
-  import Mudbrick.TestHelper, only: [output: 2]
+  import Mudbrick.TestHelper, only: [output: 2, bodoni_regular: 0]
 
+  alias Mudbrick.Font
   alias Mudbrick.TextBlock
   alias Mudbrick.TextBlock.Line
   alias Mudbrick.TextBlock.Line.Part
@@ -23,7 +24,6 @@ defmodule Mudbrick.TextBlockTest do
                    colour: {0, 0, 0},
                    font: nil,
                    font_size: 10,
-                   left_offset: {+0.0, -24.0},
                    text: "third"
                  }
                ]
@@ -35,7 +35,6 @@ defmodule Mudbrick.TextBlockTest do
                    colour: {0, 0, 0},
                    font: nil,
                    font_size: 10,
-                   left_offset: {+0.0, -12.0},
                    text: "second"
                  }
                ]
@@ -47,12 +46,48 @@ defmodule Mudbrick.TextBlockTest do
                    colour: {0, 0, 0},
                    font: nil,
                    font_size: 10,
-                   left_offset: {+0.0, -0.0},
                    text: "first"
                  }
                ]
              }
            ] = block.lines
+  end
+
+  test "offsets from left get set" do
+    font =
+      (Mudbrick.new(fonts: %{bodoni: [file: bodoni_regular()]})
+       |> Mudbrick.Document.find_object(&match?(%Font{}, &1))).value
+
+    block =
+      TextBlock.new(
+        colour: {0, 0, 1},
+        font: font,
+        font_size: 10,
+        position: {400, 500},
+        leading: 14
+      )
+      |> TextBlock.write("first ", colour: {1, 0, 0})
+      |> TextBlock.write("""
+      line
+      second line
+      """)
+      |> TextBlock.write("third ", leading: 16)
+      |> TextBlock.write("line")
+      |> TextBlock.write("\nfourth", colour: {0, 1, 0}, font_size: 24)
+
+    part_offsets =
+      for line <- block.lines do
+        for part <- line.parts do
+          {part.text, part.left_offset}
+        end
+      end
+
+    assert part_offsets == [
+             [{"fourth", {0.0, -44.0}}],
+             [{"line", {24.86, -28.0}}, {"third ", {0.0, -28.0}}],
+             [{"second line", {0.0, -14.0}}],
+             [{"line", {20.429999999999996, 0.0}}, {"first ", {0.0, 0.0}}]
+           ]
   end
 
   test "writes get divided into lines and parts" do
