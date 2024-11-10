@@ -17,7 +17,8 @@ defmodule Mudbrick.TextBlock.Line do
               font: nil,
               font_size: nil,
               left_offset: nil,
-              text: ""
+              text: "",
+              underline: nil
 
     def width(part) do
       Mudbrick.Font.width(

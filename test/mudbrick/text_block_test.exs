@@ -135,6 +135,34 @@ defmodule Mudbrick.TextBlockTest do
            ] = block.lines
   end
 
+  describe "underline" do
+    test "can be set on a single line" do
+      block =
+        TextBlock.new(
+          font_size: 10,
+          position: {400, 500}
+        )
+        |> TextBlock.write("this is ")
+        |> TextBlock.write("underlined", underline: [width: 1])
+
+      assert block.lines == [
+               %Line{
+                 leading: 12,
+                 parts: [
+                   %Part{
+                     colour: {0, 0, 0},
+                     font: nil,
+                     font_size: 10,
+                     text: "underlined",
+                     underline: [width: 1]
+                   },
+                   %Part{colour: {0, 0, 0}, font: nil, font_size: 10, text: "this is "}
+                 ]
+               }
+             ]
+    end
+  end
+
   describe "leading" do
     test "can be set per line" do
       block =
@@ -267,6 +295,41 @@ defmodule Mudbrick.TextBlockTest do
                end)
                |> operations()
     end
+
+    test "underlines happen" do
+      assert [
+               "q",
+               "0.0 469.2 m",
+               "0 0 0 RG",
+               "1 w",
+               "91.53599999999999 469.2 l",
+               "S",
+               "Q",
+               "q",
+               "0.0 498.0 m",
+               "0 0 0 RG",
+               "1 w",
+               "62.064 498.0 l",
+               "S",
+               "Q",
+               "BT",
+               "/F1 12 Tf",
+               "14.399999999999999 TL",
+               "0 500 Td",
+               "0 0 0 rg",
+               "<012100F400BB00C0010F00ED00D900F400C000BB01B7> Tj",
+               "<00F400FC011D01B7012100F400BB00C0010F00ED00D900F400C000BB01B7> '",
+               "<012100F400BB00C0010F00ED00D900F400C000BB01B700A500CF00A500D900F4> '",
+               "ET"
+             ] =
+               output(fn %{fonts: fonts} ->
+                 TextBlock.new(font: fonts.regular, position: {0, 500})
+                 |> TextBlock.write("underlined ", underline: [width: 1])
+                 |> TextBlock.write("\nnot underlined ")
+                 |> TextBlock.write("\nunderlined again", underline: [width: 1])
+               end)
+               |> operations()
+    end
   end
 
   describe "right-aligned" do
@@ -387,7 +450,9 @@ defmodule Mudbrick.TextBlockTest do
     end
   end
 
-  defp output(f), do: output(f, Mudbrick.TextBlock.Output)
+  defp output(f) do
+    output(f, Mudbrick.TextBlock.Output) |> Enum.reverse()
+  end
 
   defp operations(ops) do
     Enum.map(ops, &Mudbrick.TestHelper.show/1)

@@ -1,6 +1,11 @@
 defmodule Mudbrick.TextBlock do
   @type alignment :: :left | :right
 
+  @type underline_option ::
+          {:width, number()}
+          | {:colour, Mudbrick.colour()}
+  @type underline_options :: [underline_option()]
+
   @type option ::
           {:align, alignment()}
           | {:colour, Mudbrick.colour()}
@@ -16,6 +21,7 @@ defmodule Mudbrick.TextBlock do
           | {:font, atom()}
           | {:font_size, number()}
           | {:leading, number()}
+          | {:underline, underline_options()}
 
   @type part_options :: [part_option()]
 
@@ -40,9 +46,9 @@ defmodule Mudbrick.TextBlock do
             colour: {0, 0, 0},
             font: nil,
             font_size: 12,
+            leading: nil,
             lines: [],
-            position: {0, 0},
-            leading: nil
+            position: {0, 0}
 
   alias Mudbrick.TextBlock.Line
 

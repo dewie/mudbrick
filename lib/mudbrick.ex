@@ -236,6 +236,20 @@ defmodule Mudbrick do
       ...> new(fonts: %{regular: [file: bodoni_regular()], bold: [file: bodoni_bold()]})
       ...> |> page()
       ...> |> text(["I am ", {"bold", font: :bold}], font: :regular, position: {200, 200})
+
+  Underlined text.
+
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick
+      ...> new(fonts: %{bodoni: [file: bodoni_regular()]})
+      ...> |> page(size: {100, 40})
+      ...> |> text(["nounderline\\n", {"underline!", underline: [width: 1]}], position: {8, 20}, font: :bodoni, font_size: 8)
+      ...> |> render()
+      ...> |> then(&File.write("examples/underlined_text.pdf", &1))
+
+  Produces [this PDF](examples/underlined_text.pdf?#navpanes=0).
+
+  <object width="400" height="115" data="examples/underlined_text.pdf?#navpanes=0" type="application/pdf"></object>
   """
 
   @spec text(context(), Mudbrick.TextBlock.write(), Mudbrick.TextBlock.options()) :: context()
@@ -256,7 +270,7 @@ defmodule Mudbrick do
 
     context
     |> ContentStream.update_operations(fn ops ->
-      Enum.reverse(TextBlock.Output.from(text_block).operations) ++ ops
+      TextBlock.Output.from(text_block).operations ++ ops
     end)
   end
 
