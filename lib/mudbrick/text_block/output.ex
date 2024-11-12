@@ -11,7 +11,7 @@ defmodule Mudbrick.TextBlock.Output do
   alias Mudbrick.ContentStream.Rg
   alias Mudbrick.ContentStream.Td
   alias Mudbrick.ContentStream.Tf
-  alias Mudbrick.ContentStream.{Apostrophe, Tj}
+  alias Mudbrick.ContentStream.{Tj, TStar}
   alias Mudbrick.ContentStream.TL
   alias Mudbrick.Path
   alias Mudbrick.TextBlock.Line
@@ -51,11 +51,14 @@ defmodule Mudbrick.TextBlock.Output do
 
     defp reduce_parts(output, %Line{parts: []}, _operator, nil) do
       output
-      |> Output.add(%Apostrophe{font: output.font, text: ""})
+      |> Output.add(%Tj{font: output.font, text: ""})
+      |> Output.add(%TStar{})
     end
 
     defp reduce_parts(output, %Line{parts: [part]}, _operator, nil) do
-      Output.add_part(output, part, Apostrophe)
+      output
+      |> Output.add_part(part, Tj)
+      |> Output.add(%TStar{})
       |> underline(part)
     end
 

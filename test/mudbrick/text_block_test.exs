@@ -232,9 +232,12 @@ defmodule Mudbrick.TextBlockTest do
                "400 500 Td",
                "0 0 0 rg",
                "<014C010F0116011D01B700ED00D900F400C0> Tj",
-               "() '",
-               "<011600C000B500FC00F400BB01B700ED00D900F400C0> '",
-               "() '",
+               "T*",
+               "() Tj",
+               "T*",
+               "<011600C000B500FC00F400BB01B700ED00D900F400C0> Tj",
+               "T*",
+               "() Tj",
                "ET"
              ] =
                output(fn %{fonts: fonts} ->
@@ -263,9 +266,11 @@ defmodule Mudbrick.TextBlockTest do
                "<00A5> Tj",
                "1 0 0 rg",
                "<00B4> Tj",
+               "T*",
                "0 1 0 rg",
-               "<00B5> '",
-               "<00BB> '",
+               "<00B5> Tj",
+               "T*",
+               "<00BB> Tj",
                "0 0 1 rg",
                "<00C0> Tj",
                "ET"
@@ -326,7 +331,8 @@ defmodule Mudbrick.TextBlockTest do
                "0 0 0 rg",
                "<011D00D500D9011601B700D9011601B701550158> Tj",
                "14 TL",
-               "<011D00D500D9011601B700D9011601B701550156> '",
+               "T*",
+               "<011D00D500D9011601B700D9011601B701550156> Tj",
                "12.0 TL",
                "ET"
              ] =
@@ -364,8 +370,10 @@ defmodule Mudbrick.TextBlockTest do
                "0 500 Td",
                "0 0 0 rg",
                "<012100F400BB00C0010F00ED00D900F400C000BB01B7> Tj",
-               "<00F400FC011D01B7012100F400BB00C0010F00ED00D900F400C000BB01B7> '",
-               "<012100F400BB00C0010F00ED00D900F400C000BB01B700A500CF00A500D900F4> '",
+               "T*",
+               "<00F400FC011D01B7012100F400BB00C0010F00ED00D900F400C000BB01B7> Tj",
+               "T*",
+               "<012100F400BB00C0010F00ED00D900F400C000BB01B700A500CF00A500D900F4> Tj",
                "ET"
              ] =
                output(fn %{fonts: fonts} ->

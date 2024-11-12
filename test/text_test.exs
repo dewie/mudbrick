@@ -127,7 +127,8 @@ defmodule Mudbrick.TextTest do
                1.0 0.0 0.0 rg
                <011D00D500D9011601B700D9011601B700A500ED00ED01B7> Tj
                <010F00C000BB> Tj
-               <011D00C0013D011D> '
+               T*
+               <011D00C0013D011D> Tj
                ET
                """
     end
@@ -157,7 +158,8 @@ defmodule Mudbrick.TextTest do
                <00B400ED00A500B500EA01B700A500F400BB01B7> Tj
                1.0 0.0 0.0 rg
                <010F00C000BB> Tj
-               <011D00C0013D011D> '
+               T*
+               <011D00C0013D011D> Tj
                ET
                """
     end
@@ -166,7 +168,8 @@ defmodule Mudbrick.TextTest do
   test "CID font linebreaks are converted to the ' operator" do
     assert [
              "<00A5> Tj",
-             "<00B4> '"
+             "T*",
+             "<00B4> Tj"
              | _
            ] =
              new(fonts: %{bodoni: bodoni_regular()})
@@ -180,7 +183,7 @@ defmodule Mudbrick.TextTest do
                position: {0, 700}
              )
              |> operations()
-             |> Enum.take(-3)
+             |> Enum.take(-4)
   end
 
   test "font is assigned to the operator struct when font descendant present" do
