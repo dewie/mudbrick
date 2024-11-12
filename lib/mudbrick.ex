@@ -235,17 +235,29 @@ defmodule Mudbrick do
 
   Underlined text.
 
-      iex> import Mudbrick.TestHelper
-      ...> import Mudbrick
-      ...> new(fonts: %{bodoni: bodoni_regular()})
-      ...> |> page(size: {100, 40})
-      ...> |> text(["nounderline\\n", {"underline!", underline: [width: 1]}], position: {8, 20}, font_size: 8)
+      iex> import Mudbrick
+      ...> new(fonts: %{bodoni: Mudbrick.TestHelper.bodoni_regular()})
+      ...> |> page(size: {100, 50})
+      ...> |> text([{"heading\\n", leading: 20}, "nounderline\\n", {"underline!", underline: [width: 1]}], position: {8, 40}, font_size: 8)
       ...> |> render()
       ...> |> then(&File.write("examples/underlined_text.pdf", &1))
 
   Produces [this PDF](examples/underlined_text.pdf?#navpanes=0).
 
-  <object width="400" height="115" data="examples/underlined_text.pdf?#navpanes=0" type="application/pdf"></object>
+  <object width="400" height="130" data="examples/underlined_text.pdf?#navpanes=0" type="application/pdf"></object>
+
+  Underlined, right-aligned text.
+
+      iex> import Mudbrick
+      ...> new(fonts: %{bodoni: Mudbrick.TestHelper.bodoni_regular()})
+      ...> |> page(size: {100, 50})
+      ...> |> text([{"heading\\n", leading: 20}, "nounderline\\n", {"underline!", underline: [width: 1]}], position: {90, 40}, font_size: 8, align: :right)
+      ...> |> render()
+      ...> |> then(&File.write("examples/underlined_text_right_align.pdf", &1))
+
+  Produces [this PDF](examples/underlined_text_right_align.pdf?#navpanes=0).
+
+  <object width="400" height="130" data="examples/underlined_text_right_align.pdf?#navpanes=0" type="application/pdf"></object>
   """
 
   @spec text(context(), Mudbrick.TextBlock.write(), Mudbrick.TextBlock.options()) :: context()
