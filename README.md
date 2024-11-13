@@ -17,19 +17,23 @@ Currently working:
 - Coloured text.
 - JPEG images.
 - Compression.
+- Underline with colour and thickness options.
+- Basic line drawing.
 
 To do:
 
 - Other image formats.
 - Font subsetting.
 - Vector graphics.
+- Strikethrough.
+- Text highlight.
 
 ## Installation
 
 ```elixir
 def deps do
   [
-    {:mudbrick, "~> 0.1.0"}
+    {:mudbrick, "~> 0.0"}
   ]
 end
 ```
