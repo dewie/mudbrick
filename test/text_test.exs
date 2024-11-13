@@ -28,12 +28,14 @@ defmodule Mudbrick.TextTest do
 
   test "parts inherit fonts" do
     assert [
+             "BT",
              "/F1 14 Tf",
              "16.8 TL",
-             "BT",
-             "171.65 700.0 Td",
+             "200 700 Td",
+             "-28.35 0 Td",
              "1 0 0 rg",
              "<00110055017401B7> Tj",
+             "28.35 0 Td",
              "ET"
            ] =
              new(
@@ -73,7 +75,6 @@ defmodule Mudbrick.TextTest do
              "BT",
              "/F1 10 Tf",
              "14 TL",
-             "0 0 Td",
              "0 0 0 rg",
              "<00D500C000ED00ED00FC01B7011D00D500C0010F00C0> Tj",
              "ET"
@@ -123,7 +124,6 @@ defmodule Mudbrick.TextTest do
                BT
                /F1 10 Tf
                12.0 TL
-               0 0 Td
                1.0 0.0 0.0 rg
                <011D00D500D9011601B700D9011601B700A500ED00ED01B7> Tj
                <010F00C000BB> Tj
@@ -153,7 +153,6 @@ defmodule Mudbrick.TextTest do
                BT
                /F1 10 Tf
                12.0 TL
-               0 0 Td
                0 0 0 rg
                <00B400ED00A500B500EA01B700A500F400BB01B7> Tj
                1.0 0.0 0.0 rg

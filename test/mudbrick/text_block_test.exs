@@ -389,33 +389,36 @@ defmodule Mudbrick.TextBlockTest do
   describe "right-aligned" do
     test "newlines become Tjs with offsets" do
       assert [
+               "BT",
                "/F1 10 Tf",
                "12.0 TL",
-               "BT",
-               "384.82 500.0 Td",
+               "400 500 Td",
+               "-15.180000000000001 0 Td",
                "0 0 0 rg",
                "<00A5> Tj",
                "1 0 0 rg",
                "<00A500A5> Tj",
-               "ET",
-               "BT",
-               "379.42 488.0 Td",
+               "15.180000000000001 0 Td",
+               "-20.580000000000002 0 Td",
+               "T*",
                "0 0 0 rg",
                "<013801380138> Tj",
-               "ET",
-               "BT",
-               "314.3 476.0 Td",
+               "20.580000000000002 0 Td",
+               "-85.7 0 Td",
+               "T*",
                "<008800550088> Tj",
                "0 1 0 rg",
                "<0088005500880055008800550088> Tj",
-               "ET",
-               "BT",
-               "400.0 464.0 Td",
-               "ET",
-               "BT",
-               "390.74 452.0 Td",
+               "85.7 0 Td",
+               "-0.0 0 Td",
+               "T*",
+               "() Tj",
+               "0.0 0 Td",
+               "-9.26 0 Td",
+               "T*",
                "0 0 0 rg",
                "<00D500D9> Tj",
+               "9.26 0 Td",
                "ET"
              ] =
                output(fn %{fonts: fonts} ->
@@ -452,10 +455,11 @@ defmodule Mudbrick.TextBlockTest do
 
     test "inline font change is written with Tfs" do
       assert [
+               "BT",
                "/F1 10 Tf",
                "12.0 TL",
-               "BT",
-               "225.67999999999998 500.0 Td",
+               "400 500 Td",
+               "-174.32000000000002 0 Td",
                "0 0 0 rg",
                "<011D00D500D9011601B700D9011601B7> Tj",
                "/F2 10 Tf",
@@ -465,6 +469,7 @@ defmodule Mudbrick.TextBlockTest do
                "/F3 10 Tf",
                "<015A01050109015201F00109015201F000FF014B00C30125011B011E01090125> Tj",
                "/F1 10 Tf",
+               "174.32000000000002 0 Td",
                "ET"
              ] =
                output(fn %{fonts: fonts} ->

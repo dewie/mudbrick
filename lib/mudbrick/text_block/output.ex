@@ -16,7 +16,7 @@ defmodule Mudbrick.TextBlock.Output do
   alias Mudbrick.Path
   alias Mudbrick.TextBlock.Line
 
-  defmodule LeftAlign do
+  defmodule Align do
     @moduledoc false
 
     alias Mudbrick.TextBlock.Output
@@ -26,105 +26,86 @@ defmodule Mudbrick.TextBlock.Output do
       |> Output.add(%TL{leading: line.leading})
     end
 
-    def reduce_lines(output, [line]) do
+    def reduce_lines(output, [line], x_offsetter) do
       output
       |> leading(line)
-      |> reduce_parts(line, Tj, :first_line)
+      |> reset_offset(x_offsetter.(line))
+      |> reduce_parts(line, Tj, :first_line, x_offsetter)
+      |> offset(x_offsetter.(line))
     end
 
-    def reduce_lines(output, [line | lines]) do
+    def reduce_lines(output, [line | lines], x_offsetter) do
       output
       |> leading(line)
-      |> reduce_parts(line, Tj, nil)
-      |> reduce_lines(lines)
+      |> reset_offset(x_offsetter.(line))
+      |> reduce_parts(line, Tj, nil, x_offsetter)
+      |> offset(x_offsetter.(line))
+      |> reduce_lines(lines, x_offsetter)
     end
 
-    defp reduce_parts(output, %Line{parts: []}, _operator, :first_line) do
+    defp offset(output, offset) do
+      Output.td(output, {-offset, 0})
+    end
+
+    defp reset_offset(output, offset) do
+      Output.td(output, {offset, 0})
+    end
+
+    defp reduce_parts(output, %Line{parts: []}, _operator, :first_line, _x_offsetter) do
       output
     end
 
-    defp reduce_parts(output, %Line{parts: [part]}, _operator, :first_line) do
+    defp reduce_parts(output, %Line{parts: [part]} = line, _operator, :first_line, x_offsetter) do
       output
       |> Output.add_part(part, Tj)
-      |> underline(part)
+      |> underline(part, x_offsetter.(line))
     end
 
-    defp reduce_parts(output, %Line{parts: []}, _operator, nil) do
+    defp reduce_parts(output, %Line{parts: []}, _operator, nil, _x_offsetter) do
       output
       |> Output.add(%Tj{font: output.font, text: ""})
       |> Output.add(%TStar{})
     end
 
-    defp reduce_parts(output, %Line{parts: [part]}, _operator, nil) do
+    defp reduce_parts(output, %Line{parts: [part]} = line, _operator, nil, x_offsetter) do
       output
       |> Output.add_part(part, Tj)
       |> Output.add(%TStar{})
-      |> underline(part)
+      |> underline(part, x_offsetter.(line))
     end
 
-    defp reduce_parts(output, %Line{parts: [part | parts]} = line, operator, line_kind) do
+    defp reduce_parts(
+           output,
+           %Line{parts: [part | parts]} = line,
+           operator,
+           line_kind,
+           x_offsetter
+         ) do
       output
       |> Output.add_part(part, operator)
-      |> underline(part)
-      |> reduce_parts(%{line | parts: parts}, Tj, line_kind)
+      |> underline(part, x_offsetter.(line))
+      |> reduce_parts(%{line | parts: parts}, Tj, line_kind, x_offsetter)
     end
 
-    defp underline(output, %Line.Part{underline: nil}), do: output
+    defp underline(output, %Line.Part{underline: nil}, _line_x_offset), do: output
 
-    defp underline(output, part) do
+    defp underline(output, part, line_x_offset) do
       Map.update!(output, :drawings, fn drawings ->
-        [underline_path(output, part) | drawings]
+        [underline_path(output, part, line_x_offset) | drawings]
       end)
     end
 
-    defp underline_path(output, part) do
+    defp underline_path(output, part, line_x_offset) do
       {x, y} = output.position
       {offset_x, offset_y} = part.left_offset
 
-      x = x + offset_x
+      x = x + offset_x - line_x_offset
       y = y + offset_y - 2
 
       Path.new()
       |> Path.move(to: {x, y})
       |> Path.line(Keyword.put(part.underline, :to, {x + Line.Part.width(part), y}))
       |> Path.Output.from()
-    end
-  end
-
-  defmodule RightAlign do
-    @moduledoc false
-
-    alias Mudbrick.TextBlock.Output
-
-    def reduce_lines(output, [line], measure) do
-      output
-      |> Output.end_block()
-      |> reduce_parts(line)
-      |> measure.(line, 1)
-      |> Output.start_block()
-    end
-
-    def reduce_lines(output, [line | lines], measure) do
-      output
-      |> Output.end_block()
-      |> reduce_parts(line)
-      |> measure.(line, length(lines) + 1)
-      |> Output.start_block()
-      |> reduce_lines(lines, measure)
-    end
-
-    defp reduce_parts(output, %Line{parts: []}) do
-      output
-    end
-
-    defp reduce_parts(output, %Line{parts: [part]}) do
-      Output.add_part(output, part, Tj)
-    end
-
-    defp reduce_parts(output, %Line{parts: [part | parts]} = line) do
-      output
-      |> Output.add_part(part, Tj)
-      |> reduce_parts(%{line | parts: parts})
     end
   end
 
@@ -139,10 +120,9 @@ defmodule Mudbrick.TextBlock.Output do
 
   def from(
         %Mudbrick.TextBlock{
-          align: :left,
           font: font,
           font_size: font_size,
-          position: position = {x, y}
+          position: position
         } = tb
       ) do
     tl = %TL{leading: tb.leading}
@@ -150,8 +130,11 @@ defmodule Mudbrick.TextBlock.Output do
 
     %__MODULE__{position: position, font: font, font_size: font_size}
     |> end_block()
-    |> LeftAlign.reduce_lines(tb.lines)
-    |> add(%Td{tx: x, ty: y})
+    |> Align.reduce_lines(
+      tb.lines,
+      if(tb.align == :left, do: fn _ -> 0 end, else: &Line.width/1)
+    )
+    |> td(position)
     |> add(tl)
     |> add(tf)
     |> start_block()
@@ -161,28 +144,8 @@ defmodule Mudbrick.TextBlock.Output do
     |> Map.update!(:operations, &Enum.reverse/1)
   end
 
-  def from(
-        %Mudbrick.TextBlock{
-          align: :right,
-          font: font,
-          font_size: font_size
-        } = tb
-      ) do
-    tf = %Tf{font: font, size: font_size}
-
-    %__MODULE__{font: font, font_size: font_size}
-    |> RightAlign.reduce_lines(tb.lines, fn output, line, line_number ->
-      right_offset(output, tb, line, line_number)
-    end)
-    |> add(%TL{leading: tb.leading})
-    |> add(tf)
-    |> deduplicate(tf)
-    |> Map.update!(:operations, &Enum.reverse/1)
-  end
-
-  def add(%__MODULE__{} = output, op) do
-    Map.update!(output, :operations, &[op | &1])
-  end
+  def td(output, {0, 0}), do: output
+  def td(output, {x, y}), do: add(output, %Td{tx: x, ty: y})
 
   def add_part(output, part, operator) do
     output
@@ -228,6 +191,10 @@ defmodule Mudbrick.TextBlock.Output do
       tx: x - Line.width(line),
       ty: y - tb.leading * n
     })
+  end
+
+  def add(%__MODULE__{} = output, op) do
+    Map.update!(output, :operations, &[op | &1])
   end
 
   defp deduplicate(output, initial_operator) do
