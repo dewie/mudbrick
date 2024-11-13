@@ -80,7 +80,7 @@ defmodule Mudbrick do
 
   ## Examples
 
-  Register an OTF font. Pass the file's raw data to the `:file` option.
+  Register an OTF font. Pass the file's raw data.
 
       iex> Mudbrick.new(fonts: %{bodoni: Mudbrick.TestHelper.bodoni_regular()})
 
