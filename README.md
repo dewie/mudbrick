@@ -11,7 +11,7 @@ Early-stages PDF generator, beelining for:
 
 Currently working:
 
-- OpenType fonts with ligatures and special characters.
+- OpenType fonts with ligatures, special characters and automatic kerning.
 - Text positioning.
 - Right alignment.
 - Coloured text.
