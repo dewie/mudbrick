@@ -1,7 +1,6 @@
 defmodule Mudbrick.ContentStream.TJ do
   @moduledoc false
   defstruct font: nil,
-            operator: "TJ",
             text: nil
 
   defimpl Mudbrick.Object do
