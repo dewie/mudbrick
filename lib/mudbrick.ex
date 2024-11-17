@@ -2,7 +2,7 @@ defmodule Mudbrick do
   @moduledoc """
   API for creating and exporting PDF documents.
 
-  ## Example
+  ## General example
 
   Compression, OTF font with special characters, JPEG and line drawing:
 
@@ -42,6 +42,25 @@ defmodule Mudbrick do
   Produces [this](examples/compression_font_special_chars.pdf).
 
   <object width="400" height="215" data="examples/compression_font_special_chars.pdf?#navpanes=0" type="application/pdf"></object>
+
+  ## Auto-kerning
+
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick
+      ...> new(fonts: %{bodoni: bodoni_bold()})
+      ...> |> page(size: {600, 200})
+      ...> |> text(
+      ...>   [{"Warning\\n", underline: [width: 0.5]}, "MORE ", {"efficiency", underline: [width: 0.5]}],
+      ...>   font: :bodoni,
+      ...>   font_size: 70,
+      ...>   position: {7, 130}
+      ...> )
+      ...> |> render()
+      ...> |> then(&File.write("examples/auto_kerning.pdf", &1))
+
+  Produces [this](examples/auto_kerning.pdf). Notice how the 'a' is underneath the 'W' in 'Warning'.
+
+  <object width="400" height="215" data="examples/auto_kerning.pdf?#navpanes=0" type="application/pdf"></object>
   """
 
   alias Mudbrick.{

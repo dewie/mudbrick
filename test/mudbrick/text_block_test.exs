@@ -81,9 +81,9 @@ defmodule Mudbrick.TextBlockTest do
 
     assert part_offsets == [
              [{"fourth", {0.0, -44.0}}],
-             [{"line", {24.86, -28.0}}, {"third ", {0.0, -28.0}}],
+             [{"line", {25.38, -28.0}}, {"third ", {0.0, -28.0}}],
              [{"second line", {0.0, -14.0}}],
-             [{"line", {20.429999999999996, 0.0}}, {"first ", {0.0, 0.0}}]
+             [{"line", {20.31, 0.0}}, {"first ", {0.0, 0.0}}]
            ]
   end
 
@@ -224,20 +224,20 @@ defmodule Mudbrick.TextBlockTest do
   end
 
   describe "left-aligned" do
-    test "newlines become apostrophes" do
+    test "newlines are T*s without text" do
       assert [
                "BT",
                "/F1 10 Tf",
                "14 TL",
                "400 500 Td",
                "0 0 0 rg",
-               "<014C010F0116011D01B700ED00D900F400C0> Tj",
+               "[ <014C> <010F> 12 <0116> <011D> <01B7> <00ED> <00D9> <00F4> 8 <00C0> ] TJ",
                "T*",
-               "() Tj",
+               "",
                "T*",
-               "<011600C000B500FC00F400BB01B700ED00D900F400C0> Tj",
+               "[ <0116> 24 <00C0> <00B5> <00FC> <00F4> <00BB> <01B7> <00ED> <00D9> <00F4> 8 <00C0> ] TJ",
                "T*",
-               "() Tj",
+               "",
                "ET"
              ] =
                output(fn %{fonts: fonts} ->
@@ -256,23 +256,23 @@ defmodule Mudbrick.TextBlockTest do
                |> operations()
     end
 
-    test "inline colours are written with Tjs" do
+    test "inline colours are written with rgs" do
       assert [
                "BT",
                "/F1 10 Tf",
                "12.0 TL",
                "400 500 Td",
                "0 0 0 rg",
-               "<00A5> Tj",
+               _,
                "1 0 0 rg",
-               "<00B4> Tj",
+               _,
                "T*",
                "0 1 0 rg",
-               "<00B5> Tj",
+               _,
                "T*",
-               "<00BB> Tj",
+               _,
                "0 0 1 rg",
-               "<00C0> Tj",
+               _,
                "ET"
              ] =
                output(fn %{fonts: fonts} ->
@@ -297,14 +297,14 @@ defmodule Mudbrick.TextBlockTest do
                "400 500 Td",
                "0 0 0 rg",
                "/F1 14 Tf",
-               "<011D00D500D9011601B700D9011601B7> Tj",
+               _,
                "/F1 10 Tf",
                "/F2 10 Tf",
-               "<00B400FC00ED00BB01B7> Tj",
+               _,
                "/F1 10 Tf",
-               "<00B40121011D01B7011D00D500D9011601B700D9011600F4019E011D01B7> Tj",
+               _,
                "/F3 10 Tf",
-               "<015A01050109015201F00109015201F000FF014B00C30125011B011E01090125> Tj",
+               _,
                "/F1 10 Tf",
                "ET"
              ] =
@@ -322,17 +322,17 @@ defmodule Mudbrick.TextBlockTest do
                |> operations()
     end
 
-    test "inline leading is written with TL, before ' that changes matrix" do
+    test "inline leading is written with TL, before T* that changes matrix" do
       assert [
                "BT",
                "/F1 10 Tf",
                "12.0 TL",
                "400 500 Td",
                "0 0 0 rg",
-               "<011D00D500D9011601B700D9011601B701550158> Tj",
+               "[ <011D> -12 <00D5> <00D9> <0116> <01B7> <00D9> <0116> <01B7> <0155> 40 <0158> ] TJ",
                "14 TL",
                "T*",
-               "<011D00D500D9011601B700D9011601B701550156> Tj",
+               "[ <011D> -12 <00D5> <00D9> <0116> <01B7> <00D9> <0116> <01B7> <0155> -20 <0156> ] TJ",
                "12.0 TL",
                "ET"
              ] =
@@ -351,30 +351,21 @@ defmodule Mudbrick.TextBlockTest do
     test "underlines happen" do
       assert [
                "q",
-               "0.0 469.2 m",
+               "0.0 470.0 m",
                "0 0 0 RG",
                "1 w",
-               "91.53599999999999 469.2 l",
+               "91.344 470.0 l",
                "S",
                "Q",
                "q",
-               "0.0 498.0 m",
+               "0.0 498.8 m",
                "1 0 0 RG",
                "0.6 w",
-               "62.064 498.0 l",
+               "61.967999999999996 498.8 l",
                "S",
                "Q",
-               "BT",
-               "/F1 12 Tf",
-               "14.399999999999999 TL",
-               "0 500 Td",
-               "0 0 0 rg",
-               "<012100F400BB00C0010F00ED00D900F400C000BB01B7> Tj",
-               "T*",
-               "<00F400FC011D01B7012100F400BB00C0010F00ED00D900F400C000BB01B7> Tj",
-               "T*",
-               "<012100F400BB00C0010F00ED00D900F400C000BB01B700A500CF00A500D900F4> Tj",
-               "ET"
+               "BT"
+               | _
              ] =
                output(fn %{fonts: fonts} ->
                  TextBlock.new(font: fonts.regular, position: {0, 500})
@@ -387,37 +378,37 @@ defmodule Mudbrick.TextBlockTest do
   end
 
   describe "right-aligned" do
-    test "newlines become Tjs with offsets" do
+    test "newlines become T*s with offsets in Tds" do
       assert [
                "BT",
                "/F1 10 Tf",
                "12.0 TL",
                "400 500 Td",
-               "-15.180000000000001 0 Td",
+               "-15.38 0 Td",
                "0 0 0 rg",
-               "<00A5> Tj",
+               "[ <00A5> ] TJ",
                "1 0 0 rg",
-               "<00A500A5> Tj",
-               "15.180000000000001 0 Td",
-               "-20.580000000000002 0 Td",
+               "[ <00A5> -20 <00A5> ] TJ",
+               "15.38 0 Td",
+               "-20.14 0 Td",
                "T*",
                "0 0 0 rg",
-               "<013801380138> Tj",
-               "20.580000000000002 0 Td",
-               "-85.7 0 Td",
+               "[ <0138> 44 <0138> <0138> ] TJ",
+               "20.14 0 Td",
+               "-83.38000000000001 0 Td",
                "T*",
-               "<008800550088> Tj",
+               "[ <0088> 48 <0055> <0088> ] TJ",
                "0 1 0 rg",
-               "<0088005500880055008800550088> Tj",
-               "85.7 0 Td",
+               "[ <0088> 48 <0055> <0088> 68 <0055> <0088> 68 <0055> <0088> ] TJ",
+               "83.38000000000001 0 Td",
                "-0.0 0 Td",
                "T*",
-               "() Tj",
+               "",
                "0.0 0 Td",
                "-9.26 0 Td",
                "T*",
                "0 0 0 rg",
-               "<00D500D9> Tj",
+               "[ <00D5> <00D9> ] TJ",
                "9.26 0 Td",
                "ET"
              ] =
@@ -459,17 +450,17 @@ defmodule Mudbrick.TextBlockTest do
                "/F1 10 Tf",
                "12.0 TL",
                "400 500 Td",
-               "-174.32000000000002 0 Td",
+               _,
                "0 0 0 rg",
-               "<011D00D500D9011601B700D9011601B7> Tj",
+               _,
                "/F2 10 Tf",
-               "<00B400FC00ED00BB01B7> Tj",
+               _,
                "/F1 10 Tf",
-               "<00B40121011D01B7011D00D500D9011601B700D9011600F4019E011D01B7> Tj",
+               _,
                "/F3 10 Tf",
-               "<015A01050109015201F00109015201F000FF014B00C30125011B011E01090125> Tj",
+               _,
                "/F1 10 Tf",
-               "174.32000000000002 0 Td",
+               _,
                "ET"
              ] =
                output(fn %{fonts: fonts} ->

@@ -87,15 +87,28 @@ defmodule Mudbrick.Font do
   end
 
   def width(font, size, text) do
-    {glyph_ids, _positions} = OpenType.layout_text(font.parsed, text)
+    {_glyph_ids, positions} = OpenType.layout_text(font.parsed, text)
 
-    for id <- glyph_ids, reduce: 0 do
-      acc ->
-        glyph_width = Enum.at(font.parsed.glyphWidths, id)
-        width_in_points = glyph_width / 1000 * size
-
-        acc + width_in_points
+    for {_, _, _, width, _} <- positions, reduce: 0 do
+      acc -> acc + width / 1000 * size
     end
+  end
+
+  def kerned(font, text) do
+    {glyph_ids_decimal, positions} =
+      OpenType.layout_text(font.parsed, text)
+
+    glyph_ids_decimal
+    |> Enum.zip(positions)
+    |> Enum.map(fn
+      {glyph_id, {:kern, _, _, width_when_kerned, _}} ->
+        normal_width = Enum.at(font.parsed.glyphWidths, glyph_id)
+        offset = normal_width - width_when_kerned
+        {Mudbrick.to_hex(glyph_id), offset}
+
+      {glyph_id, {:std_width, _, _, _width, _}} ->
+        Mudbrick.to_hex(glyph_id)
+    end)
   end
 
   defp add_font_file(doc, contents) do

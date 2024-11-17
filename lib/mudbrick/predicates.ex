@@ -3,7 +3,7 @@ defmodule Mudbrick.Predicates do
   Useful for testing PDF documents.
 
   While these predicates do check the PDF in a black-box way, it's not expected
-  that they will work on all PDFs found in the wild.
+  that they will work on PDFs not generated with Mudbrick.
   """
 
   @doc """
@@ -22,40 +22,96 @@ defmodule Mudbrick.Predicates do
   Checks for presence of `text` in the `pdf` `iodata`. Searches compressed and uncompressed data.
 
   This arity requires you to pass the raw font data in which the text is
-  expected to be written. It must be present in raw hexadecimal form
-  corresponding to the font's glyph IDs.
+  expected to be written. The text must be present in TJ operator format, which
+  raw hexadecimal form corresponding to the font's glyph IDs, interspersed with
+  optional kerning offsets.
 
   The [OpenType](https://hexdocs.pm/opentype) library is used to find font
   features, such as ligatures, which are expected to have been used in the PDF.
 
   ## Options
 
-  - `:in_font` - raw font data in which the text is expected.
+  - `:in_font` - raw font data in which the text is expected. Required.
 
-  ## Example
+  ## Example: with compression
 
-      iex> Mudbrick.Predicates.has_text?("some-pdf", "hello", in_font: Mudbrick.TestHelper.bodoni_regular())
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick.Predicates
+      ...> import Mudbrick
+      ...> font = bodoni_regular()
+      ...> raw_pdf =
+      ...>   new(compress: true, fonts: %{default: font})
+      ...>   |> page()
+      ...>   |> text(
+      ...>     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWhello, CO₂!WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+      ...>     font_size: 100
+      ...>   )
+      ...>   |> render()
+      ...>   |> IO.iodata_to_binary()
+      ...> {has_text?(raw_pdf, "hello, CO₂!", in_font: font), has_text?(raw_pdf, "good morning!", in_font: font)}
+      {true, false}
+
+  ## Example: without compression
+
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick.Predicates
+      ...> import Mudbrick
+      ...> font = bodoni_regular()
+      ...> raw_pdf =
+      ...>   new(compress: false, fonts: %{default: font})
+      ...>   |> page()
+      ...>   |> text(
+      ...>     "Hello, world!",
+      ...>     font_size: 100
+      ...>   )
+      ...>   |> render()
+      ...>   |> IO.iodata_to_binary()
+      ...> {has_text?(raw_pdf, "Hello, world!", in_font: font), has_text?(raw_pdf, "Good morning!", in_font: font)}
+      {true, false}
   """
   @spec has_text?(pdf :: iodata(), text :: binary(), opts :: list()) :: boolean()
   def has_text?(pdf, text, opts) do
     font = Keyword.fetch!(opts, :in_font)
     parsed_font = OpenType.new() |> OpenType.parse(font)
-    {glyph_ids_decimal, _positions} = OpenType.layout_text(parsed_font, text)
-    glyph_ids_hex = Enum.map_join(glyph_ids_decimal, "", &Mudbrick.to_hex/1)
 
-    has_text?(pdf, glyph_ids_hex)
+    mudbrick_font = %Mudbrick.Font{
+      name: nil,
+      resource_identifier: nil,
+      type: nil,
+      parsed: parsed_font
+    }
+
+    pattern_source =
+      Mudbrick.Font.kerned(mudbrick_font, text)
+      |> Enum.reduce("", &append_glyph_id/2)
+
+    pattern = Regex.compile!(pattern_source)
+
+    pdf
+    |> extract_streams()
+    |> Enum.any?(&(&1 =~ pattern))
   end
 
   defp extract_streams(pdf) do
+    binary = IO.iodata_to_binary(pdf)
+
     ~r"<<(.*?)>>\nstream\n(.*?)endstream"s
-    |> Regex.scan(pdf, capture: :all_but_first)
+    |> Regex.scan(binary, capture: :all_but_first)
     |> Enum.map(fn
       [dictionary, content] ->
         if String.contains?(dictionary, "FlateDecode") do
-          Mudbrick.decompress(content) |> IO.iodata_to_binary()
+          content |> Mudbrick.decompress() |> IO.iodata_to_binary()
         else
           content
         end
     end)
+  end
+
+  defp append_glyph_id({glyph_id, _kerning}, acc) do
+    append_glyph_id(glyph_id, acc)
+  end
+
+  defp append_glyph_id(glyph_id, acc) do
+    "#{acc}<#{glyph_id}>[  \\d]+"
   end
 end

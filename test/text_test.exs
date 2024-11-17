@@ -5,7 +5,7 @@ defmodule Mudbrick.TextTest do
   import Mudbrick
   import Mudbrick.TestHelper
 
-  alias Mudbrick.ContentStream.Tj
+  alias Mudbrick.ContentStream.TJ
   alias Mudbrick.Font
   alias Mudbrick.Indirect
 
@@ -32,10 +32,10 @@ defmodule Mudbrick.TextTest do
              "/F1 14 Tf",
              "16.8 TL",
              "200 700 Td",
-             "-28.35 0 Td",
+             "-28.294 0 Td",
              "1 0 0 rg",
-             "<00110055017401B7> Tj",
-             "28.35 0 Td",
+             "[ <0011> 4 <0055> <0174> <01B7> ] TJ",
+             "28.294 0 Td",
              "ET"
            ] =
              new(
@@ -76,7 +76,7 @@ defmodule Mudbrick.TextTest do
              "/F1 10 Tf",
              "14 TL",
              "0 0 0 rg",
-             "<00D500C000ED00ED00FC01B7011D00D500C0010F00C0> Tj",
+             _,
              "ET"
            ] =
              new(fonts: %{bodoni: bodoni_regular()})
@@ -104,71 +104,66 @@ defmodule Mudbrick.TextTest do
     end
 
     test "can be set on a text block" do
-      {_doc, content_stream} =
-        new(fonts: %{bodoni: bodoni_regular()})
-        |> page()
-        |> text(
-          [
-            "this is all ",
-            """
-            red
-            text\
-            """
-          ],
-          font_size: 10,
-          colour: {1.0, 0.0, 0.0}
-        )
-
-      assert show(content_stream) =~
-               """
-               BT
-               /F1 10 Tf
-               12.0 TL
-               1.0 0.0 0.0 rg
-               <011D00D500D9011601B700D9011601B700A500ED00ED01B7> Tj
-               <010F00C000BB> Tj
-               T*
-               <011D00C0013D011D> Tj
-               ET
-               """
+      assert [
+               "BT",
+               "/F1 10 Tf",
+               "12.0 TL",
+               "1.0 0.0 0.0 rg",
+               _,
+               _,
+               "T*",
+               _,
+               "ET"
+             ] =
+               new(fonts: %{bodoni: bodoni_regular()})
+               |> page()
+               |> text(
+                 [
+                   "this is all ",
+                   """
+                   red
+                   text\
+                   """
+                 ],
+                 font_size: 10,
+                 colour: {1.0, 0.0, 0.0}
+               )
+               |> operations()
     end
 
     test "can be set on part of a text block" do
-      {_doc, content_stream} =
-        new(fonts: %{bodoni: bodoni_regular()})
-        |> page()
-        |> text(
-          [
-            "black and ",
-            {"""
-             red
-             text\
-             """, colour: {1.0, 0.0, 0.0}}
-          ],
-          font_size: 10
-        )
-
-      assert show(content_stream) =~
-               """
-               BT
-               /F1 10 Tf
-               12.0 TL
-               0 0 0 rg
-               <00B400ED00A500B500EA01B700A500F400BB01B7> Tj
-               1.0 0.0 0.0 rg
-               <010F00C000BB> Tj
-               T*
-               <011D00C0013D011D> Tj
-               ET
-               """
+      assert [
+               "BT",
+               "/F1 10 Tf",
+               "12.0 TL",
+               "0 0 0 rg",
+               _,
+               "1.0 0.0 0.0 rg",
+               _,
+               "T*",
+               _,
+               "ET"
+             ] =
+               new(fonts: %{bodoni: bodoni_regular()})
+               |> page()
+               |> text(
+                 [
+                   "black and ",
+                   {"""
+                    red
+                    text\
+                    """, colour: {1.0, 0.0, 0.0}}
+                 ],
+                 font_size: 10
+               )
+               |> operations()
     end
   end
 
-  test "CID font linebreaks are converted to the ' operator" do
+  test "linebreaks are converted to the T* operator" do
     assert [
-             "<00A5> Tj",
-             "T*",
-             "<00B4> Tj"
+             _,
+             "T*"
              | _
            ] =
              new(fonts: %{bodoni: bodoni_regular()})
@@ -193,7 +188,7 @@ defmodule Mudbrick.TextTest do
 
     [_et, show_text_operation | _] = content_stream.value.operations
 
-    assert %Tj{
+    assert %TJ{
              text: "CO₂",
              font: %Font{
                name: :"LibreBodoni-Regular",
@@ -203,8 +198,8 @@ defmodule Mudbrick.TextTest do
   end
 
   describe "serialisation" do
-    test "converts Tj text to the assigned font's glyph IDs in hex" do
-      assert ["<001100550174> Tj" | _] =
+    test "converts TJ text to the assigned font's glyph IDs in hex, with kerning" do
+      assert ["[ <0011> 4 <0055> <0174> ] TJ", "ET"] =
                new(fonts: %{bodoni: bodoni_regular()})
                |> page()
                |> text("CO₂", font_size: 24, position: {0, 700})
@@ -212,7 +207,7 @@ defmodule Mudbrick.TextTest do
                |> Enum.take(-2)
     end
 
-    test "copes with trailing newlines in CID font text" do
+    test "copes with trailing newlines" do
       assert new(fonts: %{bodoni: bodoni_regular()})
              |> page()
              |> text("\n", font_size: 13)

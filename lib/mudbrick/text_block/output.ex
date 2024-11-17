@@ -11,7 +11,7 @@ defmodule Mudbrick.TextBlock.Output do
   alias Mudbrick.ContentStream.Rg
   alias Mudbrick.ContentStream.Td
   alias Mudbrick.ContentStream.Tf
-  alias Mudbrick.ContentStream.{Tj, TStar}
+  alias Mudbrick.ContentStream.{TJ, TStar}
   alias Mudbrick.ContentStream.TL
   alias Mudbrick.Path
   alias Mudbrick.TextBlock.Line
@@ -30,7 +30,7 @@ defmodule Mudbrick.TextBlock.Output do
       output
       |> leading(line)
       |> reset_offset(x_offsetter.(line))
-      |> reduce_parts(line, Tj, :first_line, x_offsetter)
+      |> reduce_parts(line, TJ, :first_line, x_offsetter)
       |> offset(x_offsetter.(line))
     end
 
@@ -38,7 +38,7 @@ defmodule Mudbrick.TextBlock.Output do
       output
       |> leading(line)
       |> reset_offset(x_offsetter.(line))
-      |> reduce_parts(line, Tj, nil, x_offsetter)
+      |> reduce_parts(line, TJ, nil, x_offsetter)
       |> offset(x_offsetter.(line))
       |> reduce_lines(lines, x_offsetter)
     end
@@ -57,19 +57,19 @@ defmodule Mudbrick.TextBlock.Output do
 
     defp reduce_parts(output, %Line{parts: [part]} = line, _operator, :first_line, x_offsetter) do
       output
-      |> Output.add_part(part, Tj)
+      |> Output.add_part(part, TJ)
       |> underline(part, x_offsetter.(line))
     end
 
     defp reduce_parts(output, %Line{parts: []}, _operator, nil, _x_offsetter) do
       output
-      |> Output.add(%Tj{font: output.font, text: ""})
+      |> Output.add(%TJ{font: output.font, text: ""})
       |> Output.add(%TStar{})
     end
 
     defp reduce_parts(output, %Line{parts: [part]} = line, _operator, nil, x_offsetter) do
       output
-      |> Output.add_part(part, Tj)
+      |> Output.add_part(part, TJ)
       |> Output.add(%TStar{})
       |> underline(part, x_offsetter.(line))
     end
@@ -84,7 +84,7 @@ defmodule Mudbrick.TextBlock.Output do
       output
       |> Output.add_part(part, operator)
       |> underline(part, x_offsetter.(line))
-      |> reduce_parts(%{line | parts: parts}, Tj, line_kind, x_offsetter)
+      |> reduce_parts(%{line | parts: parts}, TJ, line_kind, x_offsetter)
     end
 
     defp underline(output, %Line.Part{underline: nil}, _line_x_offset), do: output
@@ -100,7 +100,7 @@ defmodule Mudbrick.TextBlock.Output do
       {offset_x, offset_y} = part.left_offset
 
       x = x + offset_x - line_x_offset
-      y = y + offset_y - 2
+      y = y + offset_y - part.font_size / 10
 
       Path.new()
       |> Path.move(to: {x, y})
@@ -150,7 +150,7 @@ defmodule Mudbrick.TextBlock.Output do
   def add_part(output, part, operator) do
     output
     |> with_font(
-      struct!(operator, font: part.font, text: part.text),
+      struct!(operator, font: part.font, font_size: part.font_size, text: part.text),
       part
     )
     |> colour(part.colour)
