@@ -94,6 +94,7 @@ defmodule Mudbrick.Font do
     end
   end
 
+  @doc false
   def kerned(font, text) do
     {glyph_ids_decimal, positions} =
       OpenType.layout_text(font.parsed, text)
