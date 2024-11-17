@@ -258,7 +258,13 @@ defmodule Mudbrick do
       iex> import Mudbrick
       ...> new(fonts: %{bodoni: Mudbrick.TestHelper.bodoni_regular()})
       ...> |> page(size: {100, 50})
-      ...> |> text([{"heading\\n", leading: 20}, "nounderline\\n", "now ", {"underline", underline: [width: 1]}, " that"], position: {8, 40}, font_size: 8)
+      ...> |> text([
+      ...>      {"heading\\n", leading: 20},
+      ...>      "nounderline\\n",
+      ...>      "now ",
+      ...>      {"underline", underline: [width: 1]},
+      ...>      " that"
+      ...>    ], position: {8, 40}, font_size: 8)
       ...> |> render()
       ...> |> then(&File.write("examples/underlined_text.pdf", &1))
 
@@ -271,7 +277,13 @@ defmodule Mudbrick do
       iex> import Mudbrick
       ...> new(fonts: %{bodoni: Mudbrick.TestHelper.bodoni_regular()})
       ...> |> page(size: {100, 50})
-      ...> |> text([{"heading\\n", leading: 20}, "nounderline\\n", "now ", {"underline", underline: [width: 1]}, " that"], position: {90, 40}, font_size: 8, align: :right)
+      ...> |> text([
+      ...>      {"heading\\n", leading: 20},
+      ...>      "nounderline\\n",
+      ...>      "now ",
+      ...>      {"underline", underline: [width: 1]},
+      ...>      " that"
+      ...>    ], position: {90, 40}, font_size: 8, align: :right)
       ...> |> render()
       ...> |> then(&File.write("examples/underlined_text_right_align.pdf", &1))
 
