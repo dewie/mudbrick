@@ -225,6 +225,7 @@ defmodule Mudbrick do
   - `:font` - Name of a font previously registered with `new/1`. Overrides the top-level option.
   - `:font_size` - Size in points. Overrides the top-level option.
   - `:leading` - The number of points to move down the page on the following linebreak. Overrides the top-level option.
+  - `:underline` - A list of options: `:width` in points, `:colour` as an `{r, g, b}` struct.
 
   ## Examples
 
