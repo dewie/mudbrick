@@ -42,10 +42,10 @@ defmodule Mudbrick.TextBlock.Output do
     |> Map.update!(:operations, &Enum.reverse/1)
   end
 
-  defp add_part(output, part, operator) do
+  defp add_part(output, part) do
     output
     |> with_font(
-      struct!(operator, font: part.font, text: part.text),
+      struct!(TJ, font: part.font, text: part.text),
       part
     )
     |> colour(part.colour)
@@ -92,7 +92,7 @@ defmodule Mudbrick.TextBlock.Output do
     output
     |> leading(line)
     |> reset_offset(x_offsetter.(line))
-    |> reduce_parts(line, TJ, :first_line, x_offsetter.(line))
+    |> reduce_parts(line, :first_line, x_offsetter.(line))
     |> offset(x_offsetter.(line))
   end
 
@@ -100,30 +100,30 @@ defmodule Mudbrick.TextBlock.Output do
     output
     |> leading(line)
     |> reset_offset(x_offsetter.(line))
-    |> reduce_parts(line, TJ, nil, x_offsetter.(line))
+    |> reduce_parts(line, nil, x_offsetter.(line))
     |> offset(x_offsetter.(line))
     |> reduce_lines(lines, x_offsetter)
   end
 
-  defp reduce_parts(output, %Line{parts: []}, _operator, :first_line, _x_offset) do
+  defp reduce_parts(output, %Line{parts: []}, :first_line, _x_offset) do
     output
   end
 
-  defp reduce_parts(output, %Line{parts: [part]}, _operator, :first_line, x_offset) do
+  defp reduce_parts(output, %Line{parts: [part]}, :first_line, x_offset) do
     output
-    |> add_part(part, TJ)
+    |> add_part(part)
     |> underline(part, x_offset)
   end
 
-  defp reduce_parts(output, %Line{parts: []}, _operator, nil, _x_offset) do
+  defp reduce_parts(output, %Line{parts: []}, nil, _x_offset) do
     output
     |> add(%TJ{font: output.font, text: ""})
     |> add(%TStar{})
   end
 
-  defp reduce_parts(output, %Line{parts: [part]}, _operator, nil, x_offset) do
+  defp reduce_parts(output, %Line{parts: [part]}, nil, x_offset) do
     output
-    |> add_part(part, TJ)
+    |> add_part(part)
     |> add(%TStar{})
     |> underline(part, x_offset)
   end
@@ -131,14 +131,13 @@ defmodule Mudbrick.TextBlock.Output do
   defp reduce_parts(
          output,
          %Line{parts: [part | parts]} = line,
-         operator,
          line_kind,
          x_offset
        ) do
     output
-    |> add_part(part, operator)
+    |> add_part(part)
     |> underline(part, x_offset)
-    |> reduce_parts(%{line | parts: parts}, TJ, line_kind, x_offset)
+    |> reduce_parts(%{line | parts: parts}, line_kind, x_offset)
   end
 
   defp leading(output, line) do
