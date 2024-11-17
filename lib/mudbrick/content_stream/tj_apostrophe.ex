@@ -8,7 +8,6 @@ end
 defmodule Mudbrick.ContentStream.TJ do
   @moduledoc false
   defstruct font: nil,
-            font_size: nil,
             operator: "TJ",
             text: nil
 

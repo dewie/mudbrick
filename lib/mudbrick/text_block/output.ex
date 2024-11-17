@@ -150,7 +150,7 @@ defmodule Mudbrick.TextBlock.Output do
   def add_part(output, part, operator) do
     output
     |> with_font(
-      struct!(operator, font: part.font, font_size: part.font_size, text: part.text),
+      struct!(operator, font: part.font, text: part.text),
       part
     )
     |> colour(part.colour)
