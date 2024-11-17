@@ -84,7 +84,7 @@ defmodule Mudbrick.Image do
   end
 
   defimpl Mudbrick.Object do
-    def from(image) do
+    def to_iodata(image) do
       Stream.new(
         data: image.file,
         additional_entries: %{
@@ -97,7 +97,7 @@ defmodule Mudbrick.Image do
           Filter: image.filter
         }
       )
-      |> Mudbrick.Object.from()
+      |> Mudbrick.Object.to_iodata()
     end
   end
 end

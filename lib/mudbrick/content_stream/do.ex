@@ -3,9 +3,9 @@ defmodule Mudbrick.ContentStream.Do do
   defstruct [:image]
 
   defimpl Mudbrick.Object do
-    def from(operator) do
+    def to_iodata(operator) do
       [
-        Mudbrick.Object.from(operator.image.resource_identifier),
+        Mudbrick.Object.to_iodata(operator.image.resource_identifier),
         " Do"
       ]
     end

@@ -65,8 +65,8 @@ defmodule Mudbrick.TextTest do
         |> page()
         |> text(text, font_size: 10)
 
-      assert IO.iodata_length(Mudbrick.Object.from(compressed_content_stream)) <
-               IO.iodata_length(Mudbrick.Object.from(uncompressed_content_stream))
+      assert IO.iodata_length(Mudbrick.Object.to_iodata(compressed_content_stream)) <
+               IO.iodata_length(Mudbrick.Object.to_iodata(uncompressed_content_stream))
     end
   end
 

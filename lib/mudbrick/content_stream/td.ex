@@ -13,7 +13,7 @@ defmodule Mudbrick.ContentStream.Td do
   end
 
   defimpl Mudbrick.Object do
-    def from(td) do
+    def to_iodata(td) do
       [td.tx, td.ty, "Td"]
       |> Enum.map(&to_string/1)
       |> Enum.intersperse(" ")

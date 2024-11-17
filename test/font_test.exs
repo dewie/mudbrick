@@ -98,8 +98,8 @@ defmodule Mudbrick.FontTest do
       uncompressed_stream = Document.find_object(uncompressed_doc, &match?(%CMap{}, &1)).value
       compressed_stream = Document.find_object(compressed_doc, &match?(%CMap{}, &1)).value
 
-      assert IO.iodata_length(Mudbrick.Object.from(compressed_stream)) <
-               IO.iodata_length(Mudbrick.Object.from(uncompressed_stream))
+      assert IO.iodata_length(Mudbrick.Object.to_iodata(compressed_stream)) <
+               IO.iodata_length(Mudbrick.Object.to_iodata(uncompressed_stream))
     end
   end
 

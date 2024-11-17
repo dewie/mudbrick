@@ -9,8 +9,8 @@ defmodule Mudbrick.Catalog do
   end
 
   defimpl Mudbrick.Object do
-    def from(catalog) do
-      Mudbrick.Object.from(%{
+    def to_iodata(catalog) do
+      Mudbrick.Object.to_iodata(%{
         Type: :Catalog,
         Metadata: catalog.metadata.ref,
         Pages: catalog.page_tree.ref

@@ -22,7 +22,7 @@ defmodule Mudbrick.TestHelper do
   end
 
   def show(o) do
-    Mudbrick.Object.from(o) |> to_string()
+    Mudbrick.Object.to_iodata(o) |> to_string()
   end
 
   def operations({_doc, content_stream}) do
@@ -78,7 +78,7 @@ defmodule Mudbrick.TestHelper do
         }
       })
 
-    ops = output_mod.from(block).operations
+    ops = output_mod.to_iodata(block).operations
 
     context
     |> Mudbrick.ContentStream.put(operations: ops)

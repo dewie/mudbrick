@@ -14,7 +14,7 @@ defmodule Mudbrick.Indirect do
     end
 
     defimpl Mudbrick.Object do
-      def from(%Ref{number: number}) do
+      def to_iodata(%Ref{number: number}) do
         [to_string(number), " 0 R"]
       end
     end
@@ -34,8 +34,8 @@ defmodule Mudbrick.Indirect do
     end
 
     defimpl Mudbrick.Object do
-      def from(%Object{value: value, ref: ref}) do
-        [to_string(ref.number), " 0 obj\n", Mudbrick.Object.from(value), "\nendobj"]
+      def to_iodata(%Object{value: value, ref: ref}) do
+        [to_string(ref.number), " 0 obj\n", Mudbrick.Object.to_iodata(value), "\nendobj"]
       end
     end
   end

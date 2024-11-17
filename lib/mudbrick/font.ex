@@ -172,8 +172,8 @@ defmodule Mudbrick.Font do
   end
 
   defimpl Mudbrick.Object do
-    def from(font) do
-      Object.from(%{
+    def to_iodata(font) do
+      Object.to_iodata(%{
         Type: :Font,
         BaseFont: font.name,
         Subtype: font.type,

@@ -3,6 +3,6 @@ defmodule Mudbrick.ContentStream.TStar do
   defstruct []
 
   defimpl Mudbrick.Object do
-    def from(_), do: ["T*"]
+    def to_iodata(_), do: ["T*"]
   end
 end

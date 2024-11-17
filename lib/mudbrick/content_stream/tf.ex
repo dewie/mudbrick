@@ -4,9 +4,9 @@ defmodule Mudbrick.ContentStream.Tf do
   defstruct [:font, :size]
 
   defimpl Mudbrick.Object do
-    def from(tf) do
+    def to_iodata(tf) do
       [
-        Mudbrick.Object.from(tf.font.resource_identifier),
+        Mudbrick.Object.to_iodata(tf.font.resource_identifier),
         " ",
         to_string(tf.size),
         " Tf"

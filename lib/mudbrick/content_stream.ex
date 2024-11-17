@@ -49,7 +49,7 @@ defmodule Mudbrick.ContentStream do
   end
 
   defimpl Mudbrick.Object do
-    def from(content_stream) do
+    def to_iodata(content_stream) do
       Mudbrick.Stream.new(
         compress: content_stream.compress,
         data: [
@@ -58,7 +58,7 @@ defmodule Mudbrick.ContentStream do
           |> Mudbrick.join("\n")
         ]
       )
-      |> Mudbrick.Object.from()
+      |> Mudbrick.Object.to_iodata()
     end
   end
 end

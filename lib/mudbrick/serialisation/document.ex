@@ -5,13 +5,13 @@ defimpl Mudbrick.Object, for: Mudbrick.Document do
   alias Mudbrick.Document
   alias Mudbrick.Object
 
-  def from(%Document{objects: raw_objects} = doc) do
+  def to_iodata(%Document{objects: raw_objects} = doc) do
     header = "%PDF-2.0\n%����"
-    objects = raw_objects |> Enum.reverse() |> Enum.map(&Object.from/1)
+    objects = raw_objects |> Enum.reverse() |> Enum.map(&Object.to_iodata/1)
     sections = [header | objects]
 
     trailer =
-      Object.from(%{
+      Object.to_iodata(%{
         Size: length(objects) + 1,
         Root: Document.catalog(doc).ref
       })

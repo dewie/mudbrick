@@ -4,11 +4,11 @@ defmodule Mudbrick.ContentStream.TJ do
             text: nil
 
   defimpl Mudbrick.Object do
-    def from(%Mudbrick.ContentStream.TJ{text: ""}) do
+    def to_iodata(%Mudbrick.ContentStream.TJ{text: ""}) do
       []
     end
 
-    def from(op) do
+    def to_iodata(op) do
       [
         "[ ",
         Mudbrick.Font.kerned(op.font, op.text)

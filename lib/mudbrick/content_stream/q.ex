@@ -3,7 +3,7 @@ defmodule Mudbrick.ContentStream.QPush do
   defstruct []
 
   defimpl Mudbrick.Object do
-    def from(_), do: ["q"]
+    def to_iodata(_), do: ["q"]
   end
 end
 
@@ -12,6 +12,6 @@ defmodule Mudbrick.ContentStream.QPop do
   defstruct []
 
   defimpl Mudbrick.Object do
-    def from(_), do: ["Q"]
+    def to_iodata(_), do: ["Q"]
   end
 end

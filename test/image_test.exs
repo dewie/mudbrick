@@ -85,7 +85,7 @@ defmodule Mudbrick.ImageTest do
     test "produces a JPEG XObject stream" do
       [dictionary, _stream] =
         Image.new(file: flower(), resource_identifier: :I1)
-        |> Mudbrick.Object.from()
+        |> Mudbrick.Object.to_iodata()
         |> IO.iodata_to_binary()
         |> String.split("stream", parts: 2)
 

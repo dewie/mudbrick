@@ -16,7 +16,7 @@ defmodule Mudbrick.TextBlock.Output do
   alias Mudbrick.Path
   alias Mudbrick.TextBlock.Line
 
-  def from(
+  def to_iodata(
         %Mudbrick.TextBlock{
           font: font,
           font_size: font_size,
@@ -171,7 +171,7 @@ defmodule Mudbrick.TextBlock.Output do
     Path.new()
     |> Path.move(to: {x, y})
     |> Path.line(Keyword.put(part.underline, :to, {x + Line.Part.width(part), y}))
-    |> Path.Output.from()
+    |> Path.Output.to_iodata()
   end
 
   defp drawings(output) do

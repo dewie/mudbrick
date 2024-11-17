@@ -14,11 +14,11 @@ defmodule Mudbrick.Path.Output do
     W
   }
 
-  def from(%Mudbrick.Path{sub_paths: []}) do
+  def to_iodata(%Mudbrick.Path{sub_paths: []}) do
     %__MODULE__{}
   end
 
-  def from(%Mudbrick.Path{} = path) do
+  def to_iodata(%Mudbrick.Path{} = path) do
     %__MODULE__{}
     |> add(%QPush{})
     |> then(fn output ->

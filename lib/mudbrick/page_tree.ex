@@ -14,8 +14,8 @@ defmodule Mudbrick.PageTree do
   end
 
   defimpl Mudbrick.Object do
-    def from(page_tree) do
-      Mudbrick.Object.from(%{
+    def to_iodata(page_tree) do
+      Mudbrick.Object.to_iodata(%{
         Type: :Pages,
         Kids: page_tree.kids,
         Count: length(page_tree.kids),

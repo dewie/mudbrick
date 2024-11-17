@@ -62,10 +62,10 @@ defmodule Mudbrick.Page do
   end
 
   defimpl Mudbrick.Object do
-    def from(page) do
+    def to_iodata(page) do
       {width, height} = page.size
 
-      Mudbrick.Object.from(
+      Mudbrick.Object.to_iodata(
         %{
           Type: :Page,
           Parent: page.parent,

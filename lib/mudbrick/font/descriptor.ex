@@ -29,8 +29,8 @@ defmodule Mudbrick.Font.Descriptor do
   end
 
   defimpl Mudbrick.Object do
-    def from(descriptor) do
-      Mudbrick.Object.from(%{
+    def to_iodata(descriptor) do
+      Mudbrick.Object.to_iodata(%{
         Ascent: descriptor.ascent,
         CapHeight: descriptor.cap_height,
         Descent: descriptor.descent,

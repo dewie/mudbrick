@@ -288,7 +288,7 @@ defmodule Mudbrick do
       output =
         doc
         |> text_block(writes, fetch_font(doc, opts))
-        |> TextBlock.Output.from()
+        |> TextBlock.Output.to_iodata()
 
       output.operations ++ ops
     end)
@@ -331,7 +331,7 @@ defmodule Mudbrick do
 
     context
     |> ContentStream.update_operations(fn ops ->
-      Path.Output.from(path).operations ++ ops
+      Path.Output.to_iodata(path).operations ++ ops
     end)
   end
 
@@ -344,7 +344,7 @@ defmodule Mudbrick do
   end
 
   def render(doc) do
-    Mudbrick.Object.from(doc)
+    Mudbrick.Object.to_iodata(doc)
   end
 
   @doc false
@@ -364,7 +364,7 @@ defmodule Mudbrick do
   end
 
   def join(list, separator) do
-    Enum.map_join(list, separator, &Mudbrick.Object.from/1)
+    Enum.map_join(list, separator, &Mudbrick.Object.to_iodata/1)
   end
 
   @doc """

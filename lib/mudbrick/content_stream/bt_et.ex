@@ -3,7 +3,7 @@ defmodule Mudbrick.ContentStream.BT do
   defstruct []
 
   defimpl Mudbrick.Object do
-    def from(_), do: ["BT"]
+    def to_iodata(_), do: ["BT"]
   end
 end
 
@@ -12,6 +12,6 @@ defmodule Mudbrick.ContentStream.ET do
   defstruct []
 
   defimpl Mudbrick.Object do
-    def from(_), do: ["ET"]
+    def to_iodata(_), do: ["ET"]
   end
 end

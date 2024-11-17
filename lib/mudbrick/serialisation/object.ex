@@ -2,22 +2,22 @@ defprotocol Mudbrick.Object do
   @moduledoc false
 
   @fallback_to_any true
-  @spec from(value :: any()) :: iodata()
-  def from(value)
+  @spec to_iodata(value :: any()) :: iodata()
+  def to_iodata(value)
 end
 
 defimpl Mudbrick.Object, for: Any do
-  def from(term) do
+  def to_iodata(term) do
     [to_string(term)]
   end
 end
 
 defimpl Mudbrick.Object, for: Atom do
-  def from(a) when a in [true, false] do
+  def to_iodata(a) when a in [true, false] do
     [to_string(a)]
   end
 
-  def from(name) do
+  def to_iodata(name) do
     [?/, escape_chars(name)]
   end
 
@@ -50,7 +50,7 @@ defimpl Mudbrick.Object, for: BitString do
     0xDDD => "\\ddd"
   }
 
-  def from(s) do
+  def to_iodata(s) do
     [?(, escape_chars(s), ?)]
   end
 
@@ -67,13 +67,13 @@ defimpl Mudbrick.Object, for: BitString do
 end
 
 defimpl Mudbrick.Object, for: List do
-  def from(list) do
+  def to_iodata(list) do
     [?[, Mudbrick.join(list), ?]]
   end
 end
 
 defimpl Mudbrick.Object, for: Map do
-  def from(kvs) do
+  def to_iodata(kvs) do
     ["<<", pairs(kvs), "\n>>"]
   end
 

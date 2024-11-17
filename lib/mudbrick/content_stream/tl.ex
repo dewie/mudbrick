@@ -3,7 +3,7 @@ defmodule Mudbrick.ContentStream.TL do
   defstruct [:leading]
 
   defimpl Mudbrick.Object do
-    def from(tl) do
+    def to_iodata(tl) do
       [to_string(tl.leading), " TL"]
     end
   end

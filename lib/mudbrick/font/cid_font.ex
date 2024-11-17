@@ -21,8 +21,8 @@ defmodule Mudbrick.Font.CIDFont do
   end
 
   defimpl Mudbrick.Object do
-    def from(cid_font) do
-      Mudbrick.Object.from(%{
+    def to_iodata(cid_font) do
+      Mudbrick.Object.to_iodata(%{
         Type: :Font,
         Subtype: cid_font.type,
         BaseFont: cid_font.font_name,

@@ -41,9 +41,9 @@ defmodule Mudbrick.Stream do
   end
 
   defimpl Mudbrick.Object do
-    def from(stream) do
+    def to_iodata(stream) do
       [
-        Mudbrick.Object.from(
+        Mudbrick.Object.to_iodata(
           %{Length: stream.length}
           |> Map.merge(stream.additional_entries)
           |> Map.merge(

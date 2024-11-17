@@ -18,11 +18,11 @@ defmodule Mudbrick.ContentStream.Rg do
   end
 
   defimpl Mudbrick.Object do
-    def from(%Mudbrick.ContentStream.Rg{stroking: false, r: r, g: g, b: b}) do
+    def to_iodata(%Mudbrick.ContentStream.Rg{stroking: false, r: r, g: g, b: b}) do
       [[r, g, b] |> Enum.map_join(" ", &to_string/1), " rg"]
     end
 
-    def from(%Mudbrick.ContentStream.Rg{stroking: true, r: r, g: g, b: b}) do
+    def to_iodata(%Mudbrick.ContentStream.Rg{stroking: true, r: r, g: g, b: b}) do
       [[r, g, b] |> Enum.map_join(" ", &to_string/1), " RG"]
     end
   end

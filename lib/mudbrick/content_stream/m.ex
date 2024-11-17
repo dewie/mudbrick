@@ -5,7 +5,7 @@ defmodule Mudbrick.ContentStream.M do
   defstruct [:coords]
 
   defimpl Mudbrick.Object do
-    def from(%Mudbrick.ContentStream.M{coords: {x, y}}) do
+    def to_iodata(%Mudbrick.ContentStream.M{coords: {x, y}}) do
       Enum.map_intersperse([x, y, "m"], " ", &to_string/1)
     end
   end

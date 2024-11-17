@@ -23,7 +23,7 @@ defmodule Mudbrick.ContentStream.Cm do
   end
 
   defimpl Mudbrick.Object do
-    def from(%Mudbrick.ContentStream.Cm{
+    def to_iodata(%Mudbrick.ContentStream.Cm{
           scale: {x_scale, y_scale},
           skew: {x_skew, y_skew},
           position: {x_translate, y_translate}

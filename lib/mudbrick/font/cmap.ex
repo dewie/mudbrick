@@ -9,7 +9,7 @@ defmodule Mudbrick.Font.CMap do
   end
 
   defimpl Mudbrick.Object do
-    def from(cmap) do
+    def to_iodata(cmap) do
       pairs =
         cmap.parsed.gid2cid
         |> Enum.map(fn {gid, cid} ->
@@ -47,7 +47,7 @@ defmodule Mudbrick.Font.CMap do
         """
       ]
 
-      Mudbrick.Object.from(
+      Mudbrick.Object.to_iodata(
         Mudbrick.Stream.new(
           compress: cmap.compress,
           data: data

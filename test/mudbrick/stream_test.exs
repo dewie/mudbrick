@@ -8,7 +8,7 @@ defmodule Mudbrick.StreamTest do
     check all uncompressed <- string(:alphanumeric, min_length: 150), max_runs: 200 do
       result =
         Mudbrick.Stream.new(compress: true, data: uncompressed)
-        |> Mudbrick.Object.from()
+        |> Mudbrick.Object.to_iodata()
         |> IO.iodata_to_binary()
 
       assert result =~ "FlateDecode"
@@ -19,7 +19,7 @@ defmodule Mudbrick.StreamTest do
     check all uncompressed <- string(:alphanumeric, max_length: 120), max_runs: 200 do
       result =
         Mudbrick.Stream.new(compress: true, data: uncompressed)
-        |> Mudbrick.Object.from()
+        |> Mudbrick.Object.to_iodata()
         |> IO.iodata_to_binary()
 
       refute result =~ "FlateDecode"
@@ -29,7 +29,7 @@ defmodule Mudbrick.StreamTest do
   test "includes length and stream markers when serialised" do
     serialised =
       Mudbrick.Stream.new(data: bodoni_regular())
-      |> Mudbrick.Object.from()
+      |> Mudbrick.Object.to_iodata()
       |> IO.iodata_to_binary()
 
     assert String.starts_with?(serialised, """

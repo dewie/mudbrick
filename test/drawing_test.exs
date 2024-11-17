@@ -168,7 +168,7 @@ defmodule Mudbrick.DrawingTest do
           new()
           |> move(to: {0, 0})
           |> line(to: {100, 0}, colour: colour)
-          |> Output.from()
+          |> Output.to_iodata()
         end)
 
       assert e.message == "tuple must be made of floats or integers between 0 and 1"
