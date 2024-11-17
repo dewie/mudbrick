@@ -334,57 +334,6 @@ defmodule Mudbrick do
     end)
   end
 
-  defp text_block(doc, writes, top_level_opts) do
-    Enum.reduce(writes, Mudbrick.TextBlock.new(top_level_opts), fn
-      {text, opts}, acc ->
-        Mudbrick.TextBlock.write(acc, text, fetch_font(doc, opts))
-
-      text, acc ->
-        Mudbrick.TextBlock.write(acc, text, [])
-    end)
-  end
-
-  @spec cm_opts(Mudbrick.Image.t(), Image.image_options()) :: Mudbrick.ContentStream.Cm.options()
-  defp cm_opts(image, image_opts) do
-    scale =
-      case image_opts[:scale] do
-        {:auto, :auto} ->
-          raise Mudbrick.Image.AutoScalingError,
-                "Auto scaling works with width or height, but not both."
-
-        {w, :auto} ->
-          ratio = w / image.width
-          {w, image.height * ratio}
-
-        {:auto, h} ->
-          ratio = h / image.height
-          {image.width * ratio, h}
-
-        otherwise ->
-          otherwise
-      end
-
-    Keyword.put(image_opts, :scale, scale)
-  end
-
-  defp fetch_font(doc, opts) do
-    default_font =
-      case Map.values(Document.root_page_tree(doc).value.fonts) do
-        [font] -> font.value
-        _ -> nil
-      end
-
-    Keyword.update(opts, :font, default_font, fn user_identifier ->
-      case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
-        {:ok, font} ->
-          font.value
-
-        :error ->
-          raise Font.Unregistered, "Unregistered font: #{user_identifier}"
-      end
-    end)
-  end
-
   @doc """
   Produce `iodata` from the current document.
   """
@@ -462,5 +411,56 @@ defmodule Mudbrick do
       %{p | contents: contents}
     end)
     |> finish(& &1.value.contents)
+  end
+
+  defp text_block(doc, writes, top_level_opts) do
+    Enum.reduce(writes, Mudbrick.TextBlock.new(top_level_opts), fn
+      {text, opts}, acc ->
+        Mudbrick.TextBlock.write(acc, text, fetch_font(doc, opts))
+
+      text, acc ->
+        Mudbrick.TextBlock.write(acc, text, [])
+    end)
+  end
+
+  @spec cm_opts(Mudbrick.Image.t(), Image.image_options()) :: Mudbrick.ContentStream.Cm.options()
+  defp cm_opts(image, image_opts) do
+    scale =
+      case image_opts[:scale] do
+        {:auto, :auto} ->
+          raise Mudbrick.Image.AutoScalingError,
+                "Auto scaling works with width or height, but not both."
+
+        {w, :auto} ->
+          ratio = w / image.width
+          {w, image.height * ratio}
+
+        {:auto, h} ->
+          ratio = h / image.height
+          {image.width * ratio, h}
+
+        otherwise ->
+          otherwise
+      end
+
+    Keyword.put(image_opts, :scale, scale)
+  end
+
+  defp fetch_font(doc, opts) do
+    default_font =
+      case Map.values(Document.root_page_tree(doc).value.fonts) do
+        [font] -> font.value
+        _ -> nil
+      end
+
+    Keyword.update(opts, :font, default_font, fn user_identifier ->
+      case Map.fetch(Document.root_page_tree(doc).value.fonts, user_identifier) do
+        {:ok, font} ->
+          font.value
+
+        :error ->
+          raise Font.Unregistered, "Unregistered font: #{user_identifier}"
+      end
+    end)
   end
 end

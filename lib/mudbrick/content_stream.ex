@@ -38,14 +38,14 @@ defmodule Mudbrick.ContentStream do
     end)
   end
 
-  defp update({doc, contents_obj}, f) do
-    Document.update(doc, contents_obj, f)
-  end
-
   def update_operations(context, f) do
     update(context, fn contents ->
       Map.update!(contents, :operations, f)
     end)
+  end
+
+  defp update({doc, contents_obj}, f) do
+    Document.update(doc, contents_obj, f)
   end
 
   defimpl Mudbrick.Object do
