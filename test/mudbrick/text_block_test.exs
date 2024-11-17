@@ -478,6 +478,26 @@ defmodule Mudbrick.TextBlockTest do
                |> operations()
     end
 
+    test "underlines are correctly aligned" do
+      assert [
+               "q",
+               "-173.59199999999998 498.8 m",
+               "0 0 0 RG",
+               "1 w",
+               "-111.624 498.8 l",
+               "S",
+               "Q"
+               | _
+             ] =
+               output(fn %{fonts: fonts} ->
+                 TextBlock.new(font: fonts.regular, position: {0, 500}, align: :right)
+                 |> TextBlock.write("not underlined ")
+                 |> TextBlock.write("underlined ", underline: [width: 1])
+                 |> TextBlock.write("not underlined again")
+               end)
+               |> operations()
+    end
+
     test "inline font sizes affect alignment offset of whole line" do
       assert offset_with_partial_font_size(50) < offset_with_partial_font_size(12)
     end
