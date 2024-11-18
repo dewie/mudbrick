@@ -215,7 +215,9 @@ defmodule Mudbrick do
   - `:position` - Coordinates from bottom-left of page in points. Default: `{0, 0}`.
   - `:font_size` - Size in points. Default: `12`.
   - `:leading` - Leading in points. Default is 120% of `:font_size`.
-  - `:align` - Either `:left` or `:right`. Default: `:left`. Note that the rightmost point of right-aligned text is the horizontal offset provided to `:position`.
+  - `:align` - `:left`, `:right` or `:centre`. Default: `:left`.
+    Note that the rightmost point of right-aligned text is the horizontal offset provided to `:position`.
+    The same position defines the centre point of centre-aligned text.
 
   ## Individual write options
 
@@ -253,43 +255,56 @@ defmodule Mudbrick do
       ...> |> page()
       ...> |> text(["I am ", {"bold", font: :bold}], font: :regular, position: {200, 200})
 
-  Underlined text.
+  [Underlined text](examples/underlined_text.pdf?#navpanes=0).
 
       iex> import Mudbrick
       ...> new(fonts: %{bodoni: Mudbrick.TestHelper.bodoni_regular()})
       ...> |> page(size: {100, 50})
       ...> |> text([
-      ...>      {"heading\\n", leading: 20},
-      ...>      "nounderline\\n",
-      ...>      "now ",
-      ...>      {"underline", underline: [width: 1]},
-      ...>      " that"
+      ...>      {"the\\n", leading: 20},
+      ...>      "quick\\n",
+      ...>      "brown fox ",
+      ...>      {"jumps", underline: [width: 1]},
+      ...>      " over"
       ...>    ], position: {8, 40}, font_size: 8)
       ...> |> render()
       ...> |> then(&File.write("examples/underlined_text.pdf", &1))
 
-  Produces [this PDF](examples/underlined_text.pdf?#navpanes=0).
-
   <object width="400" height="130" data="examples/underlined_text.pdf?#navpanes=0" type="application/pdf"></object>
 
-  Underlined, right-aligned text.
+  [Underlined, right-aligned text](examples/underlined_text_right_align.pdf?#navpanes=0).
 
       iex> import Mudbrick
       ...> new(fonts: %{bodoni: Mudbrick.TestHelper.bodoni_regular()})
       ...> |> page(size: {100, 50})
       ...> |> text([
-      ...>      {"heading\\n", leading: 20},
-      ...>      "nounderline\\n",
-      ...>      "now ",
-      ...>      {"underline", underline: [width: 1]},
-      ...>      " that"
+      ...>      {"the\\n", leading: 20},
+      ...>      "quick\\n",
+      ...>      "brown fox ",
+      ...>      {"jumps", underline: [width: 1]},
+      ...>      " over"
       ...>    ], position: {90, 40}, font_size: 8, align: :right)
       ...> |> render()
       ...> |> then(&File.write("examples/underlined_text_right_align.pdf", &1))
 
-  Produces [this PDF](examples/underlined_text_right_align.pdf?#navpanes=0).
-
   <object width="400" height="130" data="examples/underlined_text_right_align.pdf?#navpanes=0" type="application/pdf"></object>
+
+  [Underlined, centre-aligned text](examples/underlined_text_centre_align.pdf?#navpanes=0).
+
+      iex> import Mudbrick
+      ...> new(fonts: %{bodoni: Mudbrick.TestHelper.bodoni_regular()})
+      ...> |> page(size: {100, 50})
+      ...> |> text([
+      ...>      {"the\\n", leading: 20},
+      ...>      "quick\\n",
+      ...>      "brown fox ",
+      ...>      {"jumps", underline: [width: 1]},
+      ...>      " over"
+      ...>    ], position: {50, 40}, font_size: 8, align: :centre)
+      ...> |> render()
+      ...> |> then(&File.write("examples/underlined_text_centre_align.pdf", &1))
+
+  <object width="400" height="130" data="examples/underlined_text_centre_align.pdf?#navpanes=0" type="application/pdf"></object>
   """
 
   @spec text(context(), Mudbrick.TextBlock.write(), Mudbrick.TextBlock.options()) :: context()

@@ -30,7 +30,11 @@ defmodule Mudbrick.TextBlock.Output do
     |> end_block()
     |> reduce_lines(
       tb.lines,
-      if(tb.align == :left, do: fn _ -> 0 end, else: &Line.width/1)
+      case tb.align do
+        :left -> fn _ -> 0 end
+        :right -> &Line.width/1
+        :centre -> fn line -> Line.width(line) / 2 end
+      end
     )
     |> td(position)
     |> add(tl)

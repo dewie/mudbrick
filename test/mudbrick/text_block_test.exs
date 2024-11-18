@@ -520,6 +520,25 @@ defmodule Mudbrick.TextBlockTest do
     end
   end
 
+  describe "centre-aligned" do
+    test "offset of a line is half the right-aligned offset" do
+      text = "aaaa"
+      size = 12
+      right_td = first_td(:right, text, size)
+      centre_td = first_td(:centre, text, size)
+
+      assert centre_td.tx == right_td.tx / 2
+    end
+  end
+
+  defp first_td(align, text, size) do
+    output(fn %{fonts: fonts} ->
+      TextBlock.new(align: align, font: fonts.regular, font_size: size)
+      |> TextBlock.write(text)
+    end)
+    |> Enum.find(&match?(%Mudbrick.ContentStream.Td{}, &1))
+  end
+
   defp output(f) do
     Mudbrick.TestHelper.wrapped_output(f, TextBlock.Output) |> Enum.reverse()
   end
