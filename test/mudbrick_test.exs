@@ -5,8 +5,6 @@ defmodule MudbrickTest do
   import Mudbrick
   import Mudbrick.TestHelper
 
-  alias Mudbrick.Path
-
   test "can serialise with one empty page" do
     assert new()
            |> page()

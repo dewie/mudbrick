@@ -8,7 +8,6 @@ defmodule Mudbrick do
 
       iex> import Mudbrick.TestHelper                     # import some example fonts and images
       ...> import Mudbrick
-      ...> alias Mudbrick.Path
       ...> new(
       ...>   compress: true,                              # flate compression for fonts, text etc.
       ...>   fonts: %{bodoni: bodoni_regular()},          # register an OTF font
@@ -21,7 +20,7 @@ defmodule Mudbrick do
       ...>   position: {0, 0}                             # in points (1/72 inch), starts at bottom left
       ...> )
       ...> |> path(fn path ->                             # draw a line
-      ...>   import Path
+      ...>   import Mudbrick.Path
       ...>   path
       ...>   |> move(to: {55, 40})                        # starting near the middle of the page
       ...>   |> line(
