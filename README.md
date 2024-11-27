@@ -13,7 +13,7 @@ Currently working:
 
 - OpenType fonts with ligatures, special characters and automatic kerning.
 - Text positioning.
-- Right alignment.
+- Right and centre alignment.
 - Coloured text.
 - JPEG images.
 - Compression.
