@@ -24,7 +24,7 @@ defmodule Mudbrick.TextBlock.Output do
         } = tb
       ) do
     tl = %TL{leading: tb.leading}
-    tf = %Tf{font: font, size: font_size}
+    tf = %Tf{font_identifier: font.resource_identifier, size: font_size}
 
     %__MODULE__{position: position, font: font, font_size: font_size}
     |> end_block()
@@ -192,9 +192,9 @@ defmodule Mudbrick.TextBlock.Output do
 
   defp with_font(output, op, part) do
     output
-    |> add(%Tf{font: output.font, size: output.font_size})
+    |> add(%Tf{font_identifier: output.font.resource_identifier, size: output.font_size})
     |> add(op)
-    |> add(%Tf{font: part.font, size: part.font_size})
+    |> add(%Tf{font_identifier: part.font.resource_identifier, size: part.font_size})
   end
 
   defp colour(output, {r, g, b}) do
