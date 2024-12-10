@@ -1,5 +1,6 @@
 defmodule Mudbrick.ContentStream.TL do
   @moduledoc false
+  @enforce_keys [:leading]
   defstruct [:leading]
 
   defimpl Mudbrick.Object do

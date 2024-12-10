@@ -99,7 +99,7 @@ defmodule Mudbrick.ParseTextContentTest do
 
   alias Mudbrick.Parser
 
-  test "can parse text content to AST" do
+  setup do
     import Mudbrick
     import Mudbrick.TestHelper
 
@@ -123,30 +123,66 @@ defmodule Mudbrick.ParseTextContentTest do
       |> IO.iodata_to_binary()
       |> Parser.parse(:stream)
 
+    %{stream: stream}
+  end
+
+  test "can turn text content to Mudbrick", %{stream: stream} do
+    assert Parser.to_mudbrick(stream, :text_block) ==
+             %Mudbrick.ContentStream{
+               page: nil,
+               operations: [
+                 %Mudbrick.ContentStream.TJ{
+                   auto_kern: true,
+                   kerned_text: [
+                     {"00D5", 24},
+                     "00C0",
+                     "00ED",
+                     "00ED",
+                     "00FC",
+                     "0195",
+                     "01B7",
+                     "0138",
+                     "00FC",
+                     {"010F", 12},
+                     "00ED",
+                     "00BB",
+                     "0197"
+                   ]
+                 },
+                 %Mudbrick.ContentStream.Rg{stroking: false, r: 0, g: 0, b: 0},
+                 %Mudbrick.ContentStream.TL{leading: 14.399999999999999},
+                 %Mudbrick.ContentStream.Tf{font_identifier: :F1, size: "12"}
+               ]
+             }
+  end
+
+  test "can parse text content to AST", %{stream: stream} do
     assert [
-             Tf: ["1", "12"],
-             TL: [real: ["14", ".", "399999999999999"]],
-             rg: [integer: ["0"], integer: ["0"], integer: ["0"]],
-             TJ: [
-               glyph_id: "00D5",
-               offset: "24",
-               glyph_id: "00C0",
-               glyph_id: "00ED",
-               glyph_id: "00ED",
-               glyph_id: "00FC",
-               glyph_id: "0195",
-               glyph_id: "01B7",
-               glyph_id: "0138",
-               glyph_id: "00FC",
-               glyph_id: "010F",
-               offset: "12",
-               glyph_id: "00ED",
-               glyph_id: "00BB",
-               glyph_id: "0197"
+             text_block: [
+               Tf: ["1", "12"],
+               TL: [real: ["14", ".", "399999999999999"]],
+               rg: [integer: ["0"], integer: ["0"], integer: ["0"]],
+               TJ: [
+                 glyph_id: "00D5",
+                 offset: "24",
+                 glyph_id: "00C0",
+                 glyph_id: "00ED",
+                 glyph_id: "00ED",
+                 glyph_id: "00FC",
+                 glyph_id: "0195",
+                 glyph_id: "01B7",
+                 glyph_id: "0138",
+                 glyph_id: "00FC",
+                 glyph_id: "010F",
+                 offset: "12",
+                 glyph_id: "00ED",
+                 glyph_id: "00BB",
+                 glyph_id: "0197"
+               ]
              ]
            ] =
              stream
-             |> Parser.parse(:text_object)
+             |> Parser.parse(:text_block)
   end
 end
 

@@ -138,7 +138,7 @@ defmodule Mudbrick.Parser.Helpers do
     |> tag(:TJ)
   end
 
-  def text_object do
+  def text_block do
     ignore(string("BT"))
     |> ignore(eol())
     |> repeat(
@@ -150,6 +150,7 @@ defmodule Mudbrick.Parser.Helpers do
       ])
       |> ignore(whitespace())
     )
+    |> tag(:text_block)
   end
 end
 
@@ -160,7 +161,7 @@ defmodule Mudbrick.Parser do
   defparsec(:boolean, boolean())
   defparsec(:real, real())
   defparsec(:string, string())
-  defparsec(:text_object, text_object())
+  defparsec(:text_block, text_block())
 
   defparsec(
     :array,
@@ -331,6 +332,45 @@ defmodule Mudbrick.Parser do
   end
 
   def to_mudbrick(iodata, f), do: iodata |> parse(f) |> ast_to_mudbrick()
+
+  defp ast_to_mudbrick(text_block: operations) do
+    alias Mudbrick.ContentStream.{Rg, Tf, TJ, TL}
+
+    mudbrick_operations =
+      operations
+      |> Enum.map(fn
+        {:Tf, [index, size]} ->
+          %Tf{font_identifier: :"F#{index}", size: size}
+
+        {:TL, leading} ->
+          %TL{leading: ast_to_mudbrick(leading)}
+
+        {:rg, components} ->
+          struct!(Rg, Enum.zip([:r, :g, :b], Enum.map(components, &ast_to_mudbrick/1)))
+
+        {:TJ, glyphs_and_offsets} ->
+          contains_kerns? = Enum.any?(glyphs_and_offsets, &match?({:offset, _}, &1))
+
+          kerned_text =
+            Enum.reduce(glyphs_and_offsets, [], fn
+              {:glyph_id, id}, acc ->
+                [id | acc]
+
+              {:offset, offset}, [last_glyph | acc] ->
+                [{last_glyph, String.to_integer(offset)} | acc]
+            end)
+
+          %TJ{
+            auto_kern: contains_kerns?,
+            kerned_text: Enum.reverse(kerned_text)
+          }
+      end)
+
+    %Mudbrick.ContentStream{
+      page: nil,
+      operations: Enum.reverse(mudbrick_operations)
+    }
+  end
 
   defp ast_to_mudbrick(x) when is_tuple(x), do: ast_to_mudbrick([x])
   defp ast_to_mudbrick(array: a), do: Enum.map(a, &ast_to_mudbrick/1)
