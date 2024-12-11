@@ -207,6 +207,18 @@ defmodule Mudbrick.TextTest do
                |> Enum.take(-2)
     end
 
+    test "with auto-kerning disabled, doesn't write kerns" do
+      assert ["[ <0011> <0055> <0174> ] TJ", "ET"] =
+               new(fonts: %{bodoni: bodoni_regular()})
+               |> page()
+               |> text([{"\n", auto_kern: true}, {"CO₂", auto_kern: false}],
+                 font_size: 24,
+                 position: {0, 700}
+               )
+               |> operations()
+               |> Enum.take(-2)
+    end
+
     test "copes with trailing newlines" do
       assert new(fonts: %{bodoni: bodoni_regular()})
              |> page()

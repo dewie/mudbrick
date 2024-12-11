@@ -47,19 +47,40 @@ defmodule Mudbrick do
       iex> import Mudbrick.TestHelper
       ...> import Mudbrick
       ...> new(fonts: %{bodoni: bodoni_bold()})
-      ...> |> page(size: {600, 200})
+      ...> |> page(size: {400, 100})
       ...> |> text(
-      ...>   [{"Warning\\n", underline: [width: 0.5]}, "MORE ", {"efficiency", underline: [width: 0.5]}],
+      ...>   [{"Warning\\n", underline: [width: 0.5]}],
       ...>   font: :bodoni,
       ...>   font_size: 70,
-      ...>   position: {7, 130}
+      ...>   position: {7, 30}
       ...> )
       ...> |> render()
       ...> |> then(&File.write("examples/auto_kerning.pdf", &1))
 
   Produces [this](examples/auto_kerning.pdf). Notice how the 'a' is underneath the 'W' in 'Warning'.
 
-  <object width="400" height="215" data="examples/auto_kerning.pdf?#navpanes=0" type="application/pdf"></object>
+  <object width="400" height="115" data="examples/auto_kerning.pdf?#navpanes=0" type="application/pdf"></object>
+
+  It's on by default, but we can turn it off:
+
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick
+      ...> new(fonts: %{bodoni: bodoni_bold()})
+      ...> |> page(size: {400, 100})
+      ...> |> text(
+      ...>   [{"Warning\\n", underline: [width: 0.5]}],
+      ...>   font: :bodoni,
+      ...>   font_size: 70,
+      ...>   position: {7, 30},
+      ...>   auto_kern: false
+      ...> )
+      ...> |> render()
+      ...> |> then(&File.write("examples/auto_kerning_disabled.pdf", &1))
+
+  Produces [this](examples/auto_kerning_disabled.pdf).
+
+  <object width="400" height="115" data="examples/auto_kerning_disabled.pdf?#navpanes=0" type="application/pdf"></object>
+
   """
 
   alias Mudbrick.{

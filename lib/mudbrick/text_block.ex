@@ -8,6 +8,7 @@ defmodule Mudbrick.TextBlock do
 
   @type option ::
           {:align, alignment()}
+          | {:auto_kern, boolean()}
           | {:colour, Mudbrick.colour()}
           | {:font, atom()}
           | {:font_size, number()}
@@ -43,6 +44,7 @@ defmodule Mudbrick.TextBlock do
         }
 
   defstruct align: :left,
+            auto_kern: true,
             colour: {0, 0, 0},
             font: nil,
             font_size: 12,
@@ -105,6 +107,7 @@ defmodule Mudbrick.TextBlock do
     line_texts = String.split(text, "\n")
 
     text_block_opts = [
+      auto_kern: tb.auto_kern,
       colour: tb.colour,
       font_size: tb.font_size,
       font: tb.font,

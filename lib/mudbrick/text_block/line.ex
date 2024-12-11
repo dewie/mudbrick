@@ -8,12 +8,14 @@ defmodule Mudbrick.TextBlock.Line do
     @moduledoc false
 
     @enforce_keys [
+      :auto_kern,
       :colour,
       :font,
       :font_size,
       :text
     ]
-    defstruct colour: {0, 0, 0},
+    defstruct auto_kern: true,
+              colour: {0, 0, 0},
               font: nil,
               font_size: nil,
               left_offset: nil,

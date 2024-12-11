@@ -49,7 +49,7 @@ defmodule Mudbrick.TextBlock.Output do
   defp add_part(output, part) do
     output
     |> with_font(
-      struct!(TJ, font: part.font, text: part.text),
+      struct!(TJ, auto_kern: part.auto_kern, font: part.font, text: part.text),
       part
     )
     |> colour(part.colour)
