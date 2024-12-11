@@ -7,7 +7,6 @@ defmodule Mudbrick.TextTest do
 
   alias Mudbrick.ContentStream.TJ
   alias Mudbrick.Font
-  alias Mudbrick.Indirect
 
   test "with more than one registered font, it's an error not to choose one" do
     chain =
@@ -180,7 +179,7 @@ defmodule Mudbrick.TextTest do
              |> Enum.take(-4)
   end
 
-  test "font is assigned to the operator struct when font descendant present" do
+  test "kerned text is assigned to the operator struct" do
     {_doc, content_stream} =
       new(fonts: %{bodoni: bodoni_regular()})
       |> page(size: :letter)
@@ -189,11 +188,7 @@ defmodule Mudbrick.TextTest do
     [_et, show_text_operation | _] = content_stream.value.operations
 
     assert %TJ{
-             text: "CO₂",
-             font: %Font{
-               name: :"LibreBodoni-Regular",
-               descendant: %Indirect.Object{value: %Font.CIDFont{}}
-             }
+             kerned_text: [{"0011", 4}, "0055", "0174"]
            } = show_text_operation
   end
 

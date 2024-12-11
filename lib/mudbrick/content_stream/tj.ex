@@ -1,19 +1,17 @@
 defmodule Mudbrick.ContentStream.TJ do
   @moduledoc false
   defstruct auto_kern: true,
-            font: nil,
-            text: nil
+            kerned_text: []
 
   defimpl Mudbrick.Object do
-    def to_iodata(%Mudbrick.ContentStream.TJ{text: ""}) do
+    def to_iodata(%Mudbrick.ContentStream.TJ{kerned_text: []}) do
       []
     end
 
     def to_iodata(op) do
       [
         "[ ",
-        op.font
-        |> Mudbrick.Font.kerned(op.text)
+        op.kerned_text
         |> Enum.map(&write_glyph(op, &1)),
         "] TJ"
       ]

@@ -49,7 +49,10 @@ defmodule Mudbrick.TextBlock.Output do
   defp add_part(output, part) do
     output
     |> with_font(
-      struct!(TJ, auto_kern: part.auto_kern, font: part.font, text: part.text),
+      struct!(TJ,
+        auto_kern: part.auto_kern,
+        kerned_text: Mudbrick.Font.kerned(output.font, part.text)
+      ),
       part
     )
     |> colour(part.colour)
@@ -121,7 +124,7 @@ defmodule Mudbrick.TextBlock.Output do
 
   defp reduce_parts(output, %Line{parts: []}, nil, _x_offset) do
     output
-    |> add(%TJ{font: output.font, text: ""})
+    |> add(%TJ{kerned_text: []})
     |> add(%TStar{})
   end
 
