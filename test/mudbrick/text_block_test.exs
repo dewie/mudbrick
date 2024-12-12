@@ -159,6 +159,22 @@ defmodule Mudbrick.TextBlockTest do
                }
              ] = block.lines
     end
+
+    test "length of line is different when kerned" do
+      line = fn opts ->
+        output(fn %{fonts: fonts} ->
+          TextBlock.new(Keyword.merge(opts, font: fonts.regular))
+          |> TextBlock.write("underlined", underline: [width: 1])
+        end)
+        |> operations()
+        |> Enum.find(fn op -> String.ends_with?(op, " l") end)
+      end
+
+      line_with_kerning = line.(auto_kern: true)
+      line_without_kerning = line.(auto_kern: false)
+
+      assert line_with_kerning != line_without_kerning
+    end
   end
 
   describe "leading" do

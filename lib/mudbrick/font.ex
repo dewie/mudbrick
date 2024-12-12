@@ -82,16 +82,23 @@ defmodule Mudbrick.Font do
   end
 
   @doc false
-  def width(_font, _size, "") do
+  def width(_font, _size, "", _opts) do
     0
   end
 
-  def width(font, size, text) do
-    {_glyph_ids, positions} = OpenType.layout_text(font.parsed, text)
+  def width(font, size, text, opts) do
+    {glyph_ids, positions} = OpenType.layout_text(font.parsed, text)
 
-    for {_, _, _, width, _} <- positions, reduce: 0 do
-      acc -> acc + width / 1000 * size
-    end
+    widths =
+      if Keyword.get(opts, :auto_kern) do
+        Enum.map(positions, fn {_, _, _, width, _} -> width end)
+      else
+        Enum.map(glyph_ids, &Enum.at(font.parsed.glyphWidths, &1))
+      end
+
+    Enum.reduce(widths, 0, fn width, acc ->
+      acc + width / 1000 * size
+    end)
   end
 
   @doc false

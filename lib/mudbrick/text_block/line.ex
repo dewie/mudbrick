@@ -30,7 +30,8 @@ defmodule Mudbrick.TextBlock.Line do
       Mudbrick.Font.width(
         part.font,
         part.font_size,
-        part.text
+        part.text,
+        auto_kern: part.auto_kern
       )
     end
 
