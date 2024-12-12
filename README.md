@@ -40,7 +40,7 @@ end
 
 ## What's the deal with the name?
 
-It's a play on Adobe, which means mudbrick in spanish.
+It's a play on Adobe, which means mudbrick in Spanish.
 
 ## See also
 
