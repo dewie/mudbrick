@@ -38,6 +38,10 @@ def deps do
 end
 ```
 
+## What's the deal with the name?
+
+It's a play on Adobe, which means mudbrick in spanish.
+
 ## See also
 
 - [elixir-pdf](https://github.com/andrewtimberlake/elixir-pdf), a more mature
