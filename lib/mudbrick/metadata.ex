@@ -3,7 +3,7 @@ defmodule Mudbrick.Metadata do
 
   def render(opts) do
     document_id = id(opts)
-    instance_id = id([:x | opts])
+    instance_id = id([{:x, :y} | opts])
 
     [
       """
@@ -87,7 +87,23 @@ defmodule Mudbrick.Metadata do
   end
 
   defp id(opts) do
-    :crypto.hash(:sha256, [Application.spec(:mudbrick)[:vsn], inspect(opts)])
+    {fonts, opts} =
+      case Keyword.pop(opts, :fonts) do
+        {nil, opts} ->
+          {"", opts}
+
+        {fonts, opts} ->
+          {Map.values(fonts) |> Enum.sort(), opts}
+      end
+
+    :crypto.hash(
+      :sha256,
+      [
+        Application.spec(:mudbrick)[:vsn],
+        inspect(opts),
+        fonts
+      ]
+    )
     |> Base.encode64(padding: false)
   end
 end

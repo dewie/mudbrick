@@ -62,31 +62,67 @@ defmodule Mudbrick.MetadataTest do
     assert rendered =~ "<xmp:ModifyDate>2022-12-01T12:34:56Z</xmp:ModifyDate>"
   end
 
-  test "document and instance IDs are unique to options" do
-    opts_1 = []
-    opts_2 = [title: "hi there"]
+  describe "document and instance IDs" do
+    test "are the same when fonts are the same (no images)" do
+      a =
+        new(fonts: %{a: bodoni_regular()})
+        |> render()
+        |> IO.iodata_to_binary()
 
-    [ids_1, ids_2] =
-      for opts <- [opts_1, opts_2] do
-        rendered =
-          new(opts)
-          |> Document.find_object(fn
-            %Stream{additional_entries: entries} -> entries[:Type] == :Metadata
-            _ -> false
-          end)
-          |> show()
+      b =
+        new(fonts: %{b: bodoni_regular()})
+        |> render()
+        |> IO.iodata_to_binary()
 
-        [document_id] =
-          Regex.run(~r/xmpMM:DocumentID>(.*?)</s, rendered, capture: :all_but_first)
+      assert ids(a) == ids(b)
+    end
 
-        [instance_id] =
-          Regex.run(~r/xmpMM:InstanceID>(.*?)</s, rendered, capture: :all_but_first)
+    test "are different with different fonts" do
+      a =
+        new(fonts: %{a: bodoni_regular()})
+        |> render()
+        |> IO.iodata_to_binary()
 
-        assert document_id != instance_id
+      b =
+        new(fonts: %{b: bodoni_bold()})
+        |> render()
+        |> IO.iodata_to_binary()
 
-        {document_id, instance_id}
-      end
+      assert ids(a) != ids(b)
+    end
 
-    assert ids_1 != ids_2
+    test "are unique to options" do
+      opts_1 = []
+      opts_2 = [title: "hi there"]
+
+      [ids_1, ids_2] =
+        for opts <- [opts_1, opts_2] do
+          rendered =
+            new(opts)
+            |> Document.find_object(fn
+              %Stream{additional_entries: entries} -> entries[:Type] == :Metadata
+              _ -> false
+            end)
+            |> show()
+
+          {document_id, instance_id} = ids(rendered)
+
+          assert document_id != instance_id
+
+          {document_id, instance_id}
+        end
+
+      assert ids_1 != ids_2
+    end
+
+    defp ids(rendered) do
+      [document_id] =
+        Regex.run(~r/xmpMM:DocumentID>(.*?)</s, rendered, capture: :all_but_first)
+
+      [instance_id] =
+        Regex.run(~r/xmpMM:InstanceID>(.*?)</s, rendered, capture: :all_but_first)
+
+      {document_id, instance_id}
+    end
   end
 end

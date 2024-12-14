@@ -135,6 +135,7 @@ defmodule Mudbrick.Parser.Helpers do
       |> ignore(whitespace())
     )
     |> ignore(string("]"))
+    |> ignore(string(" TJ"))
     |> tag(:TJ)
   end
 
@@ -150,6 +151,7 @@ defmodule Mudbrick.Parser.Helpers do
       ])
       |> ignore(whitespace())
     )
+    |> ignore(string("ET"))
     |> tag(:text_block)
   end
 end
@@ -282,6 +284,45 @@ defmodule Mudbrick.Parser do
     end)
   end
 
+  def extract_text(iodata) do
+    alias Mudbrick.ContentStream.{Tf, TJ}
+
+    doc = parse(iodata)
+
+    content_stream =
+      Mudbrick.Document.find_object(doc, &match?(%Mudbrick.ContentStream{}, &1))
+
+    page_tree = Mudbrick.Document.root_page_tree(doc)
+    fonts = page_tree.value.fonts
+
+    {text_items, _last_found_font} =
+      content_stream.value.operations
+      |> List.foldr({[], nil}, fn
+        %Tf{font_identifier: font_identifier}, {text_items, _current_font} ->
+          {text_items, Map.fetch!(fonts, font_identifier).value.parsed}
+
+        %TJ{kerned_text: kerned_text}, {text_items, current_font} ->
+          text =
+            kerned_text
+            |> Enum.map(fn
+              {hex_glyph, _kern} -> hex_glyph
+              hex_glyph -> hex_glyph
+            end)
+            |> Enum.map(fn hex_glyph ->
+              {decimal_glyph, _} = Integer.parse(hex_glyph, 16)
+              Map.fetch!(current_font.gid2cid, decimal_glyph)
+            end)
+            |> to_string()
+
+          {[text | text_items], current_font}
+
+        _operation, {text_items, current_font} ->
+          {text_items, current_font}
+      end)
+
+    text_items
+  end
+
   def parse(iodata) do
     {:ok, parsed_items, _rest, %{}, _, _} =
       iodata
@@ -311,14 +352,16 @@ defmodule Mudbrick.Parser do
 
     opts = if font_file, do: [fonts: %{F1: font_file.value.data}], else: []
 
-    for page <- all(items, page_refs),
-        reduce: Mudbrick.new(opts) do
+    for page <- all(items, page_refs), reduce: Mudbrick.new(opts) do
       acc ->
         [contents_ref] = page.value[:Contents]
         contents = one(items, contents_ref)
-        contents.value.data |> dbg
+        content_stream = contents.value.data |> to_mudbrick(:text_block)
 
         Mudbrick.page(acc)
+        |> Mudbrick.ContentStream.update_operations(fn ops ->
+          content_stream.operations ++ ops
+        end)
     end
     |> Mudbrick.Document.finish()
   end
@@ -334,7 +377,7 @@ defmodule Mudbrick.Parser do
   def to_mudbrick(iodata, f), do: iodata |> parse(f) |> ast_to_mudbrick()
 
   defp ast_to_mudbrick(text_block: operations) do
-    alias Mudbrick.ContentStream.{Rg, Tf, TJ, TL}
+    alias Mudbrick.ContentStream.{BT, ET, Rg, Tf, TJ, TL}
 
     mudbrick_operations =
       operations
@@ -368,7 +411,7 @@ defmodule Mudbrick.Parser do
 
     %Mudbrick.ContentStream{
       page: nil,
-      operations: Enum.reverse(mudbrick_operations)
+      operations: [%ET{} | Enum.reverse(mudbrick_operations)] ++ [%BT{}]
     }
   end
 

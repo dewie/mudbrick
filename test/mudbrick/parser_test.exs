@@ -123,7 +123,11 @@ defmodule Mudbrick.ParseTextContentTest do
       |> IO.iodata_to_binary()
       |> Parser.parse(:stream)
 
-    %{stream: stream}
+    %{doc: doc, stream: stream}
+  end
+
+  test "can extract text from a stream with a single font", %{doc: doc} do
+    assert doc |> Mudbrick.render() |> Parser.extract_text() == ["hello, world!"]
   end
 
   test "can turn text content to Mudbrick", %{stream: stream} do
@@ -131,6 +135,7 @@ defmodule Mudbrick.ParseTextContentTest do
              %Mudbrick.ContentStream{
                page: nil,
                operations: [
+                 %Mudbrick.ContentStream.ET{},
                  %Mudbrick.ContentStream.TJ{
                    auto_kern: true,
                    kerned_text: [
@@ -151,7 +156,8 @@ defmodule Mudbrick.ParseTextContentTest do
                  },
                  %Mudbrick.ContentStream.Rg{stroking: false, r: 0, g: 0, b: 0},
                  %Mudbrick.ContentStream.TL{leading: 14.399999999999999},
-                 %Mudbrick.ContentStream.Tf{font_identifier: :F1, size: "12"}
+                 %Mudbrick.ContentStream.Tf{font_identifier: :F1, size: "12"},
+                 %Mudbrick.ContentStream.BT{}
                ]
              }
   end
@@ -202,27 +208,27 @@ defmodule Mudbrick.ParseRoundtripTest do
              |> Parser.parse() == input
     end
 
-    # test "PDF with text" do
-    #   alias Mudbrick.TestHelper
-    #   import Mudbrick
+    test "PDF with text" do
+      alias Mudbrick.TestHelper
+      import Mudbrick
 
-    #   input =
-    #     new(fonts: %{bodoni: TestHelper.bodoni_regular()})
-    #     |> page()
-    #     |> text("hello, world!")
-    #     |> Mudbrick.Document.finish()
+      input =
+        new(fonts: %{bodoni: TestHelper.bodoni_regular()})
+        |> page()
+        |> text("hello, world!")
+        |> Mudbrick.Document.finish()
 
-    #   binary =
-    #     input
-    #     |> Mudbrick.render()
-    #     |> IO.iodata_to_binary()
+      binary =
+        input
+        |> Mudbrick.render()
+        |> IO.iodata_to_binary()
 
-    #   assert binary ==
-    #            binary
-    #            |> Parser.parse()
-    #            |> Mudbrick.render()
-    #            |> IO.iodata_to_binary()
-    # end
+      assert binary ==
+               binary
+               |> Parser.parse()
+               |> Mudbrick.render()
+               |> IO.iodata_to_binary()
+    end
 
     property "objects" do
       base_object =
