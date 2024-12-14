@@ -135,12 +135,13 @@ defmodule Mudbrick.Parser.Helpers do
       |> ignore(whitespace())
     )
     |> ignore(string("]"))
-    |> ignore(string(" TJ"))
+    |> ignore(whitespace())
+    |> ignore(string("TJ"))
     |> tag(:TJ)
   end
 
   def text_block do
-    ignore(string("BT"))
+    tag(ignore(string("BT")), :BT)
     |> ignore(eol())
     |> repeat(
       choice([
@@ -151,7 +152,7 @@ defmodule Mudbrick.Parser.Helpers do
       ])
       |> ignore(whitespace())
     )
-    |> ignore(string("ET"))
+    |> tag(ignore(string("ET")), :ET)
     |> tag(:text_block)
   end
 end
@@ -163,7 +164,7 @@ defmodule Mudbrick.Parser do
   defparsec(:boolean, boolean())
   defparsec(:real, real())
   defparsec(:string, string())
-  defparsec(:text_block, text_block())
+  defparsec(:text_blocks, repeat(text_block() |> ignore(optional(whitespace()))))
 
   defparsec(
     :array,
@@ -320,7 +321,7 @@ defmodule Mudbrick.Parser do
           {text_items, current_font}
       end)
 
-    text_items
+    Enum.reverse(text_items)
   end
 
   def parse(iodata) do
@@ -336,8 +337,8 @@ defmodule Mudbrick.Parser do
 
     {:Root, [catalog_ref]} = trailer
 
-    font_file =
-      Enum.find(
+    font_files =
+      Enum.filter(
         items,
         &match?(%{value: %{additional_entries: %{Subtype: :OpenType}}}, &1)
       )
@@ -350,13 +351,22 @@ defmodule Mudbrick.Parser do
 
     page_refs = List.flatten(page_tree.value[:Kids])
 
-    opts = if font_file, do: [fonts: %{F1: font_file.value.data}], else: []
+    {_, fonts} =
+      for font_file <- font_files, reduce: {1, %{}} do
+        {n, fonts} ->
+          {n + 1, Map.put(fonts, :"F#{n}", font_file.value.data)}
+      end
+
+    opts = [fonts: fonts]
 
     for page <- all(items, page_refs), reduce: Mudbrick.new(opts) do
       acc ->
         [contents_ref] = page.value[:Contents]
         contents = one(items, contents_ref)
-        content_stream = contents.value.data |> to_mudbrick(:text_block)
+
+        content_stream =
+          contents.value.data
+          |> to_mudbrick(:text_blocks)
 
         Mudbrick.page(acc)
         |> Mudbrick.ContentStream.update_operations(fn ops ->
@@ -374,44 +384,55 @@ defmodule Mudbrick.Parser do
     end
   end
 
-  def to_mudbrick(iodata, f), do: iodata |> parse(f) |> ast_to_mudbrick()
+  def to_mudbrick(iodata, f),
+    do:
+      iodata
+      |> parse(f)
+      |> ast_to_mudbrick()
 
-  defp ast_to_mudbrick(text_block: operations) do
+  defp ast_to_mudbrick([{:text_block, _operations} | _rest] = input) do
     alias Mudbrick.ContentStream.{BT, ET, Rg, Tf, TJ, TL}
 
     mudbrick_operations =
-      operations
-      |> Enum.map(fn
-        {:Tf, [index, size]} ->
-          %Tf{font_identifier: :"F#{index}", size: size}
+      Enum.flat_map(input, fn {:text_block, operations} ->
+        Enum.map(operations, fn
+          {:BT, []} ->
+            %BT{}
 
-        {:TL, leading} ->
-          %TL{leading: ast_to_mudbrick(leading)}
+          {:Tf, [index, size]} ->
+            %Tf{font_identifier: :"F#{index}", size: size}
 
-        {:rg, components} ->
-          struct!(Rg, Enum.zip([:r, :g, :b], Enum.map(components, &ast_to_mudbrick/1)))
+          {:TL, leading} ->
+            %TL{leading: ast_to_mudbrick(leading)}
 
-        {:TJ, glyphs_and_offsets} ->
-          contains_kerns? = Enum.any?(glyphs_and_offsets, &match?({:offset, _}, &1))
+          {:rg, components} ->
+            struct!(Rg, Enum.zip([:r, :g, :b], Enum.map(components, &ast_to_mudbrick/1)))
 
-          kerned_text =
-            Enum.reduce(glyphs_and_offsets, [], fn
-              {:glyph_id, id}, acc ->
-                [id | acc]
+          {:TJ, glyphs_and_offsets} ->
+            contains_kerns? = Enum.any?(glyphs_and_offsets, &match?({:offset, _}, &1))
 
-              {:offset, offset}, [last_glyph | acc] ->
-                [{last_glyph, String.to_integer(offset)} | acc]
-            end)
+            kerned_text =
+              Enum.reduce(glyphs_and_offsets, [], fn
+                {:glyph_id, id}, acc ->
+                  [id | acc]
 
-          %TJ{
-            auto_kern: contains_kerns?,
-            kerned_text: Enum.reverse(kerned_text)
-          }
+                {:offset, offset}, [last_glyph | acc] ->
+                  [{last_glyph, String.to_integer(offset)} | acc]
+              end)
+
+            %TJ{
+              auto_kern: contains_kerns?,
+              kerned_text: Enum.reverse(kerned_text)
+            }
+
+          {:ET, []} ->
+            %ET{}
+        end)
       end)
 
     %Mudbrick.ContentStream{
       page: nil,
-      operations: [%ET{} | Enum.reverse(mudbrick_operations)] ++ [%BT{}]
+      operations: Enum.reverse(mudbrick_operations)
     }
   end
 
