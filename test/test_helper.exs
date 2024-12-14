@@ -31,6 +31,11 @@ defmodule Mudbrick.TestHelper do
     |> Enum.map(&show/1)
   end
 
+  def operations(doc) do
+    content_stream = Mudbrick.Document.find_object(doc, &match?(%Mudbrick.ContentStream{}, &1))
+    operations({doc, content_stream})
+  end
+
   def bodoni_regular do
     @bodoni_regular
   end

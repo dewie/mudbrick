@@ -1,8 +1,7 @@
 defmodule Mudbrick.ContentStream.Td do
   @moduledoc false
   defstruct tx: 0,
-            ty: 0,
-            purpose: nil
+            ty: 0
 
   def add_current({_doc, content_stream} = context) do
     Mudbrick.ContentStream.add(context, content_stream.value.current_base_td)

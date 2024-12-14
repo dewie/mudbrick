@@ -67,7 +67,7 @@ defmodule Mudbrick.Parser.Helpers do
   end
 
   def number do
-    choice([integer(), real()])
+    choice([real(), integer()])
   end
 
   def string do
@@ -106,15 +106,24 @@ defmodule Mudbrick.Parser.Helpers do
     |> tag(:TL)
   end
 
-  def rg do
-    number()
-    |> ignore(whitespace())
-    |> concat(number())
-    |> ignore(whitespace())
-    |> concat(number())
-    |> ignore(whitespace())
-    |> ignore(string("rg"))
+  def rg_stroking do
+    three_number_operation("RG")
+    |> tag(:RG)
+  end
+
+  def rg_non_stroking do
+    three_number_operation("rg")
     |> tag(:rg)
+  end
+
+  def m do
+    two_number_operation("m")
+    |> tag(:m)
+  end
+
+  def w do
+    one_number_operation("w")
+    |> tag(:w)
   end
 
   def glyph_id_hex do
@@ -140,20 +149,97 @@ defmodule Mudbrick.Parser.Helpers do
     |> tag(:TJ)
   end
 
-  def text_block do
-    tag(ignore(string("BT")), :BT)
-    |> ignore(eol())
+  def td do
+    two_number_operation("Td")
+    |> tag(:Td)
+  end
+
+  def l do
+    two_number_operation("l")
+    |> tag(:l)
+  end
+
+  def q_push do
+    ignore(string("q")) |> tag(:q)
+  end
+
+  def s do
+    ignore(string("S")) |> tag(:S)
+  end
+
+  def t_star do
+    ignore(string("T*")) |> tag(:TStar)
+  end
+
+  def q_pop do
+    ignore(string("Q")) |> tag(:Q)
+  end
+
+  def graphics_block do
+    q_push()
+    |> ignore(whitespace())
     |> repeat(
       choice([
+        l(),
+        m(),
+        rg_non_stroking(),
+        rg_stroking(),
+        s(),
+        w()
+      ])
+      |> ignore(whitespace())
+    )
+    |> concat(q_pop())
+    |> tag(:graphics_block)
+  end
+
+  def text_block do
+    tag(ignore(string("BT")), :BT)
+    |> ignore(whitespace())
+    |> repeat(
+      choice([
+        l(),
+        m(),
+        q_pop(),
+        q_push(),
+        rg_non_stroking(),
+        rg_stroking(),
+        s(),
+        td(),
         tf(),
+        tj(),
         tl(),
-        rg(),
-        tj()
+        t_star(),
+        w()
       ])
       |> ignore(whitespace())
     )
     |> tag(ignore(string("ET")), :ET)
     |> tag(:text_block)
+  end
+
+  defp one_number_operation(operator) do
+    number()
+    |> ignore(whitespace())
+    |> ignore(string(operator))
+  end
+
+  defp two_number_operation(operator) do
+    number()
+    |> ignore(whitespace())
+    |> concat(number())
+    |> ignore(whitespace())
+    |> ignore(string(operator))
+  end
+
+  defp three_number_operation(operator) do
+    number()
+    |> ignore(whitespace())
+    |> concat(number())
+    |> ignore(whitespace())
+    |> concat(number())
+    |> ignore(whitespace())
+    |> ignore(string(operator))
   end
 end
 
@@ -161,10 +247,37 @@ defmodule Mudbrick.Parser do
   import NimbleParsec
   import Mudbrick.Parser.Helpers
 
+  alias Mudbrick.ContentStream.{
+    BT,
+    ET,
+    L,
+    M,
+    QPop,
+    QPush,
+    Rg,
+    S,
+    Td,
+    Tf,
+    TJ,
+    TL,
+    W
+  }
+
   defparsec(:boolean, boolean())
+  defparsec(:number, number())
   defparsec(:real, real())
   defparsec(:string, string())
-  defparsec(:text_blocks, repeat(text_block() |> ignore(optional(whitespace()))))
+
+  defparsec(
+    :content_blocks,
+    repeat(
+      choice([
+        text_block(),
+        graphics_block()
+      ])
+      |> ignore(optional(whitespace()))
+    )
+  )
 
   defparsec(
     :array,
@@ -364,13 +477,13 @@ defmodule Mudbrick.Parser do
         [contents_ref] = page.value[:Contents]
         contents = one(items, contents_ref)
 
-        content_stream =
+        %Mudbrick.ContentStream{operations: operations} =
           contents.value.data
-          |> to_mudbrick(:text_blocks)
+          |> to_mudbrick(:content_blocks)
 
         Mudbrick.page(acc)
         |> Mudbrick.ContentStream.update_operations(fn ops ->
-          content_stream.operations ++ ops
+          operations ++ ops
         end)
     end
     |> Mudbrick.Document.finish()
@@ -390,44 +503,66 @@ defmodule Mudbrick.Parser do
       |> parse(f)
       |> ast_to_mudbrick()
 
-  defp ast_to_mudbrick([{:text_block, _operations} | _rest] = input) do
-    alias Mudbrick.ContentStream.{BT, ET, Rg, Tf, TJ, TL}
+  defp ast_to_operator({:BT, []}), do: %BT{}
 
+  defp ast_to_operator({:m, [x, y]}),
+    do: %M{
+      coords: {ast_to_mudbrick(x), ast_to_mudbrick(y)}
+    }
+
+  defp ast_to_operator({:l, [x, y]}),
+    do: %L{
+      coords: {ast_to_mudbrick(x), ast_to_mudbrick(y)}
+    }
+
+  defp ast_to_operator({:RG, [r, g, b]}),
+    do: %Rg{
+      stroking: true,
+      r: ast_to_mudbrick(r),
+      g: ast_to_mudbrick(g),
+      b: ast_to_mudbrick(b)
+    }
+
+  defp ast_to_operator({:S, []}), do: %S{}
+  defp ast_to_operator({:Td, [x, y]}), do: %Td{tx: ast_to_mudbrick(x), ty: ast_to_mudbrick(y)}
+
+  defp ast_to_operator({:w, number}), do: %W{width: ast_to_mudbrick(number)}
+
+  defp ast_to_operator({:q, []}), do: %QPush{}
+  defp ast_to_operator({:Q, []}), do: %QPop{}
+
+  defp ast_to_operator({:Tf, [index, size]}), do: %Tf{font_identifier: :"F#{index}", size: size}
+
+  defp ast_to_operator({:TL, leading}), do: %TL{leading: ast_to_mudbrick(leading)}
+
+  defp ast_to_operator({:rg, components}),
+    do: struct!(Rg, Enum.zip([:r, :g, :b], Enum.map(components, &ast_to_mudbrick/1)))
+
+  defp ast_to_operator({:TJ, glyphs_and_offsets}) do
+    contains_kerns? = Enum.any?(glyphs_and_offsets, &match?({:offset, _}, &1))
+
+    kerned_text =
+      Enum.reduce(glyphs_and_offsets, [], fn
+        {:glyph_id, id}, acc ->
+          [id | acc]
+
+        {:offset, offset}, [last_glyph | acc] ->
+          [{last_glyph, String.to_integer(offset)} | acc]
+      end)
+
+    %TJ{
+      auto_kern: contains_kerns?,
+      kerned_text: Enum.reverse(kerned_text)
+    }
+  end
+
+  defp ast_to_operator({:ET, []}), do: %ET{}
+
+  defp ast_to_mudbrick([{block_type, _operations} | _rest] = input)
+       when block_type in [:text_block, :graphics_block] do
     mudbrick_operations =
-      Enum.flat_map(input, fn {:text_block, operations} ->
-        Enum.map(operations, fn
-          {:BT, []} ->
-            %BT{}
-
-          {:Tf, [index, size]} ->
-            %Tf{font_identifier: :"F#{index}", size: size}
-
-          {:TL, leading} ->
-            %TL{leading: ast_to_mudbrick(leading)}
-
-          {:rg, components} ->
-            struct!(Rg, Enum.zip([:r, :g, :b], Enum.map(components, &ast_to_mudbrick/1)))
-
-          {:TJ, glyphs_and_offsets} ->
-            contains_kerns? = Enum.any?(glyphs_and_offsets, &match?({:offset, _}, &1))
-
-            kerned_text =
-              Enum.reduce(glyphs_and_offsets, [], fn
-                {:glyph_id, id}, acc ->
-                  [id | acc]
-
-                {:offset, offset}, [last_glyph | acc] ->
-                  [{last_glyph, String.to_integer(offset)} | acc]
-              end)
-
-            %TJ{
-              auto_kern: contains_kerns?,
-              kerned_text: Enum.reverse(kerned_text)
-            }
-
-          {:ET, []} ->
-            %ET{}
-        end)
+      Enum.flat_map(input, fn {_block_type, operations} ->
+        Enum.map(operations, &ast_to_operator/1)
       end)
 
     %Mudbrick.ContentStream{

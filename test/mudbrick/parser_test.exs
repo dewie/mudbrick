@@ -11,6 +11,7 @@ defmodule Mudbrick.ParserTest do
 
     test "real numbers" do
       assert Parser.parse("0.1", :real) == [real: ["0", ".", "1"]]
+      assert Parser.parse("0.1", :number) == [{:real, ["0", ".", "1"]}]
     end
 
     test "booleans" do
@@ -91,14 +92,122 @@ defmodule Mudbrick.ParserTest do
              ]
     end
 
+    test "mixed graphics and text blocks" do
+      assert [
+               graphics_block: [
+                 q: [],
+                 m: [real: ["0", ".", "0"], real: ["-", "1", ".", "2"]],
+                 RG: [integer: ["0"], integer: ["0"], integer: ["0"]],
+                 w: [integer: ["1"]],
+                 l: [real: ["65", ".", "46"], real: ["-", "1", ".", "2"]],
+                 S: [],
+                 Q: []
+               ],
+               text_block: [
+                 BT: [],
+                 Tf: ["1", "12"],
+                 TL: [real: ["14", ".", "399999999999999"]],
+                 Td: [integer: ["7"], integer: ["30"]],
+                 rg: [integer: ["0"], integer: ["0"], integer: ["0"]],
+                 TJ: [
+                   glyph_id: "00D5",
+                   offset: "24",
+                   glyph_id: "00C0",
+                   glyph_id: "00ED",
+                   glyph_id: "00ED",
+                   glyph_id: "00FC",
+                   glyph_id: "0195",
+                   glyph_id: "01B7",
+                   glyph_id: "0138",
+                   glyph_id: "00FC",
+                   glyph_id: "010F",
+                   offset: "12",
+                   glyph_id: "00ED",
+                   glyph_id: "00BB",
+                   glyph_id: "0197"
+                 ],
+                 ET: []
+               ],
+               text_block: [
+                 BT: [],
+                 Tf: ["2", "12"],
+                 TL: [real: ["14", ".", "399999999999999"]],
+                 rg: [integer: ["0"], integer: ["0"], integer: ["0"]],
+                 TJ: [
+                   glyph_id: "0105",
+                   offset: "44",
+                   glyph_id: "00EA",
+                   glyph_id: "011E",
+                   glyph_id: "011E",
+                   glyph_id: "012C",
+                   glyph_id: "01F0",
+                   glyph_id: "0109",
+                   glyph_id: "0125",
+                   glyph_id: "01F0",
+                   glyph_id: "00C3",
+                   glyph_id: "0125",
+                   glyph_id: "012C",
+                   offset: "35",
+                   glyph_id: "015A",
+                   offset: "13",
+                   glyph_id: "0105",
+                   offset: "13",
+                   glyph_id: "00EA",
+                   offset: "63",
+                   glyph_id: "014B",
+                   glyph_id: "01F0",
+                   offset: "13",
+                   glyph_id: "00FF",
+                   glyph_id: "012C",
+                   glyph_id: "0125",
+                   glyph_id: "015A"
+                 ],
+                 ET: []
+               ]
+             ] =
+               Parser.parse(
+                 """
+                 q
+                 0.0 -1.2 m
+                 0 0 0 RG
+                 1 w
+                 65.46 -1.2 l
+                 S
+                 Q
+                 BT
+                 /F1 12 Tf
+                 14.399999999999999 TL
+                 7 30 Td
+                 0 0 0 rg
+                 [ <00D5> 24 <00C0> <00ED> <00ED> <00FC> <0195> <01B7> <0138> <00FC> <010F> 12 <00ED> <00BB> <0197> ] TJ
+                 ET
+                 BT
+                 /F2 12 Tf
+                 14.399999999999999 TL
+                 0 0 0 rg
+                 [ <0105> 44 <00EA> <011E> <011E> <012C> <01F0> <0109> <0125> <01F0> <00C3> <0125> <012C> 35 <015A> 13 <0105> 13 <00EA> 63 <014B> <01F0> 13 <00FF> <012C> <0125> <015A> ] TJ
+                 ET
+                 """,
+                 :content_blocks
+               )
+    end
+
     test "text blocks" do
       assert Parser.parse(
                """
                BT
+               q
+               7.0 23.0 m
+               0 0 0 RG
+               0.5 w
+               293.29999999999995 23.0 l
                /F1 12 Tf
                14.399999999999999 TL
                0 0 0 rg
                [ <00D5> 24 <00C0> <00ED> <00ED> <00FC> <0195> <01B7> <0138> <00FC> <010F> 12 <00ED> <00BB> <0197> ] TJ
+               T*
+               S
+               Q
                ET
                BT
                /F2 12 Tf
@@ -107,10 +216,15 @@ defmodule Mudbrick.ParserTest do
                [ <0105> 44 <00EA> <011E> <011E> <012C> <01F0> <0109> <0125> <01F0> <00C3> <0125> <012C> 35 <015A> 13 <0105> 1 3 <00EA> 63 <014B> <01F0> 13 <00FF> <012C> <0125> <015A> ] TJ
                ET\
                """,
-               :text_blocks
+               :content_blocks
              ) == [
                text_block: [
                  BT: [],
+                 q: [],
+                 m: [real: ["7", ".", "0"], real: ["23", ".", "0"]],
+                 RG: [{:integer, ["0"]}, {:integer, ["0"]}, {:integer, ["0"]}],
+                 w: [real: ["0", ".", "5"]],
+                 l: [real: ["293", ".", "29999999999995"], real: ["23", ".", "0"]],
                  Tf: ["1", "12"],
                  TL: [real: ["14", ".", "399999999999999"]],
                  rg: [integer: ["0"], integer: ["0"], integer: ["0"]],
@@ -131,6 +245,9 @@ defmodule Mudbrick.ParserTest do
                    glyph_id: "00BB",
                    glyph_id: "0197"
                  ],
+                 TStar: [],
+                 S: [],
+                 Q: [],
                  ET: []
                ],
                text_block: [

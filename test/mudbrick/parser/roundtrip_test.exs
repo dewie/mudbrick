@@ -5,6 +5,33 @@ defmodule Mudbrick.ParseRoundtripTest do
   alias Mudbrick.Parser
 
   describe "roundtripping from/to Mudbrick" do
+    test "with underline" do
+      import Mudbrick.TestHelper
+      import Mudbrick
+
+      input =
+        new(fonts: %{bodoni: bodoni_bold()})
+        |> page(size: {400, 100})
+        |> text(
+          [{"Warning\\n", underline: [width: 0.5]}],
+          font: :bodoni,
+          font_size: 70,
+          position: {7, 30}
+        )
+        |> Mudbrick.Document.finish()
+
+      parsed =
+        input
+        |> render()
+        |> IO.iodata_to_binary()
+        |> Parser.parse()
+
+      assert operations(input) == operations(parsed)
+
+      # not there yet
+      # assert parsed == input
+    end
+
     test "minimal PDF" do
       input = Mudbrick.new()
 
