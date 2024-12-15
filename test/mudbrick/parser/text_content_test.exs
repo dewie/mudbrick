@@ -2,12 +2,12 @@ defmodule Mudbrick.ParseTextContentTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
+  import Mudbrick
+  import Mudbrick.TestHelper
+
   alias Mudbrick.Parser
 
   setup do
-    import Mudbrick
-    import Mudbrick.TestHelper
-
     doc =
       new(fonts: %{bodoni: bodoni_regular(), franklin: franklin_regular()})
       |> page()
@@ -21,9 +21,7 @@ defmodule Mudbrick.ParseTextContentTest do
       |> text("hello in another font", font: :franklin)
       |> Mudbrick.Document.finish()
 
-    obj =
-      doc.objects
-      |> Enum.find(&(%Mudbrick.ContentStream{} = &1.value))
+    obj = Enum.find(doc.objects, &(%Mudbrick.ContentStream{} = &1.value))
 
     [
       {:dictionary, [pair: [name: "Length", integer: [_]]]},
@@ -36,6 +34,28 @@ defmodule Mudbrick.ParseTextContentTest do
       |> Parser.parse(:stream)
 
     %{doc: doc, stream: stream}
+  end
+
+  test "can extract text from a compressed document" do
+    doc =
+      new(compress: true, fonts: %{bodoni: bodoni_regular(), franklin: franklin_regular()})
+      |> page()
+      |> text(
+        {
+          "hello, world!",
+          underline: [width: 1]
+        },
+        font: :bodoni
+      )
+      |> text("hello in another font", font: :franklin)
+      |> Mudbrick.Document.finish()
+
+    assert doc
+           |> Mudbrick.render()
+           |> Parser.extract_text() == [
+             "hello, world!",
+             "hello in another font"
+           ]
   end
 
   test "can extract text from a single page with multiple fonts", %{doc: doc} do

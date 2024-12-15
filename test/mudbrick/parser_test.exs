@@ -3,6 +3,56 @@ defmodule Mudbrick.ParserTest do
 
   alias Mudbrick.Parser
 
+  describe "streams" do
+    test "compressed" do
+      stream =
+        Mudbrick.Stream.new(
+          compress: true,
+          data: "oooooooooooo"
+        )
+
+      obj =
+        Mudbrick.Indirect.Ref.new(1)
+        |> Mudbrick.Indirect.Object.new(stream)
+
+      assert Parser.parse(Mudbrick.Object.to_iodata(obj), :indirect_object) == [
+               indirect_object: [
+                 1,
+                 0,
+                 {:dictionary,
+                  [
+                    pair: [name: "Filter", array: [name: "FlateDecode"]],
+                    pair: [name: "Length", integer: ["11"]]
+                  ]},
+                 "stream",
+                 "x\x9C\xCB\xCFG\0\0!\xDE\x055"
+               ]
+             ]
+    end
+
+    test "uncompressed" do
+      stream =
+        Mudbrick.Stream.new(
+          compress: false,
+          data: "oooooooooooo"
+        )
+
+      obj =
+        Mudbrick.Indirect.Ref.new(1)
+        |> Mudbrick.Indirect.Object.new(stream)
+
+      assert Parser.parse(Mudbrick.Object.to_iodata(obj), :indirect_object) == [
+               indirect_object: [
+                 1,
+                 0,
+                 {:dictionary, [pair: [name: "Length", integer: ["12"]]]},
+                 "stream",
+                 "oooooooooooo"
+               ]
+             ]
+    end
+  end
+
   test "strings bounded by parens" do
     assert Parser.parse("(hello, world!)", :string) == [string: ["hello, world!"]]
     assert Parser.parse("()", :string) == [string: []]

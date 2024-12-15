@@ -69,6 +69,37 @@ defmodule Mudbrick.ParseRoundtripTest do
                |> IO.iodata_to_binary()
     end
 
+    test "PDF with text, compressed" do
+      alias Mudbrick.TestHelper
+      import Mudbrick
+
+      input =
+        new(
+          compress: true,
+          fonts: %{
+            bodoni: TestHelper.bodoni_regular(),
+            franklin: TestHelper.franklin_regular()
+          }
+        )
+        |> page()
+        |> text("hello, bodoni", font: :bodoni)
+        |> text("hello, franklin", font: :franklin)
+        |> Mudbrick.Document.finish()
+
+      binary =
+        input
+        |> Mudbrick.render()
+        |> IO.iodata_to_binary()
+
+      parsed_binary =
+        binary
+        |> Parser.parse()
+        |> Mudbrick.render()
+        |> IO.iodata_to_binary()
+
+      assert binary == parsed_binary
+    end
+
     property "objects" do
       base_object =
         one_of([

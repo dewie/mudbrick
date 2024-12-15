@@ -466,19 +466,40 @@ defmodule Mudbrick.Parser do
     {_, fonts} =
       for font_file <- font_files, reduce: {1, %{}} do
         {n, fonts} ->
-          {n + 1, Map.put(fonts, :"F#{n}", font_file.value.data)}
+          if font_file.value.compress do
+            {n + 1,
+             Map.put(
+               fonts,
+               :"F#{n}",
+               Mudbrick.decompress(font_file.value.data) |> IO.iodata_to_binary()
+             )}
+          else
+            {n + 1, Map.put(fonts, :"F#{n}", font_file.value.data)}
+          end
       end
 
-    opts = [fonts: fonts]
+    compress? = Enum.any?(font_files, fn f -> f.value.compress end)
+
+    opts = []
+    opts = if map_size(fonts) > 0, do: Keyword.put(opts, :fonts, fonts), else: opts
+    opts = if compress?, do: Keyword.put(opts, :compress, true), else: opts
 
     for page <- all(items, page_refs), reduce: Mudbrick.new(opts) do
       acc ->
         [contents_ref] = page.value[:Contents]
+
         contents = one(items, contents_ref)
 
-        %Mudbrick.ContentStream{operations: operations} =
-          contents.value.data
-          |> to_mudbrick(:content_blocks)
+        stream = contents.value
+
+        data =
+          if stream.compress do
+            Mudbrick.decompress(stream.data)
+          else
+            stream.data
+          end
+
+        %Mudbrick.ContentStream{operations: operations} = to_mudbrick(data, :content_blocks)
 
         Mudbrick.page(acc)
         |> Mudbrick.ContentStream.update_operations(fn ops ->
@@ -630,16 +651,19 @@ defmodule Mudbrick.Parser do
           ]}
          | rest
        ]) do
+    additional_entries =
+      pairs
+      |> Enum.map(&ast_to_mudbrick/1)
+      |> Map.new()
+      |> Map.drop([:Length])
+
     [
       Mudbrick.Indirect.Ref.new(ref_number)
       |> Mudbrick.Indirect.Object.new(
         Mudbrick.Stream.new(
+          compress: additional_entries[:Filter] == [:FlateDecode],
           data: stream,
-          additional_entries:
-            pairs
-            |> Enum.map(&ast_to_mudbrick/1)
-            |> Map.new()
-            |> Map.drop([:Length])
+          additional_entries: additional_entries
         )
       )
       | ast_to_mudbrick(rest)
