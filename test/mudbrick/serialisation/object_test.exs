@@ -43,6 +43,10 @@ defmodule Mudbrick.ObjectTest do
       assert show(:"1.2") == "/1.2"
     end
 
+    test "nils become the word 'nil', mostly to avoid test problems" do
+      assert show(nil) == "/nil"
+    end
+
     test "literal whitespace is escaped as hex" do
       assert show(:"hi there") == "/hi#20there"
     end

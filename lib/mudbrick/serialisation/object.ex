@@ -17,6 +17,10 @@ defimpl Mudbrick.Object, for: Atom do
     [to_string(a)]
   end
 
+  def to_iodata(nil) do
+    ["/nil"]
+  end
+
   def to_iodata(name) do
     [?/, escape_chars(name)]
   end
