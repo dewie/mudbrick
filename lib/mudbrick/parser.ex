@@ -348,7 +348,6 @@ defmodule Mudbrick.Parser do
     )
     |> ignore(eol())
     |> ignore(string("endobj"))
-    |> ignore(eol())
     |> tag(:indirect_object)
   )
 
@@ -377,7 +376,7 @@ defmodule Mudbrick.Parser do
     ignore(version())
     |> ignore(ascii_string([not: ?\n], min: 1))
     |> ignore(eol())
-    |> repeat(parsec(:indirect_object))
+    |> repeat(parsec(:indirect_object) |> ignore(whitespace()))
     |> ignore(string("xref"))
     |> ignore(eol())
     |> eventually(ignore(string("trailer") |> concat(eol())))
