@@ -9,12 +9,7 @@ defmodule Mudbrick.ContentStream.TJ do
     end
 
     def to_iodata(op) do
-      [
-        "[ ",
-        op.kerned_text
-        |> Enum.map(&write_glyph(op, &1)),
-        "] TJ"
-      ]
+      ["[ ", Enum.map(op.kerned_text, &write_glyph(op, &1)), "] TJ"]
     end
 
     defp write_glyph(%{auto_kern: true} = op, {glyph_id, kerning}) do

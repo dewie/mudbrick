@@ -13,7 +13,7 @@ defmodule Mudbrick.ParseRoundtripTest do
         new(fonts: %{bodoni: bodoni_bold()})
         |> page(size: {400, 100})
         |> text(
-          [{"Warning\\n", underline: [width: 0.5]}],
+          [{"Warning\n", underline: [width: 0.5]}],
           font: :bodoni,
           font_size: 70,
           position: {7, 30}
