@@ -124,7 +124,6 @@ defmodule Mudbrick.TextBlock.Output do
 
   defp reduce_parts(output, %Line{parts: []}, nil, _x_offset) do
     output
-    |> add(%TJ{kerned_text: []})
     |> add(%TStar{})
   end
 

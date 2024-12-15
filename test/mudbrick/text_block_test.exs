@@ -249,11 +249,9 @@ defmodule Mudbrick.TextBlockTest do
                "0 0 0 rg",
                "[ <014C> <010F> 12 <0116> <011D> <01B7> <00ED> <00D9> <00F4> 8 <00C0> ] TJ",
                "T*",
-               "",
                "T*",
                "[ <0116> 24 <00C0> <00B5> <00FC> <00F4> <00BB> <01B7> <00ED> <00D9> <00F4> 8 <00C0> ] TJ",
                "T*",
-               "",
                "ET"
              ] =
                output(fn %{fonts: fonts} ->
@@ -419,7 +417,6 @@ defmodule Mudbrick.TextBlockTest do
                "83.38000000000001 0 Td",
                "-0.0 0 Td",
                "T*",
-               "",
                "0.0 0 Td",
                "-9.26 0 Td",
                "T*",
