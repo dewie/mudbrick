@@ -78,9 +78,17 @@ defmodule Mudbrick.Parser do
             stream.data
           end
 
-        %Mudbrick.ContentStream{operations: operations} = to_mudbrick(data, :content_blocks)
+        operations =
+          if data == "" do
+            []
+          else
+            %Mudbrick.ContentStream{operations: operations} = to_mudbrick(data, :content_blocks)
+            operations
+          end
 
-        Mudbrick.page(acc)
+        [_, _, w, h] = page.value[:MediaBox]
+
+        Mudbrick.page(acc, size: {w, h})
         |> Mudbrick.ContentStream.update_operations(fn ops ->
           operations ++ ops
         end)
@@ -160,7 +168,7 @@ defmodule Mudbrick.Parser do
     |> string("stream")
     |> ignore(eol())
     |> post_traverse({:stream_contents, []})
-    |> ignore(eol())
+    |> ignore(optional(eol()))
     |> ignore(string("endstream"))
   )
 

@@ -5,6 +5,27 @@ defmodule Mudbrick.ParseRoundtripTest do
   alias Mudbrick.Parser
 
   describe "roundtripping from/to Mudbrick" do
+    test "minimal PDF" do
+      input = Mudbrick.new()
+
+      assert input
+             |> Mudbrick.render()
+             |> IO.iodata_to_binary()
+             |> Parser.parse() == input
+    end
+
+    test "custom page size" do
+      input =
+        Mudbrick.new()
+        |> Mudbrick.page(size: {400, 100})
+        |> Mudbrick.Document.finish()
+
+      assert input
+             |> Mudbrick.render()
+             |> IO.iodata_to_binary()
+             |> Parser.parse() == input
+    end
+
     test "with underline" do
       import Mudbrick.TestHelper
       import Mudbrick
@@ -18,27 +39,15 @@ defmodule Mudbrick.ParseRoundtripTest do
           font_size: 70,
           position: {7, 30}
         )
-        |> Mudbrick.Document.finish()
+        |> render()
 
       parsed =
         input
-        |> render()
         |> IO.iodata_to_binary()
         |> Parser.parse()
+        |> render()
 
-      assert operations(input) == operations(parsed)
-
-      # not there yet
-      # assert parsed == input
-    end
-
-    test "minimal PDF" do
-      input = Mudbrick.new()
-
-      assert input
-             |> Mudbrick.render()
-             |> IO.iodata_to_binary()
-             |> Parser.parse() == input
+      assert parsed == input
     end
 
     test "PDF with text" do
