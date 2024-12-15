@@ -163,6 +163,11 @@ defmodule Mudbrick.Parser.Helpers do
     ignore(string("q")) |> tag(:q)
   end
 
+  def re do
+    four_number_operation("re")
+    |> tag(:re)
+  end
+
   def s do
     ignore(string("S")) |> tag(:S)
   end
@@ -182,6 +187,7 @@ defmodule Mudbrick.Parser.Helpers do
       choice([
         l(),
         m(),
+        re(),
         rg_non_stroking(),
         rg_stroking(),
         s(),
@@ -234,6 +240,18 @@ defmodule Mudbrick.Parser.Helpers do
 
   defp three_number_operation(operator) do
     number()
+    |> ignore(whitespace())
+    |> concat(number())
+    |> ignore(whitespace())
+    |> concat(number())
+    |> ignore(whitespace())
+    |> ignore(string(operator))
+  end
+
+  defp four_number_operation(operator) do
+    number()
+    |> ignore(whitespace())
+    |> concat(number())
     |> ignore(whitespace())
     |> concat(number())
     |> ignore(whitespace())

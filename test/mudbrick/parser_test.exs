@@ -149,6 +149,7 @@ defmodule Mudbrick.ParserTest do
                RG: [integer: ["0"], integer: ["0"], integer: ["0"]],
                w: [integer: ["1"]],
                l: [real: ["65", ".", "46"], real: ["-", "1", ".", "2"]],
+               re: [integer: ["0"], integer: ["0"], integer: ["50"], integer: ["60"]],
                S: [],
                Q: []
              ],
@@ -221,6 +222,7 @@ defmodule Mudbrick.ParserTest do
                0 0 0 RG
                1 w
                65.46 -1.2 l
+               0 0 50 60 re
                S
                Q
                BT

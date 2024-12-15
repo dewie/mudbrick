@@ -7,6 +7,7 @@ defmodule Mudbrick.Parser do
     M,
     QPop,
     QPush,
+    Re,
     Rg,
     Td,
     Tf,
@@ -282,6 +283,12 @@ defmodule Mudbrick.Parser do
         false
     end)
   end
+
+  defp ast_to_operator({:re, [x, y, w, h]}),
+    do: %Re{
+      lower_left: {ast_to_mudbrick(x), ast_to_mudbrick(y)},
+      dimensions: {ast_to_mudbrick(w), ast_to_mudbrick(h)}
+    }
 
   defp ast_to_operator({:m, [x, y]}),
     do: %M{
