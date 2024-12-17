@@ -217,7 +217,7 @@ defmodule Mudbrick do
         context
         |> add(%ContentStream.QPush{})
         |> add(ContentStream.Cm.new(cm_opts(image.value, opts)))
-        |> add(%ContentStream.Do{image: image.value})
+        |> add(%ContentStream.Do{image_identifier: image.value.resource_identifier})
         |> add(%ContentStream.QPop{})
 
       :error ->
