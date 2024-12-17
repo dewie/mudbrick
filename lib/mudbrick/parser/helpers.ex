@@ -90,6 +90,19 @@ defmodule Mudbrick.Parser.Helpers do
     |> ignore(eol())
   end
 
+  def cm do
+    six_number_operation("cm")
+    |> tag(:cm)
+  end
+
+  def do_paint do
+    ignore(string("/I"))
+    |> concat(non_negative_integer())
+    |> ignore(whitespace())
+    |> ignore(string("Do"))
+    |> tag(:Do)
+  end
+
   def tf do
     ignore(string("/F"))
     |> concat(non_negative_integer())
@@ -185,6 +198,8 @@ defmodule Mudbrick.Parser.Helpers do
     |> ignore(whitespace())
     |> repeat(
       choice([
+        cm(),
+        do_paint(),
         l(),
         m(),
         re(),
@@ -250,6 +265,22 @@ defmodule Mudbrick.Parser.Helpers do
 
   defp four_number_operation(operator) do
     number()
+    |> ignore(whitespace())
+    |> concat(number())
+    |> ignore(whitespace())
+    |> concat(number())
+    |> ignore(whitespace())
+    |> concat(number())
+    |> ignore(whitespace())
+    |> ignore(string(operator))
+  end
+
+  defp six_number_operation(operator) do
+    number()
+    |> ignore(whitespace())
+    |> concat(number())
+    |> ignore(whitespace())
+    |> concat(number())
     |> ignore(whitespace())
     |> concat(number())
     |> ignore(whitespace())

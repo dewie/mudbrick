@@ -13,6 +13,23 @@ defmodule Mudbrick.ParseRoundtripTest do
            |> Parser.parse() == input
   end
 
+  test "with an image" do
+    input =
+      Mudbrick.new(images: %{I1: Mudbrick.TestHelper.flower()})
+      |> Mudbrick.page()
+      |> Mudbrick.image(
+        :I1,
+        scale: {100, 100},
+        position: {0, 0}
+      )
+      |> Mudbrick.Document.finish()
+
+    assert input
+           |> Mudbrick.render()
+           |> IO.iodata_to_binary()
+           |> Parser.parse() == input
+  end
+
   test "custom page size" do
     input =
       Mudbrick.new()

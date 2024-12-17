@@ -87,23 +87,28 @@ defmodule Mudbrick.Metadata do
   end
 
   defp id(opts) do
-    {fonts, opts} =
-      case Keyword.pop(opts, :fonts) do
-        {nil, opts} ->
-          {"", opts}
-
-        {fonts, opts} ->
-          {Map.values(fonts) |> Enum.sort(), opts}
-      end
+    {fonts, opts} = hashable_resources(opts, :fonts)
+    {images, opts} = hashable_resources(opts, :images)
 
     :crypto.hash(
       :sha256,
       [
         Application.spec(:mudbrick)[:vsn],
         inspect(opts),
-        fonts
+        fonts,
+        images
       ]
     )
     |> Base.encode64(padding: false)
+  end
+
+  defp hashable_resources(opts, type) do
+    case Keyword.pop(opts, type) do
+      {nil, opts} ->
+        {"", opts}
+
+      {resources, opts} ->
+        {Map.values(resources) |> Enum.sort(), opts}
+    end
   end
 end

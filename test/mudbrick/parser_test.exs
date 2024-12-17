@@ -145,6 +145,19 @@ defmodule Mudbrick.ParserTest do
     assert [
              graphics_block: [
                q: [],
+               cm: [
+                 integer: ["100"],
+                 integer: ["0"],
+                 integer: ["0"],
+                 integer: ["100"],
+                 integer: ["0"],
+                 integer: ["0"]
+               ],
+               Do: ["1"],
+               Q: []
+             ],
+             graphics_block: [
+               q: [],
                m: [real: ["0", ".", "0"], real: ["-", "1", ".", "2"]],
                RG: [integer: ["0"], integer: ["0"], integer: ["0"]],
                w: [integer: ["1"]],
@@ -217,6 +230,10 @@ defmodule Mudbrick.ParserTest do
            ] =
              Parser.parse(
                """
+               q
+               100 0 0 100 0 0 cm
+               /I1 Do
+               Q
                q
                0.0 -1.2 m
                0 0 0 RG

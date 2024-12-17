@@ -3,6 +3,8 @@ defmodule Mudbrick.Parser do
   import Mudbrick.Parser.Helpers
 
   alias Mudbrick.ContentStream.{
+    Cm,
+    Do,
     L,
     M,
     QPop,
@@ -35,6 +37,12 @@ defmodule Mudbrick.Parser do
         &match?(%{value: %{additional_entries: %{Subtype: :OpenType}}}, &1)
       )
 
+    image_files =
+      Enum.filter(
+        items,
+        &match?(%{value: %{additional_entries: %{Subtype: :Image}}}, &1)
+      )
+
     catalog = one(items, catalog_ref)
 
     [page_tree_ref] = catalog.value[:Pages]
@@ -58,10 +66,27 @@ defmodule Mudbrick.Parser do
           end
       end
 
+    {_, images} =
+      for image_file <- image_files, reduce: {1, %{}} do
+        {n, images} ->
+          if image_file.value.compress do
+            {n + 1,
+             Map.put(
+               images,
+               :"I#{n}",
+               Mudbrick.decompress(image_file.value.data) |> IO.iodata_to_binary()
+             )}
+          else
+            {n + 1, Map.put(images, :"I#{n}", image_file.value.data)}
+          end
+      end
+
+    # TODO: be smarter about detecting compression - this requires a font
     compress? = Enum.any?(font_files, fn f -> f.value.compress end)
 
     opts = []
     opts = if map_size(fonts) > 0, do: Keyword.put(opts, :fonts, fonts), else: opts
+    opts = if map_size(images) > 0, do: Keyword.put(opts, :images, images), else: opts
     opts = if compress?, do: Keyword.put(opts, :compress, true), else: opts
 
     for page <- all(items, page_refs), reduce: Mudbrick.new(opts) do
@@ -83,7 +108,9 @@ defmodule Mudbrick.Parser do
           if data == "" do
             []
           else
-            %Mudbrick.ContentStream{operations: operations} = to_mudbrick(data, :content_blocks)
+            %Mudbrick.ContentStream{operations: operations} =
+              to_mudbrick(data, :content_blocks)
+
             operations
           end
 
@@ -284,6 +311,13 @@ defmodule Mudbrick.Parser do
     end)
   end
 
+  defp ast_to_operator({:cm, [x_scale, x_skew, y_skew, y_scale, x_translate, y_translate]}),
+    do: %Cm{
+      scale: {ast_to_mudbrick(x_scale), ast_to_mudbrick(y_scale)},
+      skew: {ast_to_mudbrick(x_skew), ast_to_mudbrick(y_skew)},
+      position: {ast_to_mudbrick(x_translate), ast_to_mudbrick(y_translate)}
+    }
+
   defp ast_to_operator({:re, [x, y, w, h]}),
     do: %Re{
       lower_left: {ast_to_mudbrick(x), ast_to_mudbrick(y)},
@@ -308,6 +342,7 @@ defmodule Mudbrick.Parser do
       b: ast_to_mudbrick(b)
     }
 
+  defp ast_to_operator({:Do, [index]}), do: %Do{image_identifier: :"I#{index}"}
   defp ast_to_operator({:Td, [x, y]}), do: %Td{tx: ast_to_mudbrick(x), ty: ast_to_mudbrick(y)}
   defp ast_to_operator({:w, number}), do: %W{width: ast_to_mudbrick(number)}
   defp ast_to_operator({:Tf, [index, size]}), do: %Tf{font_identifier: :"F#{index}", size: size}

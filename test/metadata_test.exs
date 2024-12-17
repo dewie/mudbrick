@@ -63,14 +63,14 @@ defmodule Mudbrick.MetadataTest do
   end
 
   describe "document and instance IDs" do
-    test "are the same when fonts are the same (no images)" do
+    test "are the same when fonts and images are the same" do
       a =
-        new(fonts: %{a: bodoni_regular()})
+        new(fonts: %{a: bodoni_regular()}, images: %{a: flower()})
         |> render()
         |> IO.iodata_to_binary()
 
       b =
-        new(fonts: %{b: bodoni_regular()})
+        new(fonts: %{b: bodoni_regular()}, images: %{b: flower()})
         |> render()
         |> IO.iodata_to_binary()
 
