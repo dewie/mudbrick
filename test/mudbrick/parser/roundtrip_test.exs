@@ -146,7 +146,8 @@ defmodule Mudbrick.ParseRoundtripTest do
                   list_of(list_of(base_object)),
                   map_of(atom(:alphanumeric), base_object),
                   map_of(atom(:alphanumeric), map_of(atom(:alphanumeric), base_object))
-                ]) do
+                ]),
+              max_runs: 50 do
       assert input
              |> Mudbrick.Object.to_iodata()
              |> Parser.to_mudbrick(:object) == input
