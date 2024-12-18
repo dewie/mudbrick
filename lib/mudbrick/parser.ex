@@ -1,21 +1,11 @@
 defmodule Mudbrick.Parser do
-  import NimbleParsec
+  import Mudbrick.Parser.AST
   import Mudbrick.Parser.Helpers
+  import NimbleParsec
 
   alias Mudbrick.ContentStream.{
-    Cm,
-    Do,
-    L,
-    M,
-    QPop,
-    QPush,
-    Re,
-    Rg,
-    Td,
     Tf,
-    TJ,
-    TL,
-    W
+    TJ
   }
 
   def parse(iodata) do
@@ -24,101 +14,25 @@ defmodule Mudbrick.Parser do
       |> IO.iodata_to_binary()
       |> pdf()
 
-    items = Enum.flat_map(parsed_items, &ast_to_mudbrick/1)
+    items = Enum.flat_map(parsed_items, &to_mudbrick/1)
+    page_refs = page_refs(items)
+    font_files = Enum.filter(items, &font?/1)
+    image_files = Enum.filter(items, &image?/1)
+    fonts = decompressed_resources_option(font_files, "F")
+    images = decompressed_resources_option(image_files, "I")
+    compress? = Enum.any?(font_files, & &1.value.compress)
 
-    trailer =
-      Enum.find(items, &match?({:Root, _}, &1))
-
-    {:Root, [catalog_ref]} = trailer
-
-    font_files =
-      Enum.filter(
-        items,
-        &match?(%{value: %{additional_entries: %{Subtype: :OpenType}}}, &1)
-      )
-
-    image_files =
-      Enum.filter(
-        items,
-        &match?(%{value: %{additional_entries: %{Subtype: :Image}}}, &1)
-      )
-
-    catalog = one(items, catalog_ref)
-
-    [page_tree_ref] = catalog.value[:Pages]
-
-    page_tree = one(items, page_tree_ref)
-
-    page_refs = List.flatten(page_tree.value[:Kids])
-
-    {_, fonts} =
-      for font_file <- font_files, reduce: {1, %{}} do
-        {n, fonts} ->
-          if font_file.value.compress do
-            {n + 1,
-             Map.put(
-               fonts,
-               :"F#{n}",
-               Mudbrick.decompress(font_file.value.data) |> IO.iodata_to_binary()
-             )}
-          else
-            {n + 1, Map.put(fonts, :"F#{n}", font_file.value.data)}
-          end
-      end
-
-    {_, images} =
-      for image_file <- image_files, reduce: {1, %{}} do
-        {n, images} ->
-          if image_file.value.compress do
-            {n + 1,
-             Map.put(
-               images,
-               :"I#{n}",
-               Mudbrick.decompress(image_file.value.data) |> IO.iodata_to_binary()
-             )}
-          else
-            {n + 1, Map.put(images, :"I#{n}", image_file.value.data)}
-          end
-      end
-
-    # TODO: be smarter about detecting compression - this requires a font
-    compress? = Enum.any?(font_files, fn f -> f.value.compress end)
-
-    opts = []
+    opts = if compress?, do: [compress: true], else: []
     opts = if map_size(fonts) > 0, do: Keyword.put(opts, :fonts, fonts), else: opts
     opts = if map_size(images) > 0, do: Keyword.put(opts, :images, images), else: opts
-    opts = if compress?, do: Keyword.put(opts, :compress, true), else: opts
 
     for page <- all(items, page_refs), reduce: Mudbrick.new(opts) do
       acc ->
-        [contents_ref] = page.value[:Contents]
-
-        contents = one(items, contents_ref)
-
-        stream = contents.value
-
-        data =
-          if stream.compress do
-            Mudbrick.decompress(stream.data)
-          else
-            stream.data
-          end
-
-        operations =
-          if data == "" do
-            []
-          else
-            %Mudbrick.ContentStream{operations: operations} =
-              to_mudbrick(data, :content_blocks)
-
-            operations
-          end
-
         [_, _, w, h] = page.value[:MediaBox]
 
         Mudbrick.page(acc, size: {w, h})
         |> Mudbrick.ContentStream.update_operations(fn ops ->
-          operations ++ ops
+          operations(items, page) ++ ops
         end)
     end
     |> Mudbrick.Document.finish()
@@ -133,20 +47,10 @@ defmodule Mudbrick.Parser do
   end
 
   defparsec(:boolean, boolean())
+  defparsec(:content_blocks, content_blocks())
   defparsec(:number, number())
   defparsec(:real, real())
   defparsec(:string, string())
-
-  defparsec(
-    :content_blocks,
-    repeat(
-      choice([
-        text_block(),
-        graphics_block()
-      ])
-      |> ignore(optional(whitespace()))
-    )
-  )
 
   defparsec(
     :array,
@@ -242,7 +146,7 @@ defmodule Mudbrick.Parser do
         _line,
         _offset
       ) do
-    dictionary = ast_to_mudbrick({:dictionary, pairs})
+    dictionary = to_mudbrick({:dictionary, pairs})
     bytes_to_read = dictionary[:Length]
 
     {
@@ -295,7 +199,63 @@ defmodule Mudbrick.Parser do
     do:
       iodata
       |> parse(f)
-      |> ast_to_mudbrick()
+      |> to_mudbrick()
+
+  defp decompressed_resources_option(files, prefix) do
+    files
+    |> Enum.with_index(fn file, n ->
+      {
+        :"#{prefix}#{n + 1}",
+        file.value.data
+        |> then(
+          &if file.value.compress do
+            &1 |> Mudbrick.decompress() |> IO.iodata_to_binary()
+          else
+            &1
+          end
+        )
+      }
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp page_refs(items) do
+    {:Root, [catalog_ref]} = Enum.find(items, &match?({:Root, _}, &1))
+    catalog = one(items, catalog_ref)
+    [page_tree_ref] = catalog.value[:Pages]
+    page_tree = one(items, page_tree_ref)
+    List.flatten(page_tree.value[:Kids])
+  end
+
+  defp operations(items, page) do
+    [contents_ref] = page.value[:Contents]
+    contents = one(items, contents_ref)
+    stream = contents.value
+
+    data =
+      if stream.compress do
+        Mudbrick.decompress(stream.data)
+      else
+        stream.data
+      end
+
+    if data == "" do
+      []
+    else
+      %Mudbrick.ContentStream{operations: operations} =
+        to_mudbrick(data, :content_blocks)
+
+      operations
+    end
+  end
+
+  defp font?(item) do
+    match?(%{value: %{additional_entries: %{Subtype: :OpenType}}}, item)
+  end
+
+  defp image?(item) do
+    match?(%{value: %{additional_entries: %{Subtype: :Image}}}, item)
+  end
 
   defp one(items, ref) do
     Enum.find(items, &match?(%{ref: ^ref}, &1))
@@ -309,177 +269,5 @@ defmodule Mudbrick.Parser do
       _ ->
         false
     end)
-  end
-
-  defp ast_to_operator({:cm, [x_scale, x_skew, y_skew, y_scale, x_translate, y_translate]}),
-    do: %Cm{
-      scale: {ast_to_mudbrick(x_scale), ast_to_mudbrick(y_scale)},
-      skew: {ast_to_mudbrick(x_skew), ast_to_mudbrick(y_skew)},
-      position: {ast_to_mudbrick(x_translate), ast_to_mudbrick(y_translate)}
-    }
-
-  defp ast_to_operator({:re, [x, y, w, h]}),
-    do: %Re{
-      lower_left: {ast_to_mudbrick(x), ast_to_mudbrick(y)},
-      dimensions: {ast_to_mudbrick(w), ast_to_mudbrick(h)}
-    }
-
-  defp ast_to_operator({:m, [x, y]}),
-    do: %M{
-      coords: {ast_to_mudbrick(x), ast_to_mudbrick(y)}
-    }
-
-  defp ast_to_operator({:l, [x, y]}),
-    do: %L{
-      coords: {ast_to_mudbrick(x), ast_to_mudbrick(y)}
-    }
-
-  defp ast_to_operator({:RG, [r, g, b]}),
-    do: %Rg{
-      stroking: true,
-      r: ast_to_mudbrick(r),
-      g: ast_to_mudbrick(g),
-      b: ast_to_mudbrick(b)
-    }
-
-  defp ast_to_operator({:Do, [index]}), do: %Do{image_identifier: :"I#{index}"}
-  defp ast_to_operator({:Td, [x, y]}), do: %Td{tx: ast_to_mudbrick(x), ty: ast_to_mudbrick(y)}
-  defp ast_to_operator({:w, number}), do: %W{width: ast_to_mudbrick(number)}
-  defp ast_to_operator({:Tf, [index, size]}), do: %Tf{font_identifier: :"F#{index}", size: size}
-  defp ast_to_operator({:TL, leading}), do: %TL{leading: ast_to_mudbrick(leading)}
-
-  defp ast_to_operator({:rg, components}),
-    do: struct!(Rg, Enum.zip([:r, :g, :b], Enum.map(components, &ast_to_mudbrick/1)))
-
-  defp ast_to_operator({:TJ, glyphs_and_offsets}) do
-    contains_kerns? = Enum.any?(glyphs_and_offsets, &match?({:offset, _}, &1))
-
-    kerned_text =
-      Enum.reduce(glyphs_and_offsets, [], fn
-        {:glyph_id, id}, acc ->
-          [id | acc]
-
-        {:offset, offset}, [last_glyph | acc] ->
-          [{last_glyph, String.to_integer(offset)} | acc]
-      end)
-
-    %TJ{
-      auto_kern: contains_kerns?,
-      kerned_text: Enum.reverse(kerned_text)
-    }
-  end
-
-  defp ast_to_operator({:Q, []}), do: %QPop{}
-  defp ast_to_operator({:q, []}), do: %QPush{}
-
-  defp ast_to_operator({op, []}),
-    do: struct!(Module.safe_concat([Mudbrick.ContentStream, op]), [])
-
-  defp ast_to_mudbrick([{block_type, _operations} | _rest] = input)
-       when block_type in [:text_block, :graphics_block] do
-    mudbrick_operations =
-      Enum.flat_map(input, fn {_block_type, operations} ->
-        Enum.map(operations, &ast_to_operator/1)
-      end)
-
-    %Mudbrick.ContentStream{
-      page: nil,
-      operations: Enum.reverse(mudbrick_operations)
-    }
-  end
-
-  defp ast_to_mudbrick(x) when is_tuple(x), do: ast_to_mudbrick([x])
-  defp ast_to_mudbrick(array: a), do: Enum.map(a, &ast_to_mudbrick/1)
-  defp ast_to_mudbrick(boolean: b), do: b
-  defp ast_to_mudbrick(integer: [n]), do: String.to_integer(n)
-  defp ast_to_mudbrick(integer: ["-", n]), do: -String.to_integer(n)
-  defp ast_to_mudbrick(real: [n, ".", d]), do: String.to_float("#{n}.#{d}")
-  defp ast_to_mudbrick(real: ["-" | rest]), do: -ast_to_mudbrick(real: rest)
-  defp ast_to_mudbrick(string: [s]), do: s
-  defp ast_to_mudbrick(string: []), do: ""
-  defp ast_to_mudbrick(name: s), do: String.to_atom(s)
-
-  defp ast_to_mudbrick(pair: [k, v]) do
-    {ast_to_mudbrick(k), ast_to_mudbrick(v)}
-  end
-
-  defp ast_to_mudbrick(dictionary: []), do: %{}
-
-  defp ast_to_mudbrick(dictionary: pairs) do
-    for {:pair, [k, v]} <- pairs, into: %{} do
-      {ast_to_mudbrick(k), ast_to_mudbrick(v)}
-    end
-  end
-
-  defp ast_to_mudbrick([]), do: []
-
-  defp ast_to_mudbrick([[{:indirect_object, _} | _rest] = unwrapped]) do
-    ast_to_mudbrick(unwrapped)
-  end
-
-  defp ast_to_mudbrick([
-         {:indirect_object,
-          [
-            ref_number,
-            _version,
-            {:dictionary, pairs}
-          ]}
-         | rest
-       ]) do
-    [
-      Mudbrick.Indirect.Ref.new(ref_number)
-      |> Mudbrick.Indirect.Object.new(
-        pairs
-        |> Enum.map(&ast_to_mudbrick/1)
-        |> Enum.into(%{})
-      )
-      | ast_to_mudbrick(rest)
-    ]
-  end
-
-  defp ast_to_mudbrick([
-         {:indirect_object,
-          [
-            ref_number,
-            _version,
-            {:dictionary, pairs},
-            "stream",
-            stream
-          ]}
-         | rest
-       ]) do
-    additional_entries =
-      pairs
-      |> Enum.map(&ast_to_mudbrick/1)
-      |> Map.new()
-      |> Map.drop([:Length])
-
-    [
-      Mudbrick.Indirect.Ref.new(ref_number)
-      |> Mudbrick.Indirect.Object.new(
-        Mudbrick.Stream.new(
-          compress: additional_entries[:Filter] == [:FlateDecode],
-          data: stream,
-          additional_entries: additional_entries
-        )
-      )
-      | ast_to_mudbrick(rest)
-    ]
-  end
-
-  defp ast_to_mudbrick([
-         {:indirect_reference,
-          [
-            ref_number,
-            _version,
-            "R"
-          ]}
-         | _rest
-       ]) do
-    [
-      ref_number
-      |> String.to_integer()
-      |> Mudbrick.Indirect.Ref.new()
-    ]
   end
 end

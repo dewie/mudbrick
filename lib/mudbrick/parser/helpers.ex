@@ -193,6 +193,16 @@ defmodule Mudbrick.Parser.Helpers do
     ignore(string("Q")) |> tag(:Q)
   end
 
+  def content_blocks do
+    repeat(
+      choice([
+        text_block(),
+        graphics_block()
+      ])
+      |> ignore(optional(whitespace()))
+    )
+  end
+
   def graphics_block do
     q_push()
     |> ignore(whitespace())
