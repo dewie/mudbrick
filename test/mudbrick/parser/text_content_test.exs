@@ -33,35 +33,7 @@ defmodule Mudbrick.ParseTextContentTest do
       |> IO.iodata_to_binary()
       |> Parser.parse(:stream)
 
-    %{doc: doc, stream: stream}
-  end
-
-  test "can extract text from a compressed document" do
-    doc =
-      new(compress: true, fonts: %{bodoni: bodoni_regular(), franklin: franklin_regular()})
-      |> page()
-      |> text(
-        {
-          "hello, world!",
-          underline: [width: 1]
-        },
-        font: :bodoni
-      )
-      |> text("hello in another font", font: :franklin)
-      |> Mudbrick.Document.finish()
-
-    assert doc
-           |> Mudbrick.render()
-           |> Parser.extract_text() == [
-             "hello, world!",
-             "hello in another font"
-           ]
-  end
-
-  test "can extract text from a single page with multiple fonts", %{doc: doc} do
-    assert doc
-           |> Mudbrick.render()
-           |> Parser.extract_text() == ["hello, world!", "hello in another font"]
+    %{stream: stream}
   end
 
   test "can turn text content to Mudbrick", %{stream: stream} do

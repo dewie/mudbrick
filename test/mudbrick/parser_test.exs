@@ -1,5 +1,6 @@
 defmodule Mudbrick.ParserTest do
   use ExUnit.Case, async: true
+  doctest Mudbrick.Parser
 
   alias Mudbrick.Indirect
   alias Mudbrick.Parser

@@ -1,4 +1,10 @@
 defmodule Mudbrick.Parser do
+  @moduledoc """
+  Parse documents generated with Mudbrick back into Elixir. Useful for testing.
+
+  Eventually this module may support documents generated with other PDF processors.
+  """
+
   import Mudbrick.Parser.AST
   import Mudbrick.Parser.Helpers
   import NimbleParsec
@@ -8,6 +14,9 @@ defmodule Mudbrick.Parser do
     TJ
   }
 
+  @doc """
+  Parse Mudbrick-generated `iodata` into a Mudbrick document.
+  """
   def parse(iodata) do
     {:ok, parsed_items, _rest, %{}, _, _} =
       iodata
@@ -38,6 +47,10 @@ defmodule Mudbrick.Parser do
     |> Mudbrick.Document.finish()
   end
 
+  @doc """
+  Parse a section of a Mudbrick-generated PDF with a specific parsing function.
+  Mostly useful for debugging this parser.
+  """
   def parse(iodata, f) do
     case iodata
          |> IO.iodata_to_binary()
@@ -46,12 +59,18 @@ defmodule Mudbrick.Parser do
     end
   end
 
+  @doc false
   defparsec(:boolean, boolean())
+  @doc false
   defparsec(:content_blocks, content_blocks())
+  @doc false
   defparsec(:number, number())
+  @doc false
   defparsec(:real, real())
+  @doc false
   defparsec(:string, string())
 
+  @doc false
   defparsec(
     :array,
     ignore(ascii_char([?[]))
@@ -64,6 +83,7 @@ defmodule Mudbrick.Parser do
     |> tag(:array)
   )
 
+  @doc false
   defparsec(
     :dictionary,
     ignore(string("<<"))
@@ -79,6 +99,7 @@ defmodule Mudbrick.Parser do
     |> tag(:dictionary)
   )
 
+  @doc false
   defparsec(
     :object,
     choice([
@@ -93,6 +114,7 @@ defmodule Mudbrick.Parser do
     ])
   )
 
+  @doc false
   defparsec(
     :stream,
     parsec(:dictionary)
@@ -104,6 +126,7 @@ defmodule Mudbrick.Parser do
     |> ignore(string("endstream"))
   )
 
+  @doc false
   defparsec(
     :indirect_object,
     integer(min: 1)
@@ -124,6 +147,7 @@ defmodule Mudbrick.Parser do
     |> tag(:indirect_object)
   )
 
+  @doc false
   defparsec(
     :pdf,
     ignore(version())
@@ -136,6 +160,7 @@ defmodule Mudbrick.Parser do
     |> parsec(:dictionary)
   )
 
+  @doc false
   def stream_contents(
         rest,
         [
@@ -156,6 +181,35 @@ defmodule Mudbrick.Parser do
     }
   end
 
+  @doc """
+  Extract text content from a Mudbrick-generated PDF. Will map glyphs back to
+  their original characters.
+
+  ## With compression
+
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick
+      ...> new(compress: true, fonts: %{bodoni: bodoni_regular(), franklin: franklin_regular()})
+      ...> |> page()
+      ...> |> text({"hello, world!", underline: [width: 1]}, font: :bodoni)
+      ...> |> text("hello in another font", font: :franklin)
+      ...> |> Mudbrick.render()
+      ...> |> Mudbrick.Parser.extract_text()
+      [ "hello, world!", "hello in another font" ]
+
+  ## Without compression
+
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick
+      ...> new(fonts: %{bodoni: bodoni_regular(), franklin: franklin_regular()})
+      ...> |> page()
+      ...> |> text({"hello, world!", underline: [width: 1]}, font: :bodoni)
+      ...> |> text("hello in another font", font: :franklin)
+      ...> |> Mudbrick.render()
+      ...> |> Mudbrick.Parser.extract_text()
+      [ "hello, world!", "hello in another font" ]
+
+  """
   def extract_text(iodata) do
     alias Mudbrick.ContentStream.{Tf, TJ}
 
@@ -195,6 +249,7 @@ defmodule Mudbrick.Parser do
     Enum.reverse(text_items)
   end
 
+  @doc false
   def to_mudbrick(iodata, f),
     do:
       iodata
