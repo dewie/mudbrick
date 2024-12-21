@@ -8,6 +8,7 @@ defmodule Mudbrick.MixProject do
       app: :mudbrick,
       deps: deps(),
       description: "PDF-2.0 generator",
+      dialyzer: dialyzer(),
       elixir: "~> 1.17",
       package: package(),
       start_permanent: Mix.env() == :prod,
@@ -43,6 +44,12 @@ defmodule Mudbrick.MixProject do
       {:nimble_parsec, "~> 1.4", runtime: false, override: true},
       {:opentype, "~> 0.5"},
       {:stream_data, "~> 1.0", only: [:dev, :test]}
+    ]
+  end
+
+  defp dialyzer do
+    [
+      plt_add_apps: [:nimble_parsec]
     ]
   end
 
