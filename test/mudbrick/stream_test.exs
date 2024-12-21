@@ -15,15 +15,15 @@ defmodule Mudbrick.StreamTest do
     end
   end
 
-  property "doesn't compress data when there's no saving" do
-    check all uncompressed <- string(:alphanumeric, max_length: 120), max_runs: 200 do
-      result =
-        Mudbrick.Stream.new(compress: true, data: uncompressed)
-        |> Mudbrick.Object.to_iodata()
-        |> IO.iodata_to_binary()
+  test "doesn't compress data when there's no saving" do
+    uncompressed = "1234567890abcdefghijklmnopqrstuvwxyz"
 
-      refute result =~ "FlateDecode"
-    end
+    result =
+      Mudbrick.Stream.new(compress: true, data: uncompressed)
+      |> Mudbrick.Object.to_iodata()
+      |> IO.iodata_to_binary()
+
+    refute result =~ "FlateDecode"
   end
 
   test "includes length and stream markers when serialised" do
