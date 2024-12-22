@@ -1,4 +1,6 @@
 defmodule Mudbrick.ContentStream.Cm do
+  @moduledoc false
+
   @type option ::
           {:position, Mudbrick.coords()}
           | {:scale, Mudbrick.coords()}
@@ -16,7 +18,6 @@ defmodule Mudbrick.ContentStream.Cm do
             skew: {0, 0},
             position: {0, 0}
 
-  @doc false
   @spec new(options()) :: t()
   def new(opts) do
     struct!(__MODULE__, opts)

@@ -1,4 +1,6 @@
 defmodule Mudbrick.Parser.AST do
+  @moduledoc false
+
   alias Mudbrick.ContentStream.{
     Cm,
     Do,

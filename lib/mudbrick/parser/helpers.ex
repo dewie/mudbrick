@@ -1,4 +1,6 @@
 defmodule Mudbrick.Parser.Helpers do
+  @moduledoc false
+
   import NimbleParsec
 
   def eol, do: string("\n")
