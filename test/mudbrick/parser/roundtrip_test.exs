@@ -4,15 +4,6 @@ defmodule Mudbrick.ParseRoundtripTest do
 
   alias Mudbrick.Parser
 
-  test "minimal PDF" do
-    input = Mudbrick.new()
-
-    assert input
-           |> Mudbrick.render()
-           |> IO.iodata_to_binary()
-           |> Parser.parse() == input
-  end
-
   test "with an image" do
     input =
       Mudbrick.new(images: %{I1: Mudbrick.TestHelper.flower()})

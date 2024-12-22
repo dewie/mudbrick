@@ -16,6 +16,14 @@ defmodule Mudbrick.Parser do
 
   @doc """
   Parse Mudbrick-generated `iodata` into a `Mudbrick.Document`.
+
+  ## Minimal round-trip
+
+      iex> doc = Mudbrick.new()
+      ...> doc
+      ...> |> Mudbrick.render()
+      ...> |> Mudbrick.Parser.parse()
+      doc
   """
   @spec parse(iodata()) :: Mudbrick.Document.t()
   def parse(iodata) do
