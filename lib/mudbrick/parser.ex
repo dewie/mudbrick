@@ -15,8 +15,9 @@ defmodule Mudbrick.Parser do
   }
 
   @doc """
-  Parse Mudbrick-generated `iodata` into a Mudbrick document.
+  Parse Mudbrick-generated `iodata` into a `Mudbrick.Document`.
   """
+  @spec parse(iodata()) :: Mudbrick.Document.t()
   def parse(iodata) do
     {:ok, parsed_items, _rest, %{}, _, _} =
       iodata
@@ -48,15 +49,85 @@ defmodule Mudbrick.Parser do
   end
 
   @doc """
-  Parse a section of a Mudbrick-generated PDF with a specific parsing function.
+  Parse a section of a Mudbrick-generated PDF with a named parsing function.
   Mostly useful for debugging this parser.
   """
+  @spec parse(iodata(), atom()) :: term()
   def parse(iodata, f) do
     case iodata
          |> IO.iodata_to_binary()
          |> then(&apply(__MODULE__, f, [&1])) do
       {:ok, resp, _, %{}, _, _} -> resp
     end
+  end
+
+  @doc """
+  Extract text content from a Mudbrick-generated PDF. Will map glyphs back to
+  their original characters.
+
+  ## With compression
+
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick
+      ...> new(compress: true, fonts: %{bodoni: bodoni_regular(), franklin: franklin_regular()})
+      ...> |> page()
+      ...> |> text({"hello, world!", underline: [width: 1]}, font: :bodoni)
+      ...> |> text("hello in another font", font: :franklin)
+      ...> |> Mudbrick.render()
+      ...> |> Mudbrick.Parser.extract_text()
+      [ "hello, world!", "hello in another font" ]
+
+  ## Without compression
+
+      iex> import Mudbrick.TestHelper
+      ...> import Mudbrick
+      ...> new(fonts: %{bodoni: bodoni_regular(), franklin: franklin_regular()})
+      ...> |> page()
+      ...> |> text({"hello, world!", underline: [width: 1]}, font: :bodoni)
+      ...> |> text("hello in another font", font: :franklin)
+      ...> |> Mudbrick.render()
+      ...> |> Mudbrick.Parser.extract_text()
+      [ "hello, world!", "hello in another font" ]
+
+  """
+  @spec extract_text(iodata()) :: [String.t()]
+  def extract_text(iodata) do
+    alias Mudbrick.ContentStream.{Tf, TJ}
+
+    doc = parse(iodata)
+
+    content_stream =
+      Mudbrick.Document.find_object(doc, &match?(%Mudbrick.ContentStream{}, &1))
+
+    page_tree = Mudbrick.Document.root_page_tree(doc)
+    fonts = page_tree.value.fonts
+
+    {text_items, _last_found_font} =
+      content_stream.value.operations
+      |> List.foldr({[], nil}, fn
+        %Tf{font_identifier: font_identifier}, {text_items, _current_font} ->
+          {text_items, Map.fetch!(fonts, font_identifier).value.parsed}
+
+        %TJ{kerned_text: kerned_text}, {text_items, current_font} ->
+          text =
+            kerned_text
+            |> Enum.map(fn
+              {hex_glyph, _kern} -> hex_glyph
+              hex_glyph -> hex_glyph
+            end)
+            |> Enum.map(fn hex_glyph ->
+              {decimal_glyph, _} = Integer.parse(hex_glyph, 16)
+              Map.fetch!(current_font.gid2cid, decimal_glyph)
+            end)
+            |> to_string()
+
+          {[text | text_items], current_font}
+
+        _operation, {text_items, current_font} ->
+          {text_items, current_font}
+      end)
+
+    Enum.reverse(text_items)
   end
 
   @doc false
@@ -179,74 +250,6 @@ defmodule Mudbrick.Parser do
       [binary_slice(rest, 0, bytes_to_read) | results],
       context
     }
-  end
-
-  @doc """
-  Extract text content from a Mudbrick-generated PDF. Will map glyphs back to
-  their original characters.
-
-  ## With compression
-
-      iex> import Mudbrick.TestHelper
-      ...> import Mudbrick
-      ...> new(compress: true, fonts: %{bodoni: bodoni_regular(), franklin: franklin_regular()})
-      ...> |> page()
-      ...> |> text({"hello, world!", underline: [width: 1]}, font: :bodoni)
-      ...> |> text("hello in another font", font: :franklin)
-      ...> |> Mudbrick.render()
-      ...> |> Mudbrick.Parser.extract_text()
-      [ "hello, world!", "hello in another font" ]
-
-  ## Without compression
-
-      iex> import Mudbrick.TestHelper
-      ...> import Mudbrick
-      ...> new(fonts: %{bodoni: bodoni_regular(), franklin: franklin_regular()})
-      ...> |> page()
-      ...> |> text({"hello, world!", underline: [width: 1]}, font: :bodoni)
-      ...> |> text("hello in another font", font: :franklin)
-      ...> |> Mudbrick.render()
-      ...> |> Mudbrick.Parser.extract_text()
-      [ "hello, world!", "hello in another font" ]
-
-  """
-  def extract_text(iodata) do
-    alias Mudbrick.ContentStream.{Tf, TJ}
-
-    doc = parse(iodata)
-
-    content_stream =
-      Mudbrick.Document.find_object(doc, &match?(%Mudbrick.ContentStream{}, &1))
-
-    page_tree = Mudbrick.Document.root_page_tree(doc)
-    fonts = page_tree.value.fonts
-
-    {text_items, _last_found_font} =
-      content_stream.value.operations
-      |> List.foldr({[], nil}, fn
-        %Tf{font_identifier: font_identifier}, {text_items, _current_font} ->
-          {text_items, Map.fetch!(fonts, font_identifier).value.parsed}
-
-        %TJ{kerned_text: kerned_text}, {text_items, current_font} ->
-          text =
-            kerned_text
-            |> Enum.map(fn
-              {hex_glyph, _kern} -> hex_glyph
-              hex_glyph -> hex_glyph
-            end)
-            |> Enum.map(fn hex_glyph ->
-              {decimal_glyph, _} = Integer.parse(hex_glyph, 16)
-              Map.fetch!(current_font.gid2cid, decimal_glyph)
-            end)
-            |> to_string()
-
-          {[text | text_items], current_font}
-
-        _operation, {text_items, current_font} ->
-          {text_items, current_font}
-      end)
-
-    Enum.reverse(text_items)
   end
 
   @doc false
