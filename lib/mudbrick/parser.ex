@@ -40,7 +40,7 @@ defmodule Mudbrick.Parser do
     images = decompressed_resources_option(image_files, "I")
     compress? = Enum.any?(items, &match?(%{value: %{compress: true}}, &1))
 
-    opts = if compress?, do: [compress: true], else: []
+    opts = [compress: compress?]
     opts = if map_size(fonts) > 0, do: Keyword.put(opts, :fonts, fonts), else: opts
     opts = if map_size(images) > 0, do: Keyword.put(opts, :images, images), else: opts
 
