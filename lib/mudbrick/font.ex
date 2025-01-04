@@ -56,8 +56,10 @@ defmodule Mudbrick.Font do
 
   @doc false
   def add_objects(doc, fonts) do
+    sorted_fonts = fonts |> Enum.into([]) |> Enum.sort()
+
     {doc, font_objects, _id} =
-      for {human_name, file_contents} <- fonts, reduce: {doc, %{}, 0} do
+      for {human_name, file_contents} <- sorted_fonts, reduce: {doc, %{}, 0} do
         {doc, font_objects, id} ->
           font_opts =
             [resource_identifier: :"F#{id + 1}"]
