@@ -2,40 +2,47 @@ defmodule Mudbrick.ParseRoundtripTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
+  import Mudbrick
+  import Mudbrick.TestHelper
+
   alias Mudbrick.Parser
 
   test "with an image" do
     input =
-      Mudbrick.new(images: %{I1: Mudbrick.TestHelper.flower()})
-      |> Mudbrick.page()
-      |> Mudbrick.image(
-        :I1,
+      new(images: %{flower: flower()})
+      |> page()
+      |> image(
+        :flower,
         scale: {100, 100},
         position: {0, 0}
       )
-      |> Mudbrick.Document.finish()
+      |> render()
 
-    assert input
-           |> Mudbrick.render()
-           |> IO.iodata_to_binary()
-           |> Parser.parse() == input
+    parsed =
+      input
+      |> IO.iodata_to_binary()
+      |> Parser.parse()
+      |> render()
+
+    assert parsed == input
   end
 
   test "custom page size" do
     input =
-      Mudbrick.new()
-      |> Mudbrick.page(size: {400, 100})
-      |> Mudbrick.Document.finish()
+      new()
+      |> page(size: {400, 100})
+      |> render()
 
-    assert input
-           |> Mudbrick.render()
-           |> IO.iodata_to_binary()
-           |> Parser.parse() == input
+    parsed =
+      input
+      |> IO.iodata_to_binary()
+      |> Parser.parse()
+      |> render()
+
+    assert parsed == input
   end
 
   test "with rectangle" do
-    import Mudbrick
-
     input =
       new()
       |> page(size: {100, 100})
@@ -43,27 +50,23 @@ defmodule Mudbrick.ParseRoundtripTest do
         Mudbrick.Path.rectangle(path, lower_left: {0, 0}, dimensions: {50, 60})
       end)
       |> render()
-      |> IO.iodata_to_binary()
 
     parsed =
       input
+      |> IO.iodata_to_binary()
       |> Parser.parse()
       |> render()
-      |> IO.iodata_to_binary()
 
     assert parsed == input
   end
 
   test "with underline" do
-    import Mudbrick.TestHelper
-    import Mudbrick
-
     input =
-      new(fonts: %{bodoni: bodoni_bold()})
+      new(fonts: %{poop: bodoni_bold()})
       |> page(size: {400, 100})
       |> text(
         [{"Warning\n", underline: [width: 0.5]}],
-        font: :bodoni,
+        font: :poop,
         font_size: 70,
         position: {7, 30}
       )
@@ -79,62 +82,48 @@ defmodule Mudbrick.ParseRoundtripTest do
   end
 
   test "PDF with text" do
-    alias Mudbrick.TestHelper
-    import Mudbrick
-
     input =
       new(
         fonts: %{
-          bodoni: TestHelper.bodoni_regular(),
-          franklin: TestHelper.franklin_regular()
+          bodoni: bodoni_regular(),
+          franklin: franklin_regular()
         }
       )
       |> page()
       |> text("hello, bodoni", font: :bodoni)
       |> text("hello, franklin", font: :franklin)
-      |> Mudbrick.Document.finish()
+      |> render()
 
-    binary =
+    parsed =
       input
-      |> Mudbrick.render()
       |> IO.iodata_to_binary()
+      |> Parser.parse()
+      |> render()
 
-    assert binary ==
-             binary
-             |> Parser.parse()
-             |> Mudbrick.render()
-             |> IO.iodata_to_binary()
+    assert parsed == input
   end
 
   test "PDF with text, compressed" do
-    alias Mudbrick.TestHelper
-    import Mudbrick
-
     input =
       new(
         compress: true,
         fonts: %{
-          bodoni: TestHelper.bodoni_regular(),
-          franklin: TestHelper.franklin_regular()
+          bodoni: bodoni_regular(),
+          franklin: franklin_regular()
         }
       )
       |> page()
       |> text("hello, bodoni", font: :bodoni)
       |> text("hello, franklin", font: :franklin)
-      |> Mudbrick.Document.finish()
+      |> render()
 
-    binary =
+    parsed =
       input
-      |> Mudbrick.render()
       |> IO.iodata_to_binary()
-
-    parsed_binary =
-      binary
       |> Parser.parse()
       |> Mudbrick.render()
-      |> IO.iodata_to_binary()
 
-    assert binary == parsed_binary
+    assert parsed == input
   end
 
   property "objects" do
