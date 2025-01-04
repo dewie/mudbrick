@@ -94,7 +94,7 @@ defmodule Mudbrick.Metadata do
       :sha256,
       [
         Application.spec(:mudbrick)[:vsn],
-        inspect(opts),
+        hashable_opts(opts),
         fonts,
         images
       ]
@@ -110,5 +110,13 @@ defmodule Mudbrick.Metadata do
       {resources, opts} ->
         {Map.values(resources) |> Enum.sort(), opts}
     end
+  end
+
+  defp hashable_opts(opts) do
+    compress = Keyword.get(opts, :compress, false)
+
+    opts
+    |> Keyword.put(:compress, compress)
+    |> inspect()
   end
 end
