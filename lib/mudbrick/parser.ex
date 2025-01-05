@@ -33,6 +33,7 @@ defmodule Mudbrick.Parser do
       |> pdf()
 
     items = Enum.flat_map(parsed_items, &to_mudbrick/1)
+
     page_refs = page_refs(items)
     font_files = Enum.filter(items, &font?/1)
     image_files = Enum.filter(items, &image?/1)
@@ -40,7 +41,23 @@ defmodule Mudbrick.Parser do
     images = decompressed_resources_option(image_files, "I")
     compress? = Enum.any?(items, &match?(%{value: %{compress: true}}, &1))
 
-    opts = [compress: compress?]
+    opts =
+      [compress: compress?] ++
+        case Enum.find(items, &metadata?/1) do
+          nil ->
+            []
+
+          metadata ->
+            xml =
+              if metadata.value.compress do
+                Mudbrick.decompress(metadata.value.data)
+              else
+                metadata.value.data
+              end
+
+            metadata(xml)
+        end
+
     opts = if map_size(fonts) > 0, do: Keyword.put(opts, :fonts, fonts), else: opts
     opts = if map_size(images) > 0, do: Keyword.put(opts, :images, images), else: opts
 
@@ -136,6 +153,64 @@ defmodule Mudbrick.Parser do
       end)
 
     Enum.reverse(text_items)
+  end
+
+  def metadata(xml_iodata) do
+    {doc, _rest} =
+      xml_iodata
+      |> IO.iodata_to_binary()
+      |> String.replace(~r/^<\?xpacket.*\?>\n/, "")
+      |> String.to_charlist()
+      |> :xmerl_scan.string()
+
+    [
+      create_date: extract_metadata_field(doc, "xmp:CreateDate"),
+      creator_tool: extract_metadata_field(doc, "xmp:CreatorTool"),
+      creators: creators(doc),
+      modify_date: extract_metadata_field(doc, "xmp:ModifyDate"),
+      producer: extract_metadata_field(doc, "pdf:Producer"),
+      title: extract_metadata_field(doc, "dc:title/rdf:Alt/rdf:li")
+    ]
+  end
+
+  defp creators(doc) do
+    :xmerl_xpath.string(~c"//dc:creator//rdf:li", doc)
+    |> Enum.map(fn
+      {:xmlElement, :"rdf:li", :"rdf:li", {~c"rdf", ~c"li"}, _ns, _attributes, _n, [], [], [],
+       _path, :undeclared} ->
+        ""
+
+      {:xmlElement, :"rdf:li", :"rdf:li", {~c"rdf", ~c"li"}, _ns, _attributes, _n, [],
+       [
+         {:xmlText, _more_attributes, _1, [], text, :text}
+       ], [], _path, :undeclared} ->
+        text |> to_string() |> String.trim()
+    end)
+  end
+
+  defp extract_metadata_field(doc, field) when field in ~w(xmp:CreateDate xmp:ModifyDate) do
+    case extract_meta(doc, field)
+         |> DateTime.from_iso8601() do
+      {:ok, datetime, _offset} -> datetime
+      {:error, _} -> ""
+    end
+  end
+
+  defp extract_metadata_field(doc, field) do
+    extract_meta(doc, field)
+  end
+
+  defp extract_meta(doc, field) do
+    :xmerl_xpath.string(~c"//#{field}/text()", doc) |> extract_meta_text()
+  end
+
+  defp extract_meta_text([]), do: ""
+
+  defp extract_meta_text([{:xmlText, _attributes, 1, [], text, :text}]),
+    do: text |> to_string() |> String.trim()
+
+  defp extract_meta_text([{:xmlText, _attributes, 1, [], text, :text} | _]) do
+    text |> to_string() |> String.trim()
   end
 
   @doc false
@@ -313,6 +388,10 @@ defmodule Mudbrick.Parser do
 
       operations
     end
+  end
+
+  defp metadata?(item) do
+    match?(%{value: %{additional_entries: %{Type: :Metadata}}}, item)
   end
 
   defp font?(item) do

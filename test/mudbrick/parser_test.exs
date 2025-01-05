@@ -1,9 +1,33 @@
 defmodule Mudbrick.ParserTest do
   use ExUnit.Case, async: true
+  use ExUnitProperties
+
   doctest Mudbrick.Parser
 
   alias Mudbrick.Indirect
   alias Mudbrick.Parser
+
+  import Mudbrick.TestHelper
+
+  property "metadata" do
+    check all options <- metadata_options(),
+              metadata <- constant(Mudbrick.Metadata.render(options)),
+              max_runs: 25 do
+      expected_options =
+        [
+          create_date: "",
+          creators: [],
+          creator_tool: "Mudbrick",
+          modify_date: "",
+          producer: "Mudbrick",
+          title: ""
+        ]
+        |> Keyword.merge(options, fn _key, _default, provided -> provided end)
+        |> Enum.sort()
+
+      assert Parser.metadata(metadata) == expected_options
+    end
+  end
 
   describe "streams" do
     test "compressed" do

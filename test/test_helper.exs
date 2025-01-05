@@ -5,6 +5,7 @@ defmodule Mudbrick.TestHelper do
   @flower Path.join(__DIR__, "fixtures/JPEG_example_flower.jpg") |> File.read!()
   @example_png Path.join(__DIR__, "fixtures/Example.png") |> File.read!()
 
+  use ExUnitProperties
   alias Mudbrick.Page
 
   def invalid_colour do
@@ -97,6 +98,75 @@ defmodule Mudbrick.TestHelper do
     tap(chain, fn rendered ->
       File.write("test.pdf", rendered)
     end)
+  end
+
+  def fonts do
+    optional_map(%{
+      bodoni_bold: constant(bodoni_bold()),
+      bodoni_regular: constant(bodoni_regular()),
+      franklin_regular: constant(franklin_regular())
+    })
+  end
+
+  def images do
+    optional_map(%{
+      flower: constant(flower())
+    })
+  end
+
+  def datetime do
+    gen all i <- integer(0..143_256_036_886_856) do
+      DateTime.from_unix!(i, 1024)
+    end
+  end
+
+  def metadata_option do
+    gen all producer <- string(:alphanumeric),
+            creator_tool <- string(:alphanumeric),
+            create_date <- datetime(),
+            modify_date <- datetime(),
+            title <- string(:alphanumeric),
+            creators <- list_of(string(:alphanumeric)),
+            option <-
+              member_of(
+                producer: producer,
+                creator_tool: creator_tool,
+                create_date: create_date,
+                modify_date: modify_date,
+                title: title,
+                creators: creators
+              ) do
+      option
+    end
+  end
+
+  def metadata_options do
+    gen all options <- list_of(metadata_option()) do
+      options |> Map.new() |> Enum.into([])
+    end
+  end
+
+  def document_option do
+    gen all fonts <- fonts(),
+            images <- images(),
+            compress <- boolean(),
+            option <-
+              one_of([
+                member_of(
+                  compress: compress,
+                  fonts: fonts,
+                  images: images
+                ),
+                metadata_option()
+              ]) do
+      option
+    end
+  end
+
+  def document_options do
+    gen all options <- list_of(document_option()) do
+      options |> Map.new() |> Enum.into([])
+    end
   end
 end
 

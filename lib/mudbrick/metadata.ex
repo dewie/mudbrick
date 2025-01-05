@@ -2,8 +2,9 @@ defmodule Mudbrick.Metadata do
   @moduledoc false
 
   def render(opts) do
+    opts = normalised_opts(opts)
     document_id = id(opts)
-    instance_id = id([{:x, :y} | opts])
+    instance_id = id([{:generate, :instance_id} | opts])
 
     [
       """
@@ -13,14 +14,14 @@ defmodule Mudbrick.Metadata do
           <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
             <pdf:Producer>\
       """,
-      Keyword.get(opts, :producer, "Mudbrick"),
+      Keyword.fetch!(opts, :producer),
       """
       </pdf:Producer>
           </rdf:Description>
           <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
             <xmp:CreatorTool>\
       """,
-      Keyword.get(opts, :creator_tool, "Mudbrick"),
+      Keyword.fetch!(opts, :creator_tool),
       """
       </xmp:CreatorTool>
       """,
@@ -34,7 +35,7 @@ defmodule Mudbrick.Metadata do
               <rdf:Alt>
                 <rdf:li xml:lang="x-default">\
       """,
-      Keyword.get(opts, :title, ""),
+      Keyword.fetch!(opts, :title),
       """
       </rdf:li>
               </rdf:Alt>
@@ -81,6 +82,7 @@ defmodule Mudbrick.Metadata do
   end
 
   defp date(_, nil), do: ""
+  defp date(_, ""), do: ""
 
   defp date(element_name, date) do
     ["<xmp:", element_name, ">", DateTime.to_iso8601(date), "</xmp:", element_name, ">"]
@@ -94,7 +96,7 @@ defmodule Mudbrick.Metadata do
       :sha256,
       [
         Application.spec(:mudbrick)[:vsn],
-        hashable_opts(opts),
+        inspect(opts),
         fonts,
         images
       ]
@@ -112,11 +114,29 @@ defmodule Mudbrick.Metadata do
     end
   end
 
-  defp hashable_opts(opts) do
+  defp normalised_opts(opts) do
     compress = Keyword.get(opts, :compress, false)
+    create_date = empty_string_opt(opts, :create_date)
+    creators = empty_string_opt(opts, :creators, [])
+    creator_tool = Keyword.get(opts, :creator_tool, "Mudbrick")
+    modify_date = empty_string_opt(opts, :modify_date)
+    producer = Keyword.get(opts, :producer, "Mudbrick")
+    title = empty_string_opt(opts, :title, "")
 
     opts
     |> Keyword.put(:compress, compress)
-    |> inspect()
+    |> Keyword.put(:create_date, create_date)
+    |> Keyword.put(:creators, creators)
+    |> Keyword.put(:creator_tool, creator_tool)
+    |> Keyword.put(:modify_date, modify_date)
+    |> Keyword.put(:producer, producer)
+    |> Keyword.put(:title, title)
+  end
+
+  defp empty_string_opt(opts, key, default \\ nil) do
+    case Keyword.get(opts, key, default) do
+      "" -> default
+      otherwise -> otherwise
+    end
   end
 end
