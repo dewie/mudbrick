@@ -115,22 +115,15 @@ defmodule Mudbrick.Metadata do
   end
 
   defp normalised_opts(opts) do
-    compress = Keyword.get(opts, :compress, false)
-    create_date = empty_string_opt(opts, :create_date)
-    creators = empty_string_opt(opts, :creators, [])
-    creator_tool = Keyword.get(opts, :creator_tool, "Mudbrick")
-    modify_date = empty_string_opt(opts, :modify_date)
-    producer = Keyword.get(opts, :producer, "Mudbrick")
-    title = empty_string_opt(opts, :title, "")
-
-    opts
-    |> Keyword.put(:compress, compress)
-    |> Keyword.put(:create_date, create_date)
-    |> Keyword.put(:creators, creators)
-    |> Keyword.put(:creator_tool, creator_tool)
-    |> Keyword.put(:modify_date, modify_date)
-    |> Keyword.put(:producer, producer)
-    |> Keyword.put(:title, title)
+    Keyword.merge(opts,
+      compress: Keyword.get(opts, :compress, false),
+      create_date: empty_string_opt(opts, :create_date),
+      creators: empty_string_opt(opts, :creators, []),
+      creator_tool: Keyword.get(opts, :creator_tool, "Mudbrick"),
+      modify_date: empty_string_opt(opts, :modify_date),
+      producer: Keyword.get(opts, :producer, "Mudbrick"),
+      title: empty_string_opt(opts, :title, "")
+    )
   end
 
   defp empty_string_opt(opts, key, default \\ nil) do
