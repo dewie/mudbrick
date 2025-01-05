@@ -8,10 +8,20 @@ defmodule Mudbrick.ParseRoundtripTest do
   alias Mudbrick.Parser
 
   property "documents" do
-    check all document_options <- list_of(document_option()), max_runs: 20 do
-      input =
+    check all document_options <- document_options(),
+              pages_options <- list_of(page_options()),
+              max_runs: 20 do
+      doc =
         document_options
         |> new()
+
+      pages_options
+      |> Enum.reduce(doc, fn options, context ->
+        page(context, options)
+      end)
+
+      input =
+        doc
         |> render()
 
       parsed =

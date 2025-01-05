@@ -168,6 +168,13 @@ defmodule Mudbrick.TestHelper do
       options |> Map.new() |> Enum.into([])
     end
   end
+
+  def page_options do
+    optional_map(%{
+      size: {float(), float()}
+    })
+    |> map(&Map.to_list/1)
+  end
 end
 
 ExUnit.start()
