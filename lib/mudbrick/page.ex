@@ -1,7 +1,7 @@
 defmodule Mudbrick.Page do
   @type t :: %__MODULE__{
-          contents: term(),
-          parent: term(),
+          contents: Mudbrick.Indirect.Object.t(),
+          parent: Mudbrick.Indirect.Ref.t(),
           size: Mudbrick.coords()
         }
 
