@@ -1,4 +1,10 @@
 defmodule Mudbrick.Page do
+  @type t :: %__MODULE__{
+          contents: term(),
+          parent: term(),
+          size: Mudbrick.coords()
+        }
+
   defstruct contents: nil,
             parent: nil,
             size: nil
@@ -13,7 +19,11 @@ defmodule Mudbrick.Page do
     letter: {8.5 * @dpi, 11 * @dpi}
   }
 
+  @type option :: {:size, Mudbrick.coords()}
+  @type options :: [option()]
+
   @doc false
+  @spec new(options()) :: t()
   def new(opts \\ []) do
     struct!(__MODULE__, opts)
   end
