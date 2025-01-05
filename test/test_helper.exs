@@ -184,11 +184,11 @@ defmodule Mudbrick.TestHelper do
   end
 
   def coords do
-    {float(), float()}
+    {float(max: 999), float(max: 999)}
   end
 
   def non_negative_coords do
-    {float(min: 0), float(min: 0)}
+    {float(min: 0, max: 999), float(min: 0, max: 999)}
   end
 
   def scale do

@@ -14,6 +14,10 @@ defmodule Mudbrick.Parser do
     TJ
   }
 
+  defmodule Error do
+    defexception [:message]
+  end
+
   @doc """
   Parse Mudbrick-generated `iodata` into a `Mudbrick.Document`.
 
@@ -27,50 +31,53 @@ defmodule Mudbrick.Parser do
   """
   @spec parse(iodata()) :: Mudbrick.Document.t()
   def parse(iodata) do
-    {:ok, parsed_items, _rest, %{}, _, _} =
-      iodata
-      |> IO.iodata_to_binary()
-      |> pdf()
+    input = IO.iodata_to_binary(iodata)
 
-    items = Enum.flat_map(parsed_items, &to_mudbrick/1)
+    case pdf(input) do
+      {:error, msg, rest, %{}, _things, _bytes} ->
+        raise Error, "#{msg}\n#{rest}"
 
-    page_refs = page_refs(items)
-    font_files = Enum.filter(items, &font?/1)
-    image_files = Enum.filter(items, &image?/1)
-    fonts = decompressed_resources_option(font_files, "F")
-    images = decompressed_resources_option(image_files, "I")
-    compress? = Enum.any?(items, &match?(%{value: %{compress: true}}, &1))
+      {:ok, parsed_items, _rest, %{}, _, _} ->
+        items = Enum.flat_map(parsed_items, &to_mudbrick/1)
 
-    opts =
-      [compress: compress?] ++
-        case Enum.find(items, &metadata?/1) do
-          nil ->
-            []
+        page_refs = page_refs(items)
+        font_files = Enum.filter(items, &font?/1)
+        image_files = Enum.filter(items, &image?/1)
+        fonts = decompressed_resources_option(font_files, "F")
+        images = decompressed_resources_option(image_files, "I")
+        compress? = Enum.any?(items, &match?(%{value: %{compress: true}}, &1))
 
-          metadata ->
-            xml =
-              if metadata.value.compress do
-                Mudbrick.decompress(metadata.value.data)
-              else
-                metadata.value.data
-              end
+        opts =
+          [compress: compress?] ++
+            case Enum.find(items, &metadata?/1) do
+              nil ->
+                []
 
-            metadata(xml)
+              metadata ->
+                xml =
+                  if metadata.value.compress do
+                    Mudbrick.decompress(metadata.value.data)
+                  else
+                    metadata.value.data
+                  end
+
+                metadata(xml)
+            end
+
+        opts = if map_size(fonts) > 0, do: Keyword.put(opts, :fonts, fonts), else: opts
+        opts = if map_size(images) > 0, do: Keyword.put(opts, :images, images), else: opts
+
+        for page <- all(items, page_refs), reduce: Mudbrick.new(opts) do
+          acc ->
+            [_, _, w, h] = page.value[:MediaBox]
+
+            Mudbrick.page(acc, size: {w, h})
+            |> Mudbrick.ContentStream.update_operations(fn ops ->
+              operations(items, page) ++ ops
+            end)
         end
-
-    opts = if map_size(fonts) > 0, do: Keyword.put(opts, :fonts, fonts), else: opts
-    opts = if map_size(images) > 0, do: Keyword.put(opts, :images, images), else: opts
-
-    for page <- all(items, page_refs), reduce: Mudbrick.new(opts) do
-      acc ->
-        [_, _, w, h] = page.value[:MediaBox]
-
-        Mudbrick.page(acc, size: {w, h})
-        |> Mudbrick.ContentStream.update_operations(fn ops ->
-          operations(items, page) ++ ops
-        end)
+        |> Mudbrick.Document.finish()
     end
-    |> Mudbrick.Document.finish()
   end
 
   @doc """

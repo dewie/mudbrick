@@ -11,11 +11,8 @@ defmodule Mudbrick.ParseRoundtripTest do
     check all document_options <- document_options(),
               pages_options <- list_of(page_options()),
               images_options <- list_of(image_options()),
-              max_runs: 20 do
-      doc =
-        document_options
-        |> new()
-
+              max_runs: 75 do
+      doc = new(document_options)
       images = Keyword.get(document_options, :images, %{})
 
       input =
