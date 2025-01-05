@@ -170,10 +170,33 @@ defmodule Mudbrick.TestHelper do
   end
 
   def page_options do
+    optional_map(%{size: non_negative_coords()})
+    |> map(&Map.to_list/1)
+  end
+
+  def image_options do
     optional_map(%{
-      size: {float(), float()}
+      position: coords(),
+      scale: scale(),
+      skew: coords()
     })
     |> map(&Map.to_list/1)
+  end
+
+  def coords do
+    {float(), float()}
+  end
+
+  def non_negative_coords do
+    {float(min: 0), float(min: 0)}
+  end
+
+  def scale do
+    bind(one_of([:x_auto, :y_auto, :neither]), fn
+      :x_auto -> {:auto, float()}
+      :y_auto -> {float(), :auto}
+      :neither -> {float(), float()}
+    end)
   end
 end
 
