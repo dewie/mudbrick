@@ -184,7 +184,7 @@ defmodule Mudbrick.TestHelper do
   end
 
   def coords do
-    {float(max: 999), float(max: 999)}
+    {float_non_exponential(), float_non_exponential()}
   end
 
   def non_negative_coords do
@@ -193,10 +193,14 @@ defmodule Mudbrick.TestHelper do
 
   def scale do
     bind(one_of([:x_auto, :y_auto, :neither]), fn
-      :x_auto -> {:auto, float()}
-      :y_auto -> {float(), :auto}
-      :neither -> {float(), float()}
+      :x_auto -> {:auto, float_non_exponential()}
+      :y_auto -> {float_non_exponential(), :auto}
+      :neither -> coords()
     end)
+  end
+
+  defp float_non_exponential do
+    float(min: -999, max: 999)
   end
 end
 

@@ -390,10 +390,13 @@ defmodule Mudbrick.Parser do
     if data == "" do
       []
     else
-      %Mudbrick.ContentStream{operations: operations} =
-        to_mudbrick(data, :content_blocks)
+      case to_mudbrick(data, :content_blocks) do
+        %Mudbrick.ContentStream{operations: operations} ->
+          operations
 
-      operations
+        _ ->
+          raise Error, "Can't parse content blocks: #{data}"
+      end
     end
   end
 

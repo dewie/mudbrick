@@ -480,18 +480,29 @@ defmodule Mudbrick do
                 "Auto scaling works with width or height, but not both."
 
         {w, :auto} ->
-          ratio = w / image.width
-          {w, image.height * ratio}
+          scaled_height(w, image)
 
         {:auto, h} ->
-          ratio = h / image.height
-          {image.width * ratio, h}
+          scaled_width(h, image)
+
+        nil ->
+          scaled_height(100, image)
 
         otherwise ->
           otherwise
       end
 
     Keyword.put(image_opts, :scale, scale)
+  end
+
+  defp scaled_height(w, image) do
+    ratio = w / image.width
+    {w, image.height * ratio}
+  end
+
+  defp scaled_width(h, image) do
+    ratio = h / image.height
+    {image.width * ratio, h}
   end
 
   defp fetch_font(doc, opts) do

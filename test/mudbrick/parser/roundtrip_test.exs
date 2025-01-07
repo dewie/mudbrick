@@ -21,18 +21,17 @@ defmodule Mudbrick.ParseRoundtripTest do
           if(Enum.empty?(images_options), do: [], else: Stream.cycle(images_options)),
           if(Enum.empty?(images), do: [], else: Stream.cycle(Map.keys(images)))
         ])
-        |> Enum.reduce(doc, fn {page_options, _image_options, _image_identifier}, context ->
+        |> Enum.reduce(doc, fn {page_options, image_options, image_identifier}, context ->
           context
           |> page(page_options)
-
-          # |> then(fn page_context ->
-          #   if Enum.empty?(image_options) or Enum.empty?(document_options[:images]) do
-          #     page_context
-          #   else
-          #     page_context
-          #     |> image(image_identifier, image_options)
-          #   end
-          # end)
+          |> then(fn page_context ->
+            if Enum.empty?(image_options) or Enum.empty?(document_options[:images]) do
+              page_context
+            else
+              page_context
+              |> image(image_identifier, image_options)
+            end
+          end)
         end)
         |> render()
 
