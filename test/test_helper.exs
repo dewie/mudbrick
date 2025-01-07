@@ -192,11 +192,11 @@ defmodule Mudbrick.TestHelper do
   end
 
   def scale do
-    bind(one_of([:x_auto, :y_auto, :neither]), fn
-      :x_auto -> {:auto, float_non_exponential()}
-      :y_auto -> {float_non_exponential(), :auto}
-      :neither -> coords()
-    end)
+    one_of([
+      {:auto, float_non_exponential()},
+      {float_non_exponential(), :auto},
+      coords()
+    ])
   end
 
   defp float_non_exponential do
