@@ -16,11 +16,7 @@ defmodule Mudbrick.ParseRoundtripTest do
       images = Keyword.get(document_options, :images, %{})
 
       input =
-        Enum.zip([
-          pages_options,
-          if(Enum.empty?(images_options), do: [], else: Stream.cycle(images_options)),
-          if(Enum.empty?(images), do: [], else: Stream.cycle(Map.keys(images)))
-        ])
+        Enum.zip([pages_options, cycle(images_options), cycle(Map.keys(images))])
         |> Enum.reduce(doc, fn {page_options, image_options, image_identifier}, context ->
           context
           |> page(page_options)
@@ -188,4 +184,7 @@ defmodule Mudbrick.ParseRoundtripTest do
 
     assert parsed == input
   end
+
+  defp cycle([]), do: []
+  defp cycle(enumerable), do: Stream.cycle(enumerable)
 end
