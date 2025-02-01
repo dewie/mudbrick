@@ -36,6 +36,23 @@ defmodule Mudbrick.ParseTextContentTest do
     %{stream: stream}
   end
 
+  test "can parse a text block with negative kerns" do
+    raw =
+      """
+      BT
+      [ <00F3> -32 <0010> ] TJ
+      ET
+      """
+
+    assert Parser.parse(raw, :content_blocks) == [
+             text_block: [
+               BT: [],
+               TJ: [glyph_id: "00F3", offset: {:integer, ["-", "32"]}, glyph_id: "0010"],
+               ET: []
+             ]
+           ]
+  end
+
   test "can turn text content to Mudbrick", %{stream: stream} do
     assert %Mudbrick.ContentStream{
              compress: false,
@@ -90,7 +107,7 @@ defmodule Mudbrick.ParseTextContentTest do
                 rg: [integer: ["0"], integer: ["0"], integer: ["0"]],
                 TJ: [
                   glyph_id: "00D5",
-                  offset: "24",
+                  offset: {:integer, ["24"]},
                   glyph_id: "00C0",
                   glyph_id: "00ED",
                   glyph_id: "00ED",
@@ -100,7 +117,7 @@ defmodule Mudbrick.ParseTextContentTest do
                   glyph_id: "0138",
                   glyph_id: "00FC",
                   glyph_id: "010F",
-                  offset: "12",
+                  offset: {:integer, ["12"]},
                   glyph_id: "00ED",
                   glyph_id: "00BB",
                   glyph_id: "0197"
@@ -115,7 +132,7 @@ defmodule Mudbrick.ParseTextContentTest do
                 rg: [integer: ["0"], integer: ["0"], integer: ["0"]],
                 TJ: [
                   glyph_id: "0105",
-                  offset: "44",
+                  offset: {:integer, ["44"]},
                   glyph_id: "00EA",
                   glyph_id: "011E",
                   glyph_id: "011E",
@@ -127,16 +144,16 @@ defmodule Mudbrick.ParseTextContentTest do
                   glyph_id: "00C3",
                   glyph_id: "0125",
                   glyph_id: "012C",
-                  offset: "35",
+                  offset: {:integer, ["35"]},
                   glyph_id: "015A",
-                  offset: "13",
+                  offset: {:integer, ["13"]},
                   glyph_id: "0105",
-                  offset: "13",
+                  offset: {:integer, ["13"]},
                   glyph_id: "00EA",
-                  offset: "63",
+                  offset: {:integer, ["63"]},
                   glyph_id: "014B",
                   glyph_id: "01F0",
-                  offset: "13",
+                  offset: {:integer, ["13"]},
                   glyph_id: "00FF",
                   glyph_id: "012C",
                   glyph_id: "0125",

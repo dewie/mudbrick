@@ -8,24 +8,51 @@ defmodule Mudbrick.ParseRoundtripTest do
   alias Mudbrick.Parser
 
   property "documents" do
-    check all document_options <- document_options(),
+    check all fonts <- fonts(),
+              document_options <- document_options(),
               pages_options <- list_of(page_options()),
               images_options <- list_of(image_options()),
+              text_writes <- list_of(string(:alphanumeric)),
               max_runs: 75 do
-      doc = new(document_options)
+      doc = new(Keyword.merge(document_options, fonts: fonts))
       images = Keyword.get(document_options, :images, %{})
 
       input =
-        Enum.zip([pages_options, cycle(images_options), cycle(Map.keys(images))])
-        |> Enum.reduce(doc, fn {page_options, image_options, image_identifier}, context ->
+        Enum.zip([
+          pages_options,
+          cycle(images_options),
+          cycle(Map.keys(images)),
+          cycle(text_writes)
+        ])
+        |> Enum.reduce(doc, fn {
+                                 page_options,
+                                 image_options,
+                                 image_identifier,
+                                 text_write
+                               },
+                               context ->
           context
           |> page(page_options)
           |> then(fn page_context ->
             if Enum.empty?(image_options) or Enum.empty?(document_options[:images]) do
               page_context
             else
+              text_options =
+                if fonts && map_size(fonts) > 1 do
+                  [font: Map.keys(fonts) |> List.first()]
+                else
+                  []
+                end
+
               page_context
               |> image(image_identifier, image_options)
+              |> then(fn context ->
+                if fonts && map_size(fonts) > 0 do
+                  text(context, text_write, text_options)
+                else
+                  context
+                end
+              end)
             end
           end)
         end)

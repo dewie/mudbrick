@@ -26,7 +26,7 @@ defmodule Mudbrick.Font do
   ]
 
   defmodule MustBeChosen do
-    defexception [:message]
+    defexception message: "You must choose a font unless you have exactly one font"
   end
 
   defmodule Unregistered do

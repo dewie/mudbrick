@@ -154,7 +154,7 @@ defmodule Mudbrick.Parser.Helpers do
     |> repeat(
       choice([
         glyph_id_hex(),
-        non_negative_integer() |> unwrap_and_tag(:offset)
+        integer() |> unwrap_and_tag(:offset)
       ])
       |> ignore(whitespace())
     )

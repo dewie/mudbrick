@@ -67,8 +67,8 @@ defmodule Mudbrick.Parser.AST do
         {:glyph_id, id}, acc ->
           [id | acc]
 
-        {:offset, offset}, [last_glyph | acc] ->
-          [{last_glyph, String.to_integer(offset)} | acc]
+        {:offset, {:integer, offset}}, [last_glyph | acc] ->
+          [{last_glyph, offset |> Enum.join() |> String.to_integer()} | acc]
       end)
 
     %TJ{
