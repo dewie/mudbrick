@@ -27,11 +27,11 @@ defmodule Mudbrick.TextBlock do
   @type part_options :: [part_option()]
 
   @type write_tuple :: {String.t(), part_options()}
+  @type write_part :: String.t() | write_tuple()
 
   @type write ::
-          String.t()
-          | write_tuple()
-          | list(write_tuple())
+          write_part()
+          | list(write_part())
 
   @type t :: %__MODULE__{
           align: alignment(),
