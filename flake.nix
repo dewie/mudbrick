@@ -30,6 +30,7 @@
                     tag=$1
 
                     mix test
+                    gh repo set-default code-supply/mudbrick
                     gh release create "$tag" --draft --generate-notes
                     mix hex.publish
                   '';
