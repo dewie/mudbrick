@@ -23,7 +23,7 @@ defmodule Mudbrick.Images.Png do
   def new(opts) do
     %__MODULE__{} =
       decode(opts[:file])
-      |> map.put(:resource_identifier,opts[:resource_identifier])
+      |> Map.put(:resource_identifier,opts[:resource_identifier])
       |> add_size()
       |> add_dictionary_and_extra_objects(opts[:doc])
   end
