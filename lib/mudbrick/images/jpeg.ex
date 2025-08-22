@@ -12,7 +12,7 @@ defmodule Mudbrick.Images.Jpeg do
     :height,
     :bits_per_component,
     :filter,
-    kids: [],
+    :extra_objects: [],
     dictionary: %{}
   ]
 
