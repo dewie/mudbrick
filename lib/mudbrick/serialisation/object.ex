@@ -12,6 +12,18 @@ defimpl Mudbrick.Object, for: Any do
   end
 end
 
+
+defimpl Mudbrick.Object, for: Tuple do
+
+  def to_iodata({:raw,a}) do
+    [to_string(a)]
+  end
+
+  def to_iodata(tuple) do
+    raise "Unsupported tuple: #{inspect(tuple)}"
+  end
+end
+
 defimpl Mudbrick.Object, for: Atom do
   def to_iodata(a) when a in [true, false] do
     [to_string(a)]

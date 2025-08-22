@@ -23,7 +23,8 @@ defmodule Mudbrick.Image do
     :width,
     :height,
     :bits_per_component,
-    :filter
+    :filter,
+    dictionary: %{}
   ]
 
   defmodule AutoScalingError do
@@ -44,14 +45,39 @@ defmodule Mudbrick.Image do
   @doc false
   @spec new(Keyword.t()) :: t()
   def new(opts) do
-    struct!(
-      __MODULE__,
-      Keyword.merge(
-        opts,
-        file_dependent_opts(ExImageInfo.info(opts[:file]))
-      )
-    )
+    case identify_image(opts[:file]) do
+      :jpeg ->
+        Mudbrick.Images.Jpeg.new(opts)
+
+      :png ->
+        Mudbrick.Images.Png.new(opts)
+
+      # Mudbrick.Images.PNG.prepare_image(image_data, objects)
+
+      _else ->
+        {:error, :image_format_not_recognised}
+    end
+
+    # struct!(
+    #   __MODULE__,
+    #   Keyword.merge(
+    #     opts,
+    #     file_dependent_opts(ExImageInfo.info(opts[:file]))
+    #   )
+    # )
+
+    # struct!(
+    #   __MODULE__,
+    #   Keyword.merge(
+    #     opts,
+    #     file_dependent_opts(ExImageInfo.info(opts[:file]))
+    #   )
+    # )
   end
+
+  def identify_image(<<255, 216, _rest::binary>>), do: :jpeg
+  def identify_image(<<137, 80, 78, 71, 13, 10, 26, 10, _rest::binary>>), do: :png
+  def identify_image(_), do: {:error, :image_format_not_recognised}
 
   @doc false
   def add_objects(doc, images) do
@@ -61,8 +87,18 @@ defmodule Mudbrick.Image do
           {doc, image} =
             Document.add(
               doc,
-              new(file: image_data, resource_identifier: :"I#{id + 1}")
+              new(file: image_data, doc: doc, resource_identifier: :"I#{id + 1}")
             )
+
+          doc =
+            case Enum.count(image.value.extra_objects) do
+              0 ->
+                doc
+
+              _ ->
+                {doc, _extra_objects} = Document.add(doc, image.value.extra_objects)
+                doc
+            end
 
           {doc, Map.put(image_objects, human_name, image), id + 1}
       end
