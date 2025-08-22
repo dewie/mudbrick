@@ -52,7 +52,8 @@ defmodule Mudbrick.Images.Jpeg do
         file: opts[:file],
         size: size,
         size: byte_size(opts[:file]),
-        dictionary: dictionary
+        dictionary: dictionary, 
+        resource_identifier: opts[:resource_identifier]
       }
 
 
