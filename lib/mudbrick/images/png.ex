@@ -1,5 +1,25 @@
 defmodule Mudbrick.Images.Png do
-  @moduledoc false
+  @moduledoc """
+  PNG image loader used by Mudbrick.
+
+  This module parses PNG binary data to extract image metadata and content,
+  assembling a PDF image `dictionary` and optional `extra_objects` (such as a
+  palette or a soft-mask for alpha channels) suitable for embedding in a PDF.
+
+  It exposes a single public entrypoint `new/1` which accepts:
+
+  - `:file` (binary): the PNG file bytes
+  - `:resource_identifier` (any): identifier used by the document builder
+  - `:doc` (struct): the current document, needed for indexed color palette refs
+
+  The struct mirrors the information discovered during decoding:
+  `width`, `height`, `bits_per_component`, `color_type`, `image_data`,
+  optional `palette` and `alpha`, the computed `size`, and the assembled
+  `dictionary` and `extra_objects`.
+
+  The module implements `Mudbrick.Object`, which turns the image into a
+  `Mudbrick.Stream` with the proper PDF image entries.
+  """
   alias Mudbrick.Stream
 
   defstruct [
@@ -20,6 +40,14 @@ defmodule Mudbrick.Images.Png do
     alpha: <<>>
   ]
 
+  @doc """
+  Build a PNG image struct from binary file data and options.
+
+  Options:
+  - `:file` (binary, required): PNG bytes.
+  - `:resource_identifier` (any, optional): identifier for the document builder.
+  - `:doc` (struct, optional): document context, used for indexed color palette refs.
+  """
   def new(opts) do
     %__MODULE__{} =
       decode(opts[:file])
@@ -28,10 +56,17 @@ defmodule Mudbrick.Images.Png do
       |> add_dictionary_and_extra_objects(opts[:doc])
   end
 
+  @doc """
+  Set the `size` field to the length of `image_data` in bytes.
+  """
   def add_size(image) do
     %{image | size: byte_size(image.image_data)}
   end
 
+  @doc """
+  Compute and attach the PDF image dictionary and any `extra_objects` needed
+  for the given PNG `color_type`.
+  """
   def add_dictionary_and_extra_objects(%{color_type: 0} = image, _doc) do
     %{
       image
@@ -87,7 +122,7 @@ defmodule Mudbrick.Images.Png do
             :Columns => image.width
           },
           :ColorSpace => [
-            :Indexed, :DeviceRGB, round(byte_size(image.palette) / 3 - 1), (length(doc.objects) + 2), 0 , {:raw,'R'}
+            :Indexed, :DeviceRGB, round(byte_size(image.palette) / 3 - 1), (length(doc.objects) + 2), 0 , {:raw, ~c"R"}
           ],
           :BitsPerComponent => image.bits_per_component
         },
@@ -142,6 +177,9 @@ defmodule Mudbrick.Images.Png do
     }
   end
 
+  @doc """
+  Decode PNG binary data into an image struct capturing metadata and content.
+  """
   def decode(image_data) do
     parse(image_data)
   end

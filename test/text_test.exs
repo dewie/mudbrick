@@ -7,6 +7,7 @@ defmodule Mudbrick.TextTest do
 
   alias Mudbrick.ContentStream.TJ
   alias Mudbrick.Font
+  require Logger
 
   test "with more than one registered font, it's an error not to choose one" do
     chain =
@@ -219,6 +220,24 @@ defmodule Mudbrick.TextTest do
              |> page()
              |> text("\n", font_size: 13)
              |> render()
+    end
+
+    test "multiline gedoe" do
+      new(fonts: %{bodoni: bodoni_regular()})
+      |> page()
+      |> text("line 1 sadfdasf\n asdfdsafsdaf sadfdsafdasf adsfdasfdsaf sadfdsaf sadfdsaf dsaf \nline 2 asdfdsaf sadfasfdsafdsafdsa sadfsdafsdaf",
+        font_size: 24,
+        position: {0, 700}
+      )
+      |> render()
+      |> then(fn(x) ->
+
+        IO.inspect x
+        File.write("./test/output/test.pdf",x)
+
+      end)
+
+
     end
   end
 end

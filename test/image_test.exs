@@ -11,25 +11,24 @@ defmodule Mudbrick.ImageTest do
     data = flower()
     doc = new(images: %{flower: data})
 
-    expected_image = %Image{
-      file: data,
+    expected_image = %Mudbrick.Images.Jpeg{
       resource_identifier: :I1,
+      size: 36287,
+      color_type: 3,
       width: 500,
       height: 477,
-      filter: :DCTDecode,
-      bits_per_component: 8
+      bits_per_component: 8,
+      file: nil,
+      extra_objects: [],
+      dictionary: %{BitsPerComponent: 8, ColorSpace: :DeviceRGB, Filter: :DCTDecode, Height: 477, Length: 36287, Subtype: :Image, Type: :XObject, Width: 500},
+      image_data: data
     }
 
-    IO.inspect(doc)
+
     assert Document.find_object(doc, &(&1 == expected_image))
     assert Document.root_page_tree(doc).value.images[:flower].value == expected_image
   end
 
-  test "PNGs are currently not supported" do
-    assert_raise Image.NotSupported, fn ->
-      new(images: %{my_png: example_png()})
-    end
-  end
 
   test "specifying :auto height maintains aspect ratio" do
     assert [
@@ -188,7 +187,7 @@ defmodule Mudbrick.ImageTest do
                   >>
                     /Filter /FlateDecode
                     /Height 75
-                    /Length 16689
+                    /Length 15961
                     /Width 100
                 >>
                   """
@@ -218,12 +217,6 @@ defmodule Mudbrick.ImageTest do
         position: {0, 0}
       )
       |> render()
-      |> tap(fn x ->
-        path = Path.join(__DIR__, "ouput/test.pdf")
-        IO.puts "Writing to #{path}"
-        :ok = File.write(path, x)
-
-        IO.inspect(x) end)
       |> then(&File.write(Path.join(__DIR__, "output/JPEG_example_flower.pdf"), &1))
     end
 
@@ -247,12 +240,6 @@ defmodule Mudbrick.ImageTest do
         position: {0, 0}
       )
       |> render()
-      |> tap(fn x ->
-        path = Path.join(__DIR__, "ouput/truecolour.pdf")
-        IO.puts "Writing to #{path}"
-        :ok = File.write(path, x)
-
-        IO.inspect(x) end)
       |> then(&File.write(Path.join(__DIR__, "output/truecolour.pdf"), &1))
     end
 
@@ -289,12 +276,6 @@ defmodule Mudbrick.ImageTest do
         position: {0, 0}
       )
       |> render()
-      |> tap(fn x ->
-        path = Path.join(__DIR__, "ouput/indexed.pdf")
-        IO.puts "Writing to #{path}"
-        :ok = File.write(path, x)
-
-        IO.inspect(x) end)
       |> then(&File.write(Path.join(__DIR__, "output/indexed.pdf"), &1))
     end
 
