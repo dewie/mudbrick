@@ -19,7 +19,7 @@ defmodule Mudbrick.ImageTest do
       height: 477,
       bits_per_component: 8,
       file: nil,
-      extra_objects: [],
+      additional_objects: [],
       dictionary: %{BitsPerComponent: 8, ColorSpace: :DeviceRGB, Filter: :DCTDecode, Height: 477, Length: 36287, Subtype: :Image, Type: :XObject, Width: 500},
       image_data: data
     }
@@ -277,6 +277,24 @@ defmodule Mudbrick.ImageTest do
       )
       |> render()
       |> then(&File.write(Path.join(__DIR__, "output/indexed.pdf"), &1))
+    end
+
+    test "creates a pdf with png_trans png " do
+      new(
+        # flate compression for fonts, text etc.
+        compress: true,
+        # register an OTF font
+        #fonts: %{bodoni: bodoni_regular()},
+        # register a JPEG
+        images: %{flower: File.read!(Path.join(__DIR__, "fixtures/png_trans.png"))}
+      )
+      |> page(size: Mudbrick.Page.size(:a4))
+      |> image(
+        :flower,
+        position: {10, 10}
+      )
+      |> render()
+      |> then(&File.write(Path.join(__DIR__, "output/png_trans.pdf"), &1))
     end
 
 

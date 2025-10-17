@@ -1,0 +1,14 @@
+{
+    "name": "Elixir Mud",
+    "build":{
+      "dockerfile": "Dockerfile",
+      "context": ".."
+    },
+  
+    "extensions": [
+      "editorconfig.editorconfig",
+      "github.vscode-pull-request-github",
+      "jakebecker.elixir-ls",
+      "redhat.vscode-yaml"
+    ]
+  }

@@ -91,12 +91,12 @@ defmodule Mudbrick.Image do
             )
 
           doc =
-            case Enum.count(image.value.extra_objects) do
+            case Enum.count(image.value.additional_objects) do
               0 ->
                 doc
 
               _ ->
-                {doc, _extra_objects} = Document.add(doc, image.value.extra_objects)
+                  {doc, _additional_objects} = Document.add(doc, image.value.additional_objects)
                 doc
             end
 
@@ -106,18 +106,18 @@ defmodule Mudbrick.Image do
     {doc, image_objects}
   end
 
-  defp file_dependent_opts({"image/jpeg", width, height, _variant}) do
-    [
-      width: width,
-      height: height,
-      filter: :DCTDecode,
-      bits_per_component: 8
-    ]
-  end
+  # defp file_dependent_opts({"image/jpeg", width, height, _variant}) do
+  #   [
+  #     width: width,
+  #     height: height,
+  #     filter: :DCTDecode,
+  #     bits_per_component: 8
+  #   ]
+  # end
 
-  defp file_dependent_opts({"image/png", _width, _height, _variant}) do
-    raise NotSupported, "PNGs are currently not supported"
-  end
+  # defp file_dependent_opts({"image/png", _width, _height, _variant}) do
+  #   raise NotSupported, "PNGs are currently not supported"
+  # end
 
   defimpl Mudbrick.Object do
     def to_iodata(image) do

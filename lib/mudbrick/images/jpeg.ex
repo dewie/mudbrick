@@ -14,7 +14,7 @@ defmodule Mudbrick.Images.Jpeg do
 
   The struct contains `width`, `height`, `bits_per_component`, `color_type`,
   `image_data`, the computed `size`, and the assembled `dictionary` and
-  `extra_objects`.
+  `additional_objects`.
 
   The module implements `Mudbrick.Object`, emitting a `Mudbrick.Stream` with
   the proper PDF image entries.
@@ -29,7 +29,7 @@ defmodule Mudbrick.Images.Jpeg do
     :height,
     :bits_per_component,
     :file,
-    extra_objects: [],
+    additional_objects: [],
     dictionary: %{},
     image_data: <<>>
   ]
@@ -49,7 +49,7 @@ defmodule Mudbrick.Images.Jpeg do
       |> Map.put(:resource_identifier, opts[:resource_identifier])
       |> Map.put(:image_data, opts[:file])
       |> add_size()
-      |> add_dictionary_and_extra_objects(opts[:doc])
+      |> add_dictionary_and_additional_objects(opts[:doc])
   end
 
   @doc """
@@ -63,7 +63,7 @@ defmodule Mudbrick.Images.Jpeg do
   Compute and attach the PDF image dictionary for the JPEG, including CMYK
   decode inversion when `color_type` is 4.
   """
-  def add_dictionary_and_extra_objects(image, _doc) do
+  def add_dictionary_and_additional_objects(image, _doc) do
     dictionary = %{
       :Type => :XObject,
       :Subtype => :Image,
