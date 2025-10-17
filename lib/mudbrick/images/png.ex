@@ -1,25 +1,15 @@
 defmodule Mudbrick.Images.Png do
   @moduledoc """
-  PNG image loader used by Mudbrick.
+  PNG image loader for Mudbrick.
 
+  Responsibilities:
+  - Parse PNG bytes to extract dimensions, bit depth, color type, palette, and image data
+  - Build a PDF Image XObject dictionary and any `additional_objects` (palette or SMask)
+  - For RGBA/GA images, construct a valid soft mask (SMask) from the alpha channel
 
-  This module parses PNG binary data to extract image metadata and content,
-  assembling a PDF image `dictionary` and optional `additional_objects` (such as a
-  palette or a soft-mask for alpha channels) suitable for embedding in a PDF.
-
-  It exposes a single public entrypoint `new/1` which accepts:
-
-  - `:file` (binary): the PNG file bytes
-  - `:resource_identifier` (any): identifier used by the document builder
-  - `:doc` (struct): the current document, needed for indexed color palette refs
-
-  The struct mirrors the information discovered during decoding:
-  `width`, `height`, `bits_per_component`, `color_type`, `image_data`,
-  optional `palette` and `alpha`, the computed `size`, and the assembled
-  `dictionary` and `additional_objects`.
-
-  The module implements `Mudbrick.Object`, which turns the image into a
-  `Mudbrick.Stream` with the proper PDF image entries.
+  Public API:
+  - `new/1` – build a `%Mudbrick.Images.Png{}` from PNG bytes and options
+  - Implements `Mudbrick.Object` to serialise as a PDF `Mudbrick.Stream`
   """
   alias Mudbrick.Stream
   require Logger
@@ -42,6 +32,25 @@ defmodule Mudbrick.Images.Png do
     alpha: <<>>
   ]
 
+  @typedoc "PNG image struct produced by this module."
+  @type t :: %__MODULE__{
+          resource_identifier: any(),
+          size: non_neg_integer() | nil,
+          color_type: 0 | 2 | 3 | 4 | 6 | nil,
+          width: non_neg_integer() | nil,
+          height: non_neg_integer() | nil,
+          bits_per_component: pos_integer() | nil,
+          compression_method: non_neg_integer() | nil,
+          interlace_method: non_neg_integer() | nil,
+          filter_method: non_neg_integer() | nil,
+          file: binary() | nil,
+          additional_objects: list(),
+          dictionary: map(),
+          image_data: binary(),
+          palette: binary(),
+          alpha: binary()
+        }
+
   @doc """
   Build a PNG image struct from binary file data and options.
 
@@ -50,6 +59,7 @@ defmodule Mudbrick.Images.Png do
   - `:resource_identifier` (any, optional): identifier for the document builder.
   - `:doc` (struct, optional): document context, used for indexed color palette refs.
   """
+  @spec new(Keyword.t()) :: t()
   def new(opts) do
     %__MODULE__{} =
       decode(opts[:file])
@@ -61,6 +71,7 @@ defmodule Mudbrick.Images.Png do
   @doc """
   Set the `size` field to the length of `image_data` in bytes.
   """
+  @spec add_size(t()) :: t()
   def add_size(image) do
     %{image | size: byte_size(image.image_data)}
   end
@@ -69,6 +80,7 @@ defmodule Mudbrick.Images.Png do
   Compute and attach the PDF image dictionary and any `additional_objects` needed
   for the given PNG `color_type`.
   """
+  @spec add_dictionary_and_additional_objects(t(), any()) :: t()
   def add_dictionary_and_additional_objects(%{color_type: 0} = image, _doc) do
   Logger.warning "PNG IMAGE TYPE = 0"
     %{
@@ -185,10 +197,12 @@ defmodule Mudbrick.Images.Png do
   @doc """
   Decode PNG binary data into an image struct capturing metadata and content.
   """
+  @spec decode(binary()) :: t()
   def decode(image_data) do
     parse(image_data)
   end
 
+  @doc false
   defp parse(image_data), do: parse(image_data, %__MODULE__{})
 
   defp parse(
@@ -209,6 +223,7 @@ defmodule Mudbrick.Images.Png do
     parse(rest, data)
   end
 
+  @doc false
   defp parse_chunk(
          "IHDR",
          <<width::unsigned-32, height::unsigned-32, bit_depth::unsigned-8, color_type::unsigned-8,
@@ -228,20 +243,24 @@ defmodule Mudbrick.Images.Png do
     }
   end
 
+  @doc false
   defp parse_chunk("IDAT", payload, %{compression_method: 0} = data) do
     %{data | image_data: <<data.image_data::binary, payload::binary>>}
   end
 
+  @doc false
   defp parse_chunk("PLTE", payload, %{compression_method: 0} = data) do
     %{data | palette: <<data.palette::binary, payload::binary>>}
   end
 
+  @doc false
   defp parse_chunk("IEND", _payload, %{color_type: color_type, image_data: image_data} = data)
        when color_type in [4, 6] do
     {image_data, alpha} = extract_alpha_channel(data, image_data)
     %{data | image_data: image_data, alpha: alpha}
   end
 
+  @doc false
   defp parse_chunk("IEND", _payload, data), do: data
 
   # defp parse_chunk("cHRM", _payload, data), do: data
@@ -255,8 +274,10 @@ defmodule Mudbrick.Images.Png do
   # defp parse_chunk("sRGB", _payload, data), do: data
   # defp parse_chunk("pHYs", _payload, data), do: data
 
+  @doc false
   defp parse_chunk(_, _payload, data), do: data
 
+  @doc false
   defp extract_alpha_channel(data, image_data) do
     %{color_type: color_type, bits_per_component: bit_depth, width: width, height: height} = data
     inflated = inflate(image_data)
@@ -278,6 +299,8 @@ defmodule Mudbrick.Images.Png do
 
   # removed old filtered split helpers; we now unfilter first
 
+  # zlib inflate helper for PNG payloads
+  @doc false
   defp inflate(compressed) do
     z = :zlib.open()
     :ok = :zlib.inflateInit(z)
@@ -286,6 +309,8 @@ defmodule Mudbrick.Images.Png do
     :erlang.list_to_binary(uncompressed)
   end
 
+  # zlib deflate helper for PDF streams
+  @doc false
   defp deflate(data) do
     z = :zlib.open()
     :ok = :zlib.deflateInit(z)
@@ -295,11 +320,14 @@ defmodule Mudbrick.Images.Png do
   end
 
   # Unfilter PNG scanlines to recover raw bytes per row (no leading filter byte)
+  @doc false
   defp unfilter_scanlines(data, width, bytes_per_pixel, height) do
     row_length = width * bytes_per_pixel
     do_unfilter(data, row_length, bytes_per_pixel, height, <<>>, :binary.copy(<<0>>, row_length))
   end
 
+  # Iterate rows, apply the appropriate filter to reconstruct raw bytes per row
+  @doc false
   defp do_unfilter(_data, _row_length, _bpp, 0, acc, _prev_row), do: acc
 
   defp do_unfilter(<<filter, rest::binary>>, row_length, bpp, rows_left, acc, prev_row) do
@@ -308,12 +336,16 @@ defmodule Mudbrick.Images.Png do
     do_unfilter(tail, row_length, bpp, rows_left - 1, <<acc::binary, current::binary>>, current)
   end
 
+  # Dispatch to specific filter algorithms (None/Sub/Up/Average/Paeth)
+  @doc false
   defp apply_png_filter(0, row, _prev, _bpp), do: row
   defp apply_png_filter(1, row, _prev, bpp), do: unfilter_sub(row, bpp)
   defp apply_png_filter(2, row, prev, _bpp), do: unfilter_up(row, prev)
   defp apply_png_filter(3, row, prev, bpp), do: unfilter_average(row, prev, bpp)
   defp apply_png_filter(4, row, prev, bpp), do: unfilter_paeth(row, prev, bpp)
 
+  # Sub filter: each byte adds the value of the byte to its left
+  @doc false
   defp unfilter_sub(row, bpp) do
     do_unfilter_sub(row, bpp, 0, <<>>)
   end
@@ -325,6 +357,8 @@ defmodule Mudbrick.Images.Png do
     do_unfilter_sub(rest, bpp, i + 1, <<acc::binary, val>>)
   end
 
+  # Up filter: each byte adds the value from previous row at same column
+  @doc false
   defp unfilter_up(row, prev) do
     do_unfilter_up(row, prev, 0, <<>>)
   end
@@ -336,6 +370,8 @@ defmodule Mudbrick.Images.Png do
     do_unfilter_up(rest, prev, i + 1, <<acc::binary, val>>)
   end
 
+  # Average filter: adds average of left and up neighbors
+  @doc false
   defp unfilter_average(row, prev, bpp) do
     do_unfilter_average(row, prev, bpp, 0, <<>>)
   end
@@ -348,6 +384,8 @@ defmodule Mudbrick.Images.Png do
     do_unfilter_average(rest, prev, bpp, i + 1, <<acc::binary, val>>)
   end
 
+  # Paeth filter: adds Paeth predictor of left, up, and upper-left
+  @doc false
   defp unfilter_paeth(row, prev, bpp) do
     do_unfilter_paeth(row, prev, bpp, 0, <<>>)
   end
@@ -362,6 +400,8 @@ defmodule Mudbrick.Images.Png do
     do_unfilter_paeth(rest, prev, bpp, i + 1, <<acc::binary, val>>)
   end
 
+  # Compute Paeth predictor value
+  @doc false
   defp paeth_predictor(a, b, c) do
     p = a + b - c
     pa = abs(p - a)
@@ -374,9 +414,13 @@ defmodule Mudbrick.Images.Png do
     end
   end
 
+  # Bitwise and for small arithmetic with wraparound in filters
+  @doc false
   defp band(x, m), do: :erlang.band(x, m)
 
   # Split unfiltered raw RGBA/GA rows into color and alpha continuous buffers
+  # From unfiltered rows, separate interleaved color and alpha samples into two buffers
+  @doc false
   defp split_color_and_alpha(raw, width, height, color_type, bit_depth) do
     # We currently support 8-bit per component
     _ = bit_depth
@@ -392,6 +436,8 @@ defmodule Mudbrick.Images.Png do
     do_split(raw, width, height, colors_per_pixel, alpha_bytes, row_bytes, <<>>, <<>>)
   end
 
+  # Walk rows collecting color and alpha planes
+  @doc false
   defp do_split(_raw, _w, 0, _cp, _ab, _rb, color_acc, alpha_acc), do: {color_acc, alpha_acc}
   defp do_split(raw, w, rows_left, cp, ab, row_bytes, color_acc, alpha_acc) do
     <<row::binary-size(row_bytes), rest::binary>> = raw
@@ -399,11 +445,15 @@ defmodule Mudbrick.Images.Png do
     do_split(rest, w, rows_left - 1, cp, ab, row_bytes, <<color_acc::binary, row_color::binary>>, <<alpha_acc::binary, row_alpha::binary>>)
   end
 
+  # Split a single row into consecutive color bytes and alpha bytes
+  @doc false
   defp split_row(row, width, colors_per_pixel, alpha_bytes) do
     bytes_per_pixel = colors_per_pixel + alpha_bytes
     do_split_row(row, width, bytes_per_pixel, colors_per_pixel, alpha_bytes, 0, <<>>, <<>>)
   end
 
+  # Iterate each pixel-sized group across the row accumulating color and alpha
+  @doc false
   defp do_split_row(_row, 0, _bpp, _cp, _ab, _i, color_acc, alpha_acc), do: {color_acc, alpha_acc}
   defp do_split_row(row, remaining, bpp, cp, ab, i, color_acc, alpha_acc) do
     offset = i * bpp

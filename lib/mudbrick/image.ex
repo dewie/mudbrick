@@ -1,4 +1,12 @@
 defmodule Mudbrick.Image do
+  @moduledoc """
+  Back-compat image facade and helpers.
+
+  This module:
+  - Detects image format and delegates to `Mudbrick.Images.Jpeg` or `Mudbrick.Images.Png`
+  - Provides helpers to register images as PDF objects on a `Mudbrick.Document`
+  - Implements a legacy object serialiser (used only for older code paths)
+  """
   @type t :: %__MODULE__{
           file: iodata(),
           resource_identifier: atom(),
@@ -42,8 +50,18 @@ defmodule Mudbrick.Image do
   alias Mudbrick.Document
   alias Mudbrick.Stream
 
-  @doc false
-  @spec new(Keyword.t()) :: t()
+  @doc """
+  Create an image object by detecting the format and delegating to
+  `Mudbrick.Images.Jpeg` or `Mudbrick.Images.Png`.
+
+  Required options:
+  - `:file` – raw image bytes
+  - `:resource_identifier` – atom reference like `:I1`
+  - `:doc` – document context (used by PNG indexed/alpha paths)
+
+  Returns a format-specific struct implementing `Mudbrick.Object`.
+  """
+  @spec new(Keyword.t()) :: t() | Mudbrick.Images.Jpeg.t() | Mudbrick.Images.Png.t() | {:error, term()}
   def new(opts) do
     case identify_image(opts[:file]) do
       :jpeg ->
@@ -52,34 +70,30 @@ defmodule Mudbrick.Image do
       :png ->
         Mudbrick.Images.Png.new(opts)
 
-      # Mudbrick.Images.PNG.prepare_image(image_data, objects)
-
       _else ->
         {:error, :image_format_not_recognised}
     end
 
-    # struct!(
-    #   __MODULE__,
-    #   Keyword.merge(
-    #     opts,
-    #     file_dependent_opts(ExImageInfo.info(opts[:file]))
-    #   )
-    # )
-
-    # struct!(
-    #   __MODULE__,
-    #   Keyword.merge(
-    #     opts,
-    #     file_dependent_opts(ExImageInfo.info(opts[:file]))
-    #   )
-    # )
   end
 
+  @doc """
+  Identify image type by magic bytes.
+  Returns `:jpeg`, `:png`, or `{:error, :image_format_not_recognised}`.
+  """
+  @spec identify_image(binary()) :: :jpeg | :png | {:error, :image_format_not_recognised}
   def identify_image(<<255, 216, _rest::binary>>), do: :jpeg
   def identify_image(<<137, 80, 78, 71, 13, 10, 26, 10, _rest::binary>>), do: :png
   def identify_image(_), do: {:error, :image_format_not_recognised}
 
-  @doc false
+  @doc """
+  Add images to a document object table, returning the updated document and a
+  map of human names to registered image objects.
+
+  The images map is `%{name => image_bytes}`. Each is added via `new/1` and any
+  additional objects (e.g., PNG palette or SMask) are appended to the document.
+  """
+  @spec add_objects(Mudbrick.Document.t(), %{optional(atom() | String.t()) => binary()}) ::
+          {Mudbrick.Document.t(), map()}
   def add_objects(doc, images) do
     {doc, image_objects, _id} =
       for {human_name, image_data} <- images, reduce: {doc, %{}, 0} do
@@ -106,18 +120,6 @@ defmodule Mudbrick.Image do
     {doc, image_objects}
   end
 
-  # defp file_dependent_opts({"image/jpeg", width, height, _variant}) do
-  #   [
-  #     width: width,
-  #     height: height,
-  #     filter: :DCTDecode,
-  #     bits_per_component: 8
-  #   ]
-  # end
-
-  # defp file_dependent_opts({"image/png", _width, _height, _variant}) do
-  #   raise NotSupported, "PNGs are currently not supported"
-  # end
 
   defimpl Mudbrick.Object do
     def to_iodata(image) do
