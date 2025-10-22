@@ -82,7 +82,6 @@ defmodule Mudbrick.Images.Png do
   """
   @spec add_dictionary_and_additional_objects(t(), any()) :: t()
   def add_dictionary_and_additional_objects(%{color_type: 0} = image, _doc) do
-  Logger.warning "PNG IMAGE TYPE = 0"
     %{
       image
       | dictionary: %{
@@ -99,7 +98,6 @@ defmodule Mudbrick.Images.Png do
   end
 
   def add_dictionary_and_additional_objects(%{color_type: 2} = image, _doc) do
-  Logger.warning "PNG IMAGE TYPE = 2"
     %{
       image
       | dictionary: %{
@@ -122,7 +120,7 @@ defmodule Mudbrick.Images.Png do
   end
 
   def add_dictionary_and_additional_objects(%{color_type: 3} = image, doc) do
-  Logger.warning "PNG IMAGE TYPE = 3"
+
     %{
       image
       | dictionary: %{
@@ -153,7 +151,7 @@ defmodule Mudbrick.Images.Png do
 
   def add_dictionary_and_additional_objects(%{color_type: color_type} = image, doc)
       when color_type in [4, 6] do
-      Logger.warning "PNG IMAGE TYPE = 4,6 -> #{color_type}"
+
 
       additional_objects =  Stream.new(
         compress: true,
@@ -170,8 +168,7 @@ defmodule Mudbrick.Images.Png do
         }
       )
 
-      Logger.warning "ADDITIONAL OBJECTS"
-      Logger.warning inspect additional_objects, pretty: true
+
 
       %{
       image
