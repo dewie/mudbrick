@@ -29,7 +29,8 @@ defmodule Mudbrick.Images.Png do
     dictionary: %{},
     image_data: <<>>,
     palette: <<>>,
-    alpha: <<>>
+    alpha: <<>>,
+    transparency: <<>>
   ]
 
   @typedoc "PNG image struct produced by this module."
@@ -48,7 +49,8 @@ defmodule Mudbrick.Images.Png do
           dictionary: map(),
           image_data: binary(),
           palette: binary(),
-          alpha: binary()
+          alpha: binary(),
+          transparency: binary()
         }
 
   @doc """
@@ -63,7 +65,7 @@ defmodule Mudbrick.Images.Png do
   def new(opts) do
     %__MODULE__{} =
       decode(opts[:file])
-      |> Map.put(:resource_identifier,opts[:resource_identifier])
+      |> Map.put(:resource_identifier, opts[:resource_identifier])
       |> add_size()
       |> add_dictionary_and_additional_objects(opts[:doc])
   end
@@ -98,6 +100,8 @@ defmodule Mudbrick.Images.Png do
   end
 
   def add_dictionary_and_additional_objects(%{color_type: 2} = image, _doc) do
+    Logger.warning("PNG IMAGE TYPE = 2")
+
     %{
       image
       | dictionary: %{
@@ -119,7 +123,27 @@ defmodule Mudbrick.Images.Png do
     }
   end
 
-  def add_dictionary_and_additional_objects(%{color_type: 3} = image, doc) do
+  def add_dictionary_and_additional_objects(%{color_type: 3, alpha: alpha} = image, doc)
+      when byte_size(alpha) > 0 do
+    Logger.warning("PNG IMAGE TYPE = 3 WITH TRANSPARENCY")
+    Logger.warning("Alpha data size: #{byte_size(alpha)}")
+    Logger.warning("Palette data size: #{byte_size(image.palette)}")
+    Logger.warning("Palette data (first 30 bytes): #{:binary.part(image.palette, 0, min(30, byte_size(image.palette))) |> :binary.bin_to_list()}")
+
+    # Create SMask for indexed PNG with transparency
+    smask_object = Stream.new(
+      compress: true,
+      data: alpha,
+      additional_entries: %{
+        :Type => :XObject,
+        :Subtype => :Image,
+        :Height => image.height,
+        :Width => image.width,
+        :BitsPerComponent => image.bits_per_component,
+        :ColorSpace => :DeviceGray,
+        :Decode => {:raw, "[ 0 1 ]"}
+      }
+    )
 
     %{
       image
@@ -137,26 +161,68 @@ defmodule Mudbrick.Images.Png do
             :Columns => image.width
           },
           :ColorSpace => [
-            :Indexed, :DeviceRGB, round(byte_size(image.palette) / 3 - 1), (length(doc.objects) + 2), 0 , {:raw, ~c"R"}
+            :Indexed,
+            :DeviceRGB,
+            round(byte_size(image.palette) / 3 - 1),
+            {:raw, ~c"#{if doc, do: length(doc.objects) + 3, else: 3} 0 R"}
+          ],
+          :BitsPerComponent => image.bits_per_component,
+          :SMask => {:raw, ~c"#{if doc, do: length(doc.objects) + 2, else: 2} 0 R"}
+        },
+        additional_objects: [
+          smask_object,
+          Stream.new(data: image.palette, compress: false),
+
+        ]
+    }
+  end
+
+  def add_dictionary_and_additional_objects(%{color_type: 3} = image, doc) do
+    Logger.warning("PNG IMAGE TYPE = 3")
+
+    # additional_objects =
+    #   Stream.new(
+    #     compress: false,
+    #     data: image.palette
+    #   )
+
+    %{
+      image
+      | dictionary: %{
+          :Type => :XObject,
+          :Subtype => :Image,
+          :Width => image.width,
+          :Height => image.height,
+          :Length => image.size,
+          :Filter => :FlateDecode,
+          :DecodeParms => %{
+            :Predictor => 15,
+            :Colors => get_colors(image.color_type),
+            :BitsPerComponent => image.bits_per_component,
+            :Columns => image.width
+          },
+          :ColorSpace => [
+            :Indexed,
+            :DeviceRGB,
+            round(byte_size(image.palette) / 3 - 1),
+            {:raw, ~c"#{if doc, do: length(doc.objects) + 2, else: 2} 0 R"}
           ],
           :BitsPerComponent => image.bits_per_component
         },
         additional_objects: [
-          Stream.new(
-            data: image.palette
-          )
+          Stream.new(data: image.palette, compress: false)
         ]
     }
   end
 
   def add_dictionary_and_additional_objects(%{color_type: color_type} = image, doc)
       when color_type in [4, 6] do
+    Logger.warning("PNG IMAGE TYPE = #{color_type}")
 
-
-      additional_objects =  Stream.new(
+    additional_objects =
+      Stream.new(
         compress: true,
         data: image.alpha,
-
         additional_entries: %{
           :Type => :XObject,
           :Subtype => :Image,
@@ -168,9 +234,7 @@ defmodule Mudbrick.Images.Png do
         }
       )
 
-
-
-      %{
+    %{
       image
       | dictionary: %{
           :Type => :XObject,
@@ -181,12 +245,10 @@ defmodule Mudbrick.Images.Png do
           :Filter => :FlateDecode,
           :ColorSpace => get_colorspace(image.color_type),
           :BitsPerComponent => image.bits_per_component,
-          :SMask =>  {:raw, ~c"#{length(doc.objects) + 2} 0 R"}
-
+          :SMask => {:raw, ~c"#{if doc, do: length(doc.objects) + 2, else: 2} 0 R"}
         },
         additional_objects: [
           additional_objects
-
         ]
     }
   end
@@ -251,9 +313,21 @@ defmodule Mudbrick.Images.Png do
   end
 
   @doc false
+  defp parse_chunk("tRNS", payload, %{compression_method: 0} = data) do
+    %{data | transparency: <<data.transparency::binary, payload::binary>>}
+  end
+
+  @doc false
   defp parse_chunk("IEND", _payload, %{color_type: color_type, image_data: image_data} = data)
        when color_type in [4, 6] do
     {image_data, alpha} = extract_alpha_channel(data, image_data)
+    %{data | image_data: image_data, alpha: alpha}
+  end
+
+  @doc false
+  defp parse_chunk("IEND", _payload, %{color_type: 3, transparency: transparency} = data)
+       when byte_size(transparency) > 0 do
+    {image_data, alpha} = extract_indexed_alpha_channel(data, data.image_data)
     %{data | image_data: image_data, alpha: alpha}
   end
 
@@ -281,8 +355,10 @@ defmodule Mudbrick.Images.Png do
 
     bytes_per_pixel =
       case color_type do
-        4 -> 1 + 1   # Gray + Alpha (8-bit assumed)
-        6 -> 3 + 1   # RGB + Alpha (8-bit assumed)
+        # Gray + Alpha (8-bit assumed)
+        4 -> 1 + 1
+        # RGB + Alpha (8-bit assumed)
+        6 -> 3 + 1
       end
 
     # Reconstruct raw, unfiltered scanlines
@@ -292,6 +368,58 @@ defmodule Mudbrick.Images.Png do
       split_color_and_alpha(raw, width, height, color_type, bit_depth)
 
     {deflate(color_raw), alpha_raw}
+  end
+
+  # Extract alpha channel for indexed PNGs with tRNS transparency
+  @doc false
+  defp extract_indexed_alpha_channel(data, image_data) do
+    %{transparency: transparency, width: width, height: height} = data
+
+    # Inflate the image data
+    inflated = inflate(image_data)
+
+    # For indexed images, each pixel is one byte (index into palette)
+    bytes_per_pixel = 1
+
+    # Unfilter the scanlines
+    raw = unfilter_scanlines(inflated, width, bytes_per_pixel, height)
+
+    # Convert transparency data to alpha mask
+    alpha_mask = build_indexed_alpha_mask(raw, transparency, width, height)
+
+    {deflate(raw), alpha_mask}
+  end
+
+  # Build alpha mask from indexed image data and tRNS transparency info
+  @doc false
+  defp build_indexed_alpha_mask(raw_data, transparency, width, height) do
+    # Create a lookup table for transparency
+    transparent_indices = :binary.bin_to_list(transparency)
+
+    # Process each pixel and create alpha mask
+    do_build_alpha_mask(raw_data, transparent_indices, width, height, <<>>)
+  end
+
+  @doc false
+  defp do_build_alpha_mask(<<>>, _transparent_indices, _width, _height, acc), do: acc
+
+  defp do_build_alpha_mask(raw_data, transparent_indices, width, height, acc) do
+    <<row::binary-size(width), rest::binary>> = raw_data
+
+    alpha_row =
+      for pixel_index <- :binary.bin_to_list(row) do
+        if pixel_index in transparent_indices, do: 0, else: 255
+      end
+
+    alpha_binary = :binary.list_to_bin(alpha_row)
+
+    do_build_alpha_mask(
+      rest,
+      transparent_indices,
+      width,
+      height,
+      <<acc::binary, alpha_binary::binary>>
+    )
   end
 
   # removed old filtered split helpers; we now unfilter first
@@ -348,6 +476,7 @@ defmodule Mudbrick.Images.Png do
   end
 
   defp do_unfilter_sub(<<>>, _bpp, _i, acc), do: acc
+
   defp do_unfilter_sub(<<byte, rest::binary>>, bpp, i, acc) do
     left = if i < bpp, do: 0, else: :binary.at(acc, i - bpp)
     val = band(byte + left, 255)
@@ -361,6 +490,7 @@ defmodule Mudbrick.Images.Png do
   end
 
   defp do_unfilter_up(<<>>, _prev, _i, acc), do: acc
+
   defp do_unfilter_up(<<byte, rest::binary>>, prev, i, acc) do
     up = :binary.at(prev, i)
     val = band(byte + up, 255)
@@ -374,6 +504,7 @@ defmodule Mudbrick.Images.Png do
   end
 
   defp do_unfilter_average(<<>>, _prev, _bpp, _i, acc), do: acc
+
   defp do_unfilter_average(<<byte, rest::binary>>, prev, bpp, i, acc) do
     left = if i < bpp, do: 0, else: :binary.at(acc, i - bpp)
     up = :binary.at(prev, i)
@@ -388,6 +519,7 @@ defmodule Mudbrick.Images.Png do
   end
 
   defp do_unfilter_paeth(<<>>, _prev, _bpp, _i, acc), do: acc
+
   defp do_unfilter_paeth(<<byte, rest::binary>>, prev, bpp, i, acc) do
     a = if i < bpp, do: 0, else: :binary.at(acc, i - bpp)
     b = :binary.at(prev, i)
@@ -404,6 +536,7 @@ defmodule Mudbrick.Images.Png do
     pa = abs(p - a)
     pb = abs(p - b)
     pc = abs(p - c)
+
     cond do
       pa <= pb and pa <= pc -> a
       pb <= pc -> b
@@ -421,10 +554,13 @@ defmodule Mudbrick.Images.Png do
   defp split_color_and_alpha(raw, width, height, color_type, bit_depth) do
     # We currently support 8-bit per component
     _ = bit_depth
+
     {colors_per_pixel, alpha_bytes} =
       case color_type do
-        4 -> {1, 1} # Gray + A
-        6 -> {3, 1} # RGB + A
+        # Gray + A
+        4 -> {1, 1}
+        # RGB + A
+        6 -> {3, 1}
       end
 
     bytes_per_pixel = colors_per_pixel + alpha_bytes
@@ -436,10 +572,21 @@ defmodule Mudbrick.Images.Png do
   # Walk rows collecting color and alpha planes
   @doc false
   defp do_split(_raw, _w, 0, _cp, _ab, _rb, color_acc, alpha_acc), do: {color_acc, alpha_acc}
+
   defp do_split(raw, w, rows_left, cp, ab, row_bytes, color_acc, alpha_acc) do
     <<row::binary-size(row_bytes), rest::binary>> = raw
     {row_color, row_alpha} = split_row(row, w, cp, ab)
-    do_split(rest, w, rows_left - 1, cp, ab, row_bytes, <<color_acc::binary, row_color::binary>>, <<alpha_acc::binary, row_alpha::binary>>)
+
+    do_split(
+      rest,
+      w,
+      rows_left - 1,
+      cp,
+      ab,
+      row_bytes,
+      <<color_acc::binary, row_color::binary>>,
+      <<alpha_acc::binary, row_alpha::binary>>
+    )
   end
 
   # Split a single row into consecutive color bytes and alpha bytes
@@ -452,11 +599,22 @@ defmodule Mudbrick.Images.Png do
   # Iterate each pixel-sized group across the row accumulating color and alpha
   @doc false
   defp do_split_row(_row, 0, _bpp, _cp, _ab, _i, color_acc, alpha_acc), do: {color_acc, alpha_acc}
+
   defp do_split_row(row, remaining, bpp, cp, ab, i, color_acc, alpha_acc) do
     offset = i * bpp
     <<_pre::binary-size(offset), pix::binary-size(bpp), _rest::binary>> = row
     <<color::binary-size(cp), alpha::binary-size(ab)>> = pix
-    do_split_row(row, remaining - 1, bpp, cp, ab, i + 1, <<color_acc::binary, color::binary>>, <<alpha_acc::binary, alpha::binary>>)
+
+    do_split_row(
+      row,
+      remaining - 1,
+      bpp,
+      cp,
+      ab,
+      i + 1,
+      <<color_acc::binary, color::binary>>,
+      <<alpha_acc::binary, alpha::binary>>
+    )
   end
 
   defp get_colorspace(0), do: :DeviceGray

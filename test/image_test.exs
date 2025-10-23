@@ -279,7 +279,25 @@ defmodule Mudbrick.ImageTest do
       |> then(&File.write(Path.join(__DIR__, "output/indexed.pdf"), &1))
     end
 
-    test "creates a pdf with png_trans png " do
+    test "creates a pdf with ekh trans logog png " do
+      new(
+        # flate compression for fonts, text etc.
+        compress: true,
+        # register an OTF font
+        #fonts: %{bodoni: bodoni_regular()},
+        # register a JPEG
+        images: %{flower: File.read!(Path.join(__DIR__, "fixtures/EKH-logo-watermerk-2022.png"))}
+      )
+      |> page(size: Mudbrick.Page.size(:a4))
+      |> image(
+        :flower,
+        position: {10, 10}
+      )
+      |> render()
+      |> then(&File.write(Path.join(__DIR__, "output/png_ekh_logo.pdf"), &1))
+    end
+
+    test "creates a pdf with transparent icon png " do
       new(
         # flate compression for fonts, text etc.
         compress: true,
