@@ -126,9 +126,6 @@ defmodule Mudbrick.Images.Png do
   def add_dictionary_and_additional_objects(%{color_type: 3, alpha: alpha} = image, doc)
       when byte_size(alpha) > 0 do
     Logger.warning("PNG IMAGE TYPE = 3 WITH TRANSPARENCY")
-    Logger.warning("Alpha data size: #{byte_size(alpha)}")
-    Logger.warning("Palette data size: #{byte_size(image.palette)}")
-    Logger.warning("Palette data (first 30 bytes): #{:binary.part(image.palette, 0, min(30, byte_size(image.palette))) |> :binary.bin_to_list()}")
 
     # Create SMask for indexed PNG with transparency
     smask_object = Stream.new(
@@ -387,7 +384,7 @@ defmodule Mudbrick.Images.Png do
     # Convert transparency data to alpha mask
     alpha_mask = build_indexed_alpha_mask(raw, transparency, width, height)
 
-    {deflate(raw), alpha_mask}
+    {image_data, alpha_mask}
   end
 
   # Build alpha mask from indexed image data and tRNS transparency info
