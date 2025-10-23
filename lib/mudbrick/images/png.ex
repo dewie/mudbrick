@@ -126,6 +126,7 @@ defmodule Mudbrick.Images.Png do
   def add_dictionary_and_additional_objects(%{color_type: 3, alpha: alpha} = image, doc)
       when byte_size(alpha) > 0 do
     Logger.warning("PNG IMAGE TYPE = 3 WITH TRANSPARENCY")
+    Logger.warning("Transparency data: #{:binary.part(image.transparency, 0, min(20, byte_size(image.transparency))) |> :binary.bin_to_list()}")
 
     # Create SMask for indexed PNG with transparency
     smask_object = Stream.new(
@@ -390,29 +391,30 @@ defmodule Mudbrick.Images.Png do
   # Build alpha mask from indexed image data and tRNS transparency info
   @doc false
   defp build_indexed_alpha_mask(raw_data, transparency, width, height) do
-    # Create a lookup table for transparency
-    transparent_indices = :binary.bin_to_list(transparency)
+    # Parse transparency data to get alpha values for each palette index
+    alpha_values = :binary.bin_to_list(transparency)
 
     # Process each pixel and create alpha mask
-    do_build_alpha_mask(raw_data, transparent_indices, width, height, <<>>)
+    do_build_alpha_mask(raw_data, alpha_values, width, height, <<>>)
   end
 
   @doc false
-  defp do_build_alpha_mask(<<>>, _transparent_indices, _width, _height, acc), do: acc
+  defp do_build_alpha_mask(<<>>, _alpha_values, _width, _height, acc), do: acc
 
-  defp do_build_alpha_mask(raw_data, transparent_indices, width, height, acc) do
+  defp do_build_alpha_mask(raw_data, alpha_values, width, height, acc) do
     <<row::binary-size(width), rest::binary>> = raw_data
 
     alpha_row =
       for pixel_index <- :binary.bin_to_list(row) do
-        if pixel_index in transparent_indices, do: 0, else: 255
+        # Get alpha value for this palette index, default to 255 (opaque) if not in tRNS
+        Enum.at(alpha_values, pixel_index, 255)
       end
 
     alpha_binary = :binary.list_to_bin(alpha_row)
 
     do_build_alpha_mask(
       rest,
-      transparent_indices,
+      alpha_values,
       width,
       height,
       <<acc::binary, alpha_binary::binary>>
