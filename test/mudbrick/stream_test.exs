@@ -33,7 +33,7 @@ defmodule Mudbrick.StreamTest do
       |> IO.iodata_to_binary()
 
     assert String.starts_with?(serialised, """
-           <</Length 42952
+           <</Length 58748
            >>
            stream\
            """)

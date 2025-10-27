@@ -76,6 +76,48 @@ defmodule Mudbrick.TextBlock do
     |> assign_offsets()
   end
 
+  @doc """
+  Write text with automatic wrapping to fit within a maximum width.
+
+  ## Parameters
+  - `tb`: The TextBlock to write to
+  - `text`: The text to write and wrap
+  - `max_width`: Maximum width in points
+  - `opts`: Additional options (same as write/3 plus wrapping options)
+
+  ## Wrapping Options
+  - `:break_words` - Whether to break long words (default: false)
+  - `:hyphenate` - Whether to add hyphens when breaking words (default: false)
+  - `:indent` - Indentation for wrapped lines (default: 0)
+  - `:justify` - Text justification (:left, :right, :center, :justify) (default: :left)
+
+  ## Examples
+
+      text_block = Mudbrick.TextBlock.new(font: font, font_size: 12)
+      |> Mudbrick.TextBlock.write_wrapped(
+        "This is a very long line of text that should be wrapped automatically.",
+        200,
+        break_words: true
+      )
+  """
+  @spec write_wrapped(t(), String.t(), number(), options()) :: t()
+  def write_wrapped(tb, text, max_width, opts \\ []) do
+    wrap_opts = Keyword.take(opts, [:break_words, :hyphenate, :indent, :justify])
+    text_opts = Keyword.drop(opts, [:break_words, :hyphenate, :indent, :justify])
+
+    wrapped_lines = Mudbrick.TextWrapper.wrap_text(
+      text,
+      tb.font,
+      tb.font_size,
+      max_width,
+      wrap_opts
+    )
+
+    Enum.reduce(wrapped_lines, tb, fn line, acc_tb ->
+      write(acc_tb, line, text_opts)
+    end)
+  end
+
   defp assign_offsets(tb) do
     {_, lines} =
       for line <- Enum.reverse(tb.lines), reduce: {0.0, []} do

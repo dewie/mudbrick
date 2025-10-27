@@ -126,7 +126,6 @@ defmodule Mudbrick.Images.Png do
   def add_dictionary_and_additional_objects(%{color_type: 3, alpha: alpha} = image, doc)
       when byte_size(alpha) > 0 do
     Logger.warning("PNG IMAGE TYPE = 3 WITH TRANSPARENCY")
-    Logger.warning("Transparency data: #{:binary.part(image.transparency, 0, min(20, byte_size(image.transparency))) |> :binary.bin_to_list()}")
 
     # Create SMask for indexed PNG with transparency
     smask_object = Stream.new(

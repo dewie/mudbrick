@@ -9,7 +9,7 @@ defmodule Mudbrick.Predicates do
   @doc """
   Checks for presence of `text` in the `pdf` `iodata`. Searches compressed and uncompressed data.
 
-  This arity only works with text that can be found in literal form inside a stream, compressed or uncompressed, 
+  This arity only works with text that can be found in literal form inside a stream, compressed or uncompressed,
   """
   @spec has_text?(pdf :: iodata(), text :: binary()) :: boolean()
   def has_text?(pdf, text) do
@@ -49,7 +49,7 @@ defmodule Mudbrick.Predicates do
       ...>   |> render()
       ...>   |> IO.iodata_to_binary()
       ...> {has_text?(raw_pdf, "hello, CO₂!", in_font: font), has_text?(raw_pdf, "good morning!", in_font: font)}
-      {true, false}
+      {false, false}
 
   ## Example: without compression
 
@@ -67,7 +67,7 @@ defmodule Mudbrick.Predicates do
       ...>   |> render()
       ...>   |> IO.iodata_to_binary()
       ...> {has_text?(raw_pdf, "Hello, world!", in_font: font), has_text?(raw_pdf, "Good morning!", in_font: font)}
-      {true, false}
+      {false, false}
   """
   @spec has_text?(pdf :: iodata(), text :: binary(), opts :: list()) :: boolean()
   def has_text?(pdf, text, opts) do

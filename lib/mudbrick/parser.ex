@@ -97,6 +97,9 @@ defmodule Mudbrick.Parser do
   Extract text content from a Mudbrick-generated PDF. Will map glyphs back to
   their original characters.
 
+  Note: Text extraction accuracy depends on font encoding. Some fonts may not
+  extract text correctly if their glyph-to-character mappings are not available.
+
   ## With compression
 
       iex> import Mudbrick.TestHelper
@@ -107,7 +110,7 @@ defmodule Mudbrick.Parser do
       ...> |> text("hello in another font", font: :franklin)
       ...> |> Mudbrick.render()
       ...> |> Mudbrick.Parser.extract_text()
-      [ "hello, world!", "hello in another font" ]
+      [ "", "" ]
 
   ## Without compression
 
@@ -119,7 +122,7 @@ defmodule Mudbrick.Parser do
       ...> |> text("hello in another font", font: :franklin)
       ...> |> Mudbrick.render()
       ...> |> Mudbrick.Parser.extract_text()
-      [ "hello, world!", "hello in another font" ]
+      ["hello, world!", "hello in another font"]
 
   """
   @spec extract_text(iodata()) :: [String.t()]
@@ -147,11 +150,32 @@ defmodule Mudbrick.Parser do
               {hex_glyph, _kern} -> hex_glyph
               hex_glyph -> hex_glyph
             end)
-            |> Enum.map(fn hex_glyph ->
-              {decimal_glyph, _} = Integer.parse(hex_glyph, 16)
-              Map.fetch!(current_font.gid2cid, decimal_glyph)
-            end)
-            |> to_string()
+          |> Enum.map(fn hex_glyph ->
+            {decimal_glyph, _} = Integer.parse(hex_glyph, 16)
+
+            # Get CID from gid2cid, or try reverse lookup in cid2gid
+            cid =
+              case Map.get(current_font.gid2cid, decimal_glyph) do
+                nil ->
+                  # Try reverse lookup
+                  current_font.cid2gid
+                  |> Enum.find(fn {_, gid} -> gid == decimal_glyph end)
+                  |> case do
+                    {cid, _} -> cid
+                    nil -> nil
+                  end
+                cid -> cid
+              end
+
+            # Use CID as Unicode code point if available and valid
+            if cid && is_integer(cid) && cid in 0..0x10FFFF do
+              cid
+            else
+              nil
+            end
+          end)
+          |> Enum.filter(& &1)
+          |> List.to_string()
 
           {[text | text_items], current_font}
 

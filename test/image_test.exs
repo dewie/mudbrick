@@ -180,14 +180,10 @@ defmodule Mudbrick.ImageTest do
                     /Subtype /Image
                     /BitsPerComponent 8
                     /ColorSpace /DeviceRGB
-                    /DecodeParms <</BitsPerComponent 8
-                    /Colors 3
-                    /Columns 100
-                    /Predictor 15
-                  >>
                     /Filter /FlateDecode
                     /Height 75
-                    /Length 15961
+                    /Length 20501
+                    /SMask 2 0 R
                     /Width 100
                 >>
                   """

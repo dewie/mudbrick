@@ -38,7 +38,7 @@ defmodule Mudbrick.FontTest do
              | _
            ] = lines
 
-    assert "497 beginbfchar" in lines
+    assert "498 beginbfchar" in lines
   end
 
   test "embedded OTF fonts create descendant, descriptor and file objects" do
@@ -70,7 +70,7 @@ defmodule Mudbrick.FontTest do
     assert %Mudbrick.Stream{
              data: ^data,
              additional_entries: %{
-               Length1: 42_952,
+               Length1: 58_748,
                Subtype: :OpenType
              }
            } = file.value
