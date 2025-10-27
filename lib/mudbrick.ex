@@ -373,13 +373,39 @@ defmodule Mudbrick do
   def text(context, write_or_writes, opts \\ [])
 
   def text({doc, _contents_obj} = context, writes, opts) when is_list(writes) do
-    ContentStream.update_operations(context, fn ops ->
-      output =
-        text_block(doc, writes, fetch_font(doc, opts))
-        |> TextBlock.Output.to_iodata()
+    # Check if max_width is set for wrapping
+    if Keyword.has_key?(opts, :max_width) do
+      max_width = Keyword.fetch!(opts, :max_width)
+      wrap_opts = Keyword.take(opts, [:break_words, :hyphenate, :indent, :justify])
+      text_block_opts = Keyword.drop(opts, [:max_width, :break_words, :hyphenate, :indent, :justify])
 
-      output.operations ++ ops
-    end)
+      ContentStream.update_operations(context, fn ops ->
+        # Fetch font value from opts
+        font_opts = fetch_font(doc, text_block_opts)
+        tb = TextBlock.new(font_opts)
+
+        # Apply wrapping to each text element in the list
+        tb = Enum.reduce(writes, tb, fn
+          {text, write_opts}, acc_tb ->
+            merged_wrap_opts = Keyword.merge(wrap_opts, write_opts)
+            TextBlock.write_wrapped(acc_tb, text, max_width, merged_wrap_opts)
+
+          text, acc_tb ->
+            TextBlock.write_wrapped(acc_tb, text, max_width, wrap_opts)
+        end)
+
+        output = TextBlock.Output.to_iodata(tb)
+        output.operations ++ ops
+      end)
+    else
+      ContentStream.update_operations(context, fn ops ->
+        output =
+          text_block(doc, writes, fetch_font(doc, opts))
+          |> TextBlock.Output.to_iodata()
+
+        output.operations ++ ops
+      end)
+    end
   end
 
   def text({doc, _contents_obj} = context, write, opts) when is_binary(write) do
@@ -529,7 +555,7 @@ defmodule Mudbrick do
         Mudbrick.TextBlock.write(acc, text, fetch_font(doc, opts))
 
       text, acc ->
-        Mudbrick.TextBlock.write(acc, text, [])
+        Mudbrick.TextBlock.write(acc, text, fetch_font(doc, []))
     end)
   end
 

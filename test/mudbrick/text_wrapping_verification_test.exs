@@ -60,3 +60,4 @@ defmodule Mudbrick.TextWrappingVerificationTest do
     IO.puts("   - Section 3: Text should be wrapped and justified")
   end
 end
+

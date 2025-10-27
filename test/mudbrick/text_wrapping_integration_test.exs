@@ -14,7 +14,7 @@ defmodule Mudbrick.TextWrappingIntegrationTest do
       font: :bodoni,
       font_size: 12,
       position: {10, 280},
-      max_width: 180
+      max_width: 80
     )
     |> render()
     |> then(&File.write(output_file, &1))

@@ -113,8 +113,9 @@ defmodule Mudbrick.TextBlock do
       wrap_opts
     )
 
+    # Add each wrapped line as a separate line with a newline
     Enum.reduce(wrapped_lines, tb, fn line, acc_tb ->
-      write(acc_tb, line, text_opts)
+      write(acc_tb, line <> "\n", text_opts)
     end)
   end
 

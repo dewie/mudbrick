@@ -44,3 +44,4 @@ defmodule Mudbrick.TextJustificationTest do
     assert result == ["word"]
   end
 end
+
