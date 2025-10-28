@@ -376,10 +376,13 @@ defmodule Mudbrick.Images.Png do
     inflated = inflate(image_data)
 
     # For indexed images, each pixel is one byte (index into palette)
+    # Note: in PNG, indexed images can have bit depths of 1, 2, 4, or 8 bits.
+    # Our unfilter must operate on the correct packed row byte length.
     bytes_per_pixel = 1
 
     # Unfilter the scanlines
-    raw = unfilter_scanlines(inflated, width, bytes_per_pixel, height)
+    # Use bit depth to compute packed row length correctly for indexed color
+    raw = unfilter_scanlines_indexed(inflated, width, data.bits_per_component, height)
 
     # Convert transparency data to alpha mask
     alpha_mask = build_indexed_alpha_mask(raw, transparency, width, height)
@@ -447,6 +450,16 @@ defmodule Mudbrick.Images.Png do
   defp unfilter_scanlines(data, width, bytes_per_pixel, height) do
     row_length = width * bytes_per_pixel
     do_unfilter(data, row_length, bytes_per_pixel, height, <<>>, :binary.copy(<<0>>, row_length))
+  end
+
+  # Unfilter helper for indexed-color images with sub-byte bit depths (1/2/4/8)
+  @doc false
+  defp unfilter_scanlines_indexed(data, width, bit_depth, height) do
+    # Number of data bits per row (without the filter byte)
+    row_bits = width * bit_depth
+    # Packed bytes per row, rounded up
+    row_length = div(row_bits + 7, 8)
+    do_unfilter(data, row_length, 1, height, <<>>, :binary.copy(<<0>>, row_length))
   end
 
   # Iterate rows, apply the appropriate filter to reconstruct raw bytes per row
