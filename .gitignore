@@ -27,3 +27,7 @@ mudbrick-*.tar
 /.direnv
 test.pdf
 /examples/*.pdf
+/test/output/*.pdf
+
+# macOS system files
+.DS_Store

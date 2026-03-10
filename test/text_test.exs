@@ -7,6 +7,7 @@ defmodule Mudbrick.TextTest do
 
   alias Mudbrick.ContentStream.TJ
   alias Mudbrick.Font
+  require Logger
 
   test "with more than one registered font, it's an error not to choose one" do
     chain =
@@ -33,7 +34,7 @@ defmodule Mudbrick.TextTest do
              "200 700 Td",
              "-28.294 0 Td",
              "1 0 0 rg",
-             "[ <0011> 4 <0055> <0174> <01B7> ] TJ",
+             "[ <0026> 4 <0032> <01C2> <0003> ] TJ",
              "28.294 0 Td",
              "ET"
            ] =
@@ -188,13 +189,13 @@ defmodule Mudbrick.TextTest do
     [_et, show_text_operation | _] = content_stream.value.operations
 
     assert %TJ{
-             kerned_text: [{"0011", 4}, "0055", "0174"]
+             kerned_text: [{"0026", 4}, "0032", "01C2"]
            } = show_text_operation
   end
 
   describe "serialisation" do
     test "converts TJ text to the assigned font's glyph IDs in hex, with kerning" do
-      assert ["[ <0011> 4 <0055> <0174> ] TJ", "ET"] =
+      assert ["[ <0026> 4 <0032> <01C2> ] TJ", "ET"] =
                new(fonts: %{bodoni: bodoni_regular()})
                |> page()
                |> text("CO₂", font_size: 24, position: {0, 700})
@@ -203,7 +204,7 @@ defmodule Mudbrick.TextTest do
     end
 
     test "with auto-kerning disabled, doesn't write kerns" do
-      assert ["[ <0011> <0055> <0174> ] TJ", "ET"] =
+      assert ["[ <0026> <0032> <01C2> ] TJ", "ET"] =
                new(fonts: %{bodoni: bodoni_regular()})
                |> page()
                |> text([{"\n", auto_kern: true}, {"CO₂", auto_kern: false}],
@@ -219,6 +220,24 @@ defmodule Mudbrick.TextTest do
              |> page()
              |> text("\n", font_size: 13)
              |> render()
+    end
+
+    test "multiline gedoe" do
+      new(fonts: %{bodoni: bodoni_regular()})
+      |> page()
+      |> text("line 1 sadfdasf\n asdfdsafsdaf sadfdsafdasf adsfdasfdsaf sadfdsaf sadfdsaf dsaf \nline 2 asdfdsaf sadfasfdsafdsafdsa sadfsdafsdaf",
+        font_size: 24,
+        position: {0, 700}
+      )
+      |> render()
+      |> then(fn(x) ->
+
+        IO.inspect x
+        File.write("./test/output/test.pdf",x)
+
+      end)
+
+
     end
   end
 end

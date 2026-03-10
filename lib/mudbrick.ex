@@ -238,6 +238,11 @@ defmodule Mudbrick do
   - `:align` - `:left`, `:right` or `:centre`. Default: `:left`.
     Note that the rightmost point of right-aligned text is the horizontal offset provided to `:position`.
     The same position defines the centre point of centre-aligned text.
+  - `:max_width` - Maximum width in points. When set, text will automatically wrap to fit within this width.
+  - `:break_words` - When `max_width` is set, whether to break long words that don't fit on a line. Default: `false`.
+  - `:hyphenate` - When `break_words` is enabled, whether to add hyphens at word breaks. Default: `false`.
+  - `:indent` - Indentation in points for wrapped lines. Default: `0`.
+  - `:justify` - Text justification when wrapping: `:left`, `:right`, `:center`, or `:justify`. Default: `:left`.
 
   ## Individual write options
 
@@ -325,20 +330,103 @@ defmodule Mudbrick do
       ...> |> then(&File.write("examples/underlined_text_centre_align.pdf", &1))
 
   <object width="400" height="130" data="examples/underlined_text_centre_align.pdf?#navpanes=0" type="application/pdf"></object>
+
+  [Text wrapping](examples/text_wrapping.pdf?#navpanes=0).
+
+      iex> import Mudbrick
+      ...> import Mudbrick.TestHelper
+      ...> new(fonts: %{bodoni: bodoni_regular()})
+      ...> |> page(size: {250, 350})
+      ...> |> text(
+      ...>    "This is a very long line of text that should be wrapped automatically to fit within the specified width constraints. It will break at word boundaries and create multiple lines as needed.",
+      ...>    font: :bodoni,
+      ...>    font_size: 12,
+      ...>    position: {10, 330},
+      ...>    max_width: 230
+      ...>  )
+      ...> |> render()
+      ...> |> then(&File.write("examples/text_wrapping.pdf", &1))
+
+  <object width="400" height="400" data="examples/text_wrapping.pdf?#navpanes=0" type="application/pdf"></object>
+
+  [Text wrapping with justification](examples/text_wrapping_justified.pdf?#navpanes=0).
+
+      iex> import Mudbrick
+      ...> import Mudbrick.TestHelper
+      ...> new(fonts: %{bodoni: bodoni_regular()})
+      ...> |> page(size: {300, 400})
+      ...> |> text(
+      ...>    "This text is fully justified. Spaces are distributed evenly between words to align both left and right margins. The last line is not justified.",
+      ...>    font: :bodoni,
+      ...>    font_size: 12,
+      ...>    position: {10, 380},
+      ...>    max_width: 280,
+      ...>    justify: :justify
+      ...>  )
+      ...> |> render()
+      ...> |> then(&File.write("examples/text_wrapping_justified.pdf", &1))
+
+  <object width="400" height="400" data="examples/text_wrapping_justified.pdf?#navpanes=0" type="application/pdf"></object>
   """
 
   @spec text(context(), Mudbrick.TextBlock.write(), Mudbrick.TextBlock.options()) :: context()
   def text(context, write_or_writes, opts \\ [])
 
   def text({doc, _contents_obj} = context, writes, opts) when is_list(writes) do
-    ContentStream.update_operations(context, fn ops ->
-      output =
-        doc
-        |> text_block(writes, fetch_font(doc, opts))
-        |> TextBlock.Output.to_iodata()
+    # Check if max_width is set for wrapping
+    if Keyword.has_key?(opts, :max_width) do
+      max_width = Keyword.fetch!(opts, :max_width)
+      wrap_opts = Keyword.take(opts, [:break_words, :hyphenate, :indent, :justify])
+      text_block_opts = Keyword.drop(opts, [:max_width, :break_words, :hyphenate, :indent, :justify])
 
-      output.operations ++ ops
-    end)
+      ContentStream.update_operations(context, fn ops ->
+        # Fetch font value from opts
+        font_opts = fetch_font(doc, text_block_opts)
+        tb = TextBlock.new(font_opts)
+
+        # Apply wrapping to each text element in the list
+        tb = Enum.reduce(writes, tb, fn
+          {text, write_opts}, acc_tb ->
+            merged_wrap_opts = Keyword.merge(wrap_opts, write_opts)
+            TextBlock.write_wrapped(acc_tb, text, max_width, merged_wrap_opts)
+
+          text, acc_tb ->
+            TextBlock.write_wrapped(acc_tb, text, max_width, wrap_opts)
+        end)
+
+        output = TextBlock.Output.to_iodata(tb)
+        output.operations ++ ops
+      end)
+    else
+      ContentStream.update_operations(context, fn ops ->
+        output =
+          text_block(doc, writes, fetch_font(doc, opts))
+          |> TextBlock.Output.to_iodata()
+
+        output.operations ++ ops
+      end)
+    end
+  end
+
+  def text({doc, _contents_obj} = context, write, opts) when is_binary(write) do
+    # Check if max_width is set for wrapping
+    if Keyword.has_key?(opts, :max_width) do
+      max_width = Keyword.fetch!(opts, :max_width)
+      wrap_opts = Keyword.take(opts, [:break_words, :hyphenate, :indent, :justify])
+      text_block_opts = Keyword.drop(opts, [:max_width, :break_words, :hyphenate, :indent, :justify])
+
+      ContentStream.update_operations(context, fn ops ->
+        # Fetch font value from opts and merge with text_block_opts
+        font_opts = fetch_font(doc, text_block_opts)
+        tb = TextBlock.new(font_opts)
+        tb = TextBlock.write_wrapped(tb, write, max_width, wrap_opts)
+
+        output = TextBlock.Output.to_iodata(tb)
+        output.operations ++ ops
+      end)
+    else
+      text(context, [write], opts)
+    end
   end
 
   def text(context, write, opts) do
@@ -467,7 +555,7 @@ defmodule Mudbrick do
         Mudbrick.TextBlock.write(acc, text, fetch_font(doc, opts))
 
       text, acc ->
-        Mudbrick.TextBlock.write(acc, text, [])
+        Mudbrick.TextBlock.write(acc, text, fetch_font(doc, []))
     end)
   end
 

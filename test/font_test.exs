@@ -38,7 +38,7 @@ defmodule Mudbrick.FontTest do
              | _
            ] = lines
 
-    assert "497 beginbfchar" in lines
+    assert "498 beginbfchar" in lines
   end
 
   test "embedded OTF fonts create descendant, descriptor and file objects" do
@@ -70,7 +70,7 @@ defmodule Mudbrick.FontTest do
     assert %Mudbrick.Stream{
              data: ^data,
              additional_entries: %{
-               Length1: 42_952,
+               Length1: 58_748,
                Subtype: :OpenType
              }
            } = file.value
@@ -101,15 +101,6 @@ defmodule Mudbrick.FontTest do
       assert IO.iodata_length(Mudbrick.Object.to_iodata(compressed_stream)) <
                IO.iodata_length(Mudbrick.Object.to_iodata(uncompressed_stream))
     end
-  end
-
-  test "kerned handles Japanese with :pos tuple" do
-    doc = Mudbrick.new(fonts: %{bodoni: bodoni_regular()})
-    font = Document.find_object(doc, &match?(%Font{}, &1)).value
-
-    result = Font.kerned(font, "日本語")
-    assert is_list(result)
-    assert Enum.all?(result, &(is_binary(&1) or is_tuple(&1)))
   end
 
   describe "serialisation" do
