@@ -110,7 +110,7 @@ defmodule Mudbrick.Image do
                 doc
 
               _ ->
-                  {doc, additional_objects} = Enum.reduce(image.value.additional_objects, {doc, []}, fn additional_object, {doc, objects} ->
+                  {doc, _additional_objects} = Enum.reduce(image.value.additional_objects, {doc, []}, fn additional_object, {doc, _objects} ->
                     {doc, _obj} = Document.add(doc, additional_object)
                     {doc, nil}
                   end)

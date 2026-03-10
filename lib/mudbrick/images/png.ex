@@ -100,8 +100,6 @@ defmodule Mudbrick.Images.Png do
   end
 
   def add_dictionary_and_additional_objects(%{color_type: 2} = image, _doc) do
-    Logger.warning("PNG IMAGE TYPE = 2")
-
     %{
       image
       | dictionary: %{
@@ -125,22 +123,21 @@ defmodule Mudbrick.Images.Png do
 
   def add_dictionary_and_additional_objects(%{color_type: 3, alpha: alpha} = image, doc)
       when byte_size(alpha) > 0 do
-    Logger.warning("PNG IMAGE TYPE = 3 WITH TRANSPARENCY")
-
     # Create SMask for indexed PNG with transparency
-    smask_object = Stream.new(
-      compress: true,
-      data: alpha,
-      additional_entries: %{
-        :Type => :XObject,
-        :Subtype => :Image,
-        :Height => image.height,
-        :Width => image.width,
-        :BitsPerComponent => image.bits_per_component,
-        :ColorSpace => :DeviceGray,
-        :Decode => {:raw, "[ 0 1 ]"}
-      }
-    )
+    smask_object =
+      Stream.new(
+        compress: true,
+        data: alpha,
+        additional_entries: %{
+          :Type => :XObject,
+          :Subtype => :Image,
+          :Height => image.height,
+          :Width => image.width,
+          :BitsPerComponent => image.bits_per_component,
+          :ColorSpace => :DeviceGray,
+          :Decode => {:raw, "[ 0 1 ]"}
+        }
+      )
 
     %{
       image
@@ -168,15 +165,12 @@ defmodule Mudbrick.Images.Png do
         },
         additional_objects: [
           smask_object,
-          Stream.new(data: image.palette, compress: false),
-
+          Stream.new(data: image.palette, compress: false)
         ]
     }
   end
 
   def add_dictionary_and_additional_objects(%{color_type: 3} = image, doc) do
-    Logger.warning("PNG IMAGE TYPE = 3")
-
     # additional_objects =
     #   Stream.new(
     #     compress: false,
@@ -214,8 +208,6 @@ defmodule Mudbrick.Images.Png do
 
   def add_dictionary_and_additional_objects(%{color_type: color_type} = image, doc)
       when color_type in [4, 6] do
-    Logger.warning("PNG IMAGE TYPE = #{color_type}")
-
     additional_objects =
       Stream.new(
         compress: true,
@@ -378,7 +370,7 @@ defmodule Mudbrick.Images.Png do
     # For indexed images, each pixel is one byte (index into palette)
     # Note: in PNG, indexed images can have bit depths of 1, 2, 4, or 8 bits.
     # Our unfilter must operate on the correct packed row byte length.
-    bytes_per_pixel = 1
+    _bytes_per_pixel = 1
 
     # Unfilter the scanlines
     # Use bit depth to compute packed row length correctly for indexed color
