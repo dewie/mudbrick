@@ -41,7 +41,9 @@ defmodule Mudbrick.TextWrapper do
 
   # Handle nil font case for testing
   def wrap_text(text, nil, _font_size, _max_width, _opts) do
-    String.split(text, ~r/\s+/)
+    text
+    |> String.replace("\r\n", "\n")
+    |> String.split("\n")
   end
 
   def wrap_text(text, font, font_size, max_width, opts) do
@@ -50,11 +52,18 @@ defmodule Mudbrick.TextWrapper do
     indent = Keyword.get(opts, :indent, 0)
     justify = Keyword.get(opts, :justify, :left)
 
-    words = String.split(text, ~r/\s+/)
-    raw_lines = wrap_words(words, font, font_size, max_width, indent, break_words, hyphenate, [], "")
+    text
+    |> String.replace("\r\n", "\n")
+    |> String.split("\n")
+    |> Enum.flat_map(fn
+      "" ->
+        [""]
 
-    # Apply justification to the lines
-    justify_lines(raw_lines, font, font_size, max_width, indent, justify)
+      paragraph ->
+        words = String.split(paragraph, ~r/[ \t]+/, trim: true)
+        raw_lines = wrap_words(words, font, font_size, max_width, indent, break_words, hyphenate, [], "")
+        justify_lines(raw_lines, font, font_size, max_width, indent, justify)
+    end)
   end
 
   @doc """
