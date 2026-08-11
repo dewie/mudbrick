@@ -16,6 +16,7 @@ Currently working:
 - Right and centre alignment.
 - Coloured text.
 - JPEG images.
+- PNG images, including transparency.
 - Compression.
 - Underline with colour and thickness options.
 - Basic line drawing.

@@ -6,90 +6,28 @@ defmodule Mudbrick.ImageTest do
 
   alias Mudbrick.Document
   alias Mudbrick.Image
+  alias Mudbrick.Images.Png
 
-  test "embedding an image adds it to the document" do
-    data = flower()
-    doc = new(images: %{flower: data})
+  describe "JPEGs" do
+    test "embedding an image adds it to the document" do
+      data = flower()
+      doc = new(images: %{flower: data})
 
-    expected_image = %Image{
-      file: data,
-      resource_identifier: :I1,
-      width: 500,
-      height: 477,
-      filter: :DCTDecode,
-      bits_per_component: 8
-    }
+      expected_image = %Image{
+        file: data,
+        resource_identifier: :I1,
+        width: 500,
+        height: 477,
+        filter: :DCTDecode,
+        bits_per_component: 8
+      }
 
-    assert Document.find_object(doc, &(&1 == expected_image))
-    assert Document.root_page_tree(doc).value.images[:flower].value == expected_image
-  end
-
-  test "PNGs are currently not supported" do
-    assert_raise Image.NotSupported, fn ->
-      new(images: %{my_png: example_png()})
+      assert Document.find_object(doc, &(&1 == expected_image))
+      assert Document.root_page_tree(doc).value.images[:flower].value == expected_image
     end
-  end
 
-  test "specifying :auto height maintains aspect ratio" do
-    assert [
-             "q",
-             "100 0 0 95.4 123 456 cm",
-             "/I1 Do",
-             "Q"
-           ] =
-             new(images: %{flower: flower()})
-             |> page()
-             |> image(
-               :flower,
-               position: {123, 456},
-               scale: {100, :auto}
-             )
-             |> operations()
-  end
-
-  test "specifying :auto width maintains aspect ratio" do
-    assert [
-             "q",
-             "52.41090146750524 0 0 50 123 456 cm",
-             "/I1 Do",
-             "Q"
-           ] =
-             new(images: %{flower: flower()})
-             |> page()
-             |> image(
-               :flower,
-               position: {123, 456},
-               scale: {:auto, 50}
-             )
-             |> operations()
-  end
-
-  test "asking for a registered image produces an isolated cm/Do operation" do
-    assert [
-             "q",
-             "100 0 0 100 45 550 cm",
-             "/I1 Do",
-             "Q"
-           ] =
-             new(images: %{flower: flower()})
-             |> page()
-             |> image(
-               :flower,
-               position: {45, 550},
-               scale: {100, 100}
-             )
-             |> operations()
-  end
-
-  describe "serialisation" do
-    test "produces a JPEG XObject stream" do
-      [dictionary, _stream] =
-        Image.new(file: flower(), resource_identifier: :I1)
-        |> Mudbrick.Object.to_iodata()
-        |> IO.iodata_to_binary()
-        |> String.split("stream", parts: 2)
-
-      assert dictionary ==
+    test "serialise to a JPEG XObject stream" do
+      assert dictionary(Image.new(file: flower(), resource_identifier: :I1)) ==
                """
                <</Type /XObject
                  /Subtype /Image
@@ -102,5 +40,270 @@ defmodule Mudbrick.ImageTest do
                >>
                """
     end
+  end
+
+  describe "placement" do
+    test "specifying :auto height maintains aspect ratio" do
+      assert [
+               "q",
+               "100 0 0 95.4 123 456 cm",
+               "/I1 Do",
+               "Q"
+             ] =
+               new(images: %{flower: flower()})
+               |> page()
+               |> image(:flower, position: {123, 456}, scale: {100, :auto})
+               |> operations()
+    end
+
+    test "specifying :auto width maintains aspect ratio" do
+      assert [
+               "q",
+               "52.41090146750524 0 0 50 123 456 cm",
+               "/I1 Do",
+               "Q"
+             ] =
+               new(images: %{flower: flower()})
+               |> page()
+               |> image(:flower, position: {123, 456}, scale: {:auto, 50})
+               |> operations()
+    end
+
+    test "asking for a registered image produces an isolated cm/Do operation" do
+      assert [
+               "q",
+               "100 0 0 100 45 550 cm",
+               "/I1 Do",
+               "Q"
+             ] =
+               new(images: %{flower: flower()})
+               |> page()
+               |> image(:flower, position: {45, 550}, scale: {100, 100})
+               |> operations()
+    end
+
+    test "a PNG can be placed just like a JPEG" do
+      assert [
+               "q",
+               "100 0 0 75 0 0 cm",
+               "/I1 Do",
+               "Q"
+             ] =
+               new(images: %{drawing: example_png()})
+               |> page()
+               |> image(:drawing, position: {0, 0}, scale: {100, 75})
+               |> operations()
+    end
+  end
+
+  describe "PNG decoding" do
+    test "reads dimensions, colour type and bit depth from a truecolour PNG" do
+      png = Png.new(file: read_fixture("truecolour.png"), resource_identifier: :I1)
+
+      assert png.colour_type == 2
+      assert png.width == 100
+      assert png.height == 75
+      assert png.bits_per_component == 8
+      assert png.palette == nil
+      assert png.alpha == nil
+    end
+
+    test "reads a palette from an indexed PNG" do
+      png = Png.new(file: example_png(), resource_identifier: :I1)
+
+      assert png.colour_type == 3
+      # RGB entries, 3 bytes each
+      assert rem(byte_size(png.palette), 3) == 0
+      assert png.alpha == nil
+    end
+
+    test "extracts an alpha channel from a truecolour + alpha PNG" do
+      png = Png.new(file: read_fixture("truecolour-alpha.png"), resource_identifier: :I1)
+
+      assert png.colour_type == 6
+      # one alpha byte per pixel
+      assert byte_size(png.alpha) == png.width * png.height
+    end
+
+    test "extracts an alpha channel from a greyscale + alpha PNG" do
+      png = Png.new(file: read_fixture("grayscale-alpha.png"), resource_identifier: :I1)
+
+      assert png.colour_type == 4
+      assert byte_size(png.alpha) == png.width * png.height
+    end
+
+    test "maps a tRNS chunk to per-pixel alpha for an indexed PNG" do
+      # 2x2 image, pixels indexing palette entries 0, 1, 2, 0.
+      # tRNS gives index 0 alpha 0 and index 1 alpha 128; index 2 defaults to opaque.
+      file =
+        build_png(
+          width: 2,
+          height: 2,
+          colour_type: 3,
+          palette: <<0, 0, 0, 1, 1, 1, 2, 2, 2>>,
+          transparency: <<0, 128>>,
+          scanlines: [<<0, 1>>, <<2, 0>>]
+        )
+
+      png = Png.new(file: file, resource_identifier: :I1)
+
+      assert png.alpha == <<0, 128, 255, 0>>
+    end
+
+    test "raises for interlaced PNGs" do
+      file = build_png(width: 1, height: 1, colour_type: 0, interlace: 1, scanlines: [<<0>>])
+
+      assert_raise Image.NotSupported, "Interlaced PNGs are not supported", fn ->
+        Png.new(file: file, resource_identifier: :I1)
+      end
+    end
+
+    test "raises for unsupported PNG colour types" do
+      file = build_png(width: 1, height: 1, colour_type: 99, scanlines: [<<0>>])
+
+      assert_raise Image.NotSupported, "Unsupported PNG colour type: 99", fn ->
+        Png.new(file: file, resource_identifier: :I1)
+      end
+    end
+
+    test "raises for sub-8-bit indexed PNGs with transparency" do
+      file =
+        build_png(
+          width: 1,
+          height: 1,
+          colour_type: 3,
+          bits: 4,
+          palette: <<0, 0, 0>>,
+          transparency: <<0>>,
+          scanlines: [<<0>>]
+        )
+
+      assert_raise Image.NotSupported, fn ->
+        Png.new(file: file, resource_identifier: :I1)
+      end
+    end
+
+    test "raises for unrecognised image formats" do
+      assert_raise Image.NotSupported, fn ->
+        new(images: %{mystery: <<"GIF89a", 0, 0, 0>>})
+      end
+    end
+  end
+
+  describe "PNG serialisation" do
+    test "a truecolour PNG becomes a FlateDecode XObject with a predictor" do
+      png =
+        Png.new(file: read_fixture("truecolour.png"), resource_identifier: :I1)
+        |> Png.put_dictionary()
+
+      assert dictionary(png) ==
+               """
+               <</Type /XObject
+                 /Subtype /Image
+                 /BitsPerComponent 8
+                 /ColorSpace /DeviceRGB
+                 /DecodeParms <</BitsPerComponent 8
+                 /Colors 3
+                 /Columns 100
+                 /Predictor 15
+               >>
+                 /Filter /FlateDecode
+                 /Height 75
+                 /Length 16689
+                 /Width 100
+               >>
+               """
+    end
+
+    test "a greyscale PNG declares its predictor so filtering is undone" do
+      png =
+        Png.new(file: read_fixture("grayscale.png"), resource_identifier: :I1)
+        |> Png.put_dictionary()
+
+      dict = dictionary(png)
+      assert dict =~ "/ColorSpace /DeviceGray"
+      # The predictor is essential: without it the reader treats PNG filter
+      # bytes as pixel data and the image is corrupted.
+      assert dict =~
+               "/DecodeParms <</BitsPerComponent 8\n  /Colors 1\n  /Columns 100\n  /Predictor 15\n>>"
+    end
+  end
+
+  describe "PNG embedding" do
+    test "an indexed PNG embeds its palette as a referenced object" do
+      png = Png.new(file: example_png(), resource_identifier: :I1)
+      doc = new(images: %{drawing: example_png()})
+
+      image = Document.find_object(doc, &match?(%Png{}, &1))
+      [:Indexed, :DeviceRGB, hival, palette_ref] = image.value.dictionary[:ColorSpace]
+
+      assert hival == div(byte_size(png.palette), 3) - 1
+
+      palette = Document.object_with_ref(doc, palette_ref)
+      assert palette.value.data == png.palette
+    end
+
+    test "an alpha PNG embeds a greyscale soft mask referenced from the image" do
+      png = Png.new(file: read_fixture("truecolour-alpha.png"), resource_identifier: :I1)
+      doc = new(images: %{flower: read_fixture("truecolour-alpha.png")})
+
+      image = Document.find_object(doc, &match?(%Png{}, &1))
+      smask_ref = image.value.dictionary[:SMask]
+
+      # The colour data was re-compressed without PNG filtering, so it must not
+      # advertise a predictor.
+      refute Map.has_key?(image.value.dictionary, :DecodeParms)
+
+      smask = Document.object_with_ref(doc, smask_ref).value
+      entries = smask.additional_entries
+      assert entries[:ColorSpace] == :DeviceGray
+      assert entries[:Width] == png.width
+      assert entries[:Height] == png.height
+      assert IO.iodata_to_binary(Mudbrick.decompress(smask.data)) == png.alpha
+    end
+  end
+
+  defp dictionary(image) do
+    [dictionary, _stream] =
+      image
+      |> Mudbrick.Object.to_iodata()
+      |> IO.iodata_to_binary()
+      |> String.split("stream", parts: 2)
+
+    dictionary
+  end
+
+  defp read_fixture(name) do
+    Path.join([__DIR__, "fixtures", name]) |> File.read!()
+  end
+
+  # Assembles a minimal, valid PNG so transparency handling can be tested with
+  # known pixel values instead of a checked-in binary.
+  defp build_png(opts) do
+    ihdr =
+      <<opts[:width]::32, opts[:height]::32, opts[:bits] || 8, opts[:colour_type], 0, 0,
+        opts[:interlace] || 0>>
+
+    # Each PNG scanline is prefixed with a filter-type byte (0 = no filtering).
+    filtered = Enum.map(opts[:scanlines], fn row -> <<0>> <> IO.iodata_to_binary([row]) end)
+    idat = :zlib.compress(IO.iodata_to_binary(filtered))
+
+    chunks =
+      [chunk("IHDR", ihdr)] ++
+        palette_chunk(opts[:palette]) ++
+        transparency_chunk(opts[:transparency]) ++
+        [chunk("IDAT", idat), chunk("IEND", "")]
+
+    <<137, 80, 78, 71, 13, 10, 26, 10>> <> IO.iodata_to_binary(chunks)
+  end
+
+  defp palette_chunk(nil), do: []
+  defp palette_chunk(palette), do: [chunk("PLTE", palette)]
+
+  defp transparency_chunk(nil), do: []
+  defp transparency_chunk(transparency), do: [chunk("tRNS", transparency)]
+
+  defp chunk(type, data) do
+    <<byte_size(data)::32>> <> type <> data <> <<:erlang.crc32(type <> data)::32>>
   end
 end

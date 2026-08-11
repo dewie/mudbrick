@@ -39,18 +39,19 @@ defmodule Mudbrick.Image do
   end
 
   alias Mudbrick.Document
+  alias Mudbrick.Images.Png
   alias Mudbrick.Stream
 
   @doc false
-  @spec new(Keyword.t()) :: t()
+  @spec new(Keyword.t()) :: t() | Png.t()
   def new(opts) do
-    struct!(
-      __MODULE__,
-      Keyword.merge(
-        opts,
-        file_dependent_opts(ExImageInfo.info(opts[:file]))
-      )
-    )
+    case ExImageInfo.info(opts[:file]) do
+      {"image/png", _width, _height, _variant} ->
+        Png.new(opts)
+
+      info ->
+        struct!(__MODULE__, Keyword.merge(opts, file_dependent_opts(info)))
+    end
   end
 
   @doc false
@@ -59,16 +60,42 @@ defmodule Mudbrick.Image do
       for {human_name, image_data} <- images, reduce: {doc, %{}, 0} do
         {doc, image_objects, id} ->
           {doc, image} =
-            Document.add(
-              doc,
-              new(file: image_data, resource_identifier: :"I#{id + 1}")
-            )
+            add_image(doc, new(file: image_data, resource_identifier: :"I#{id + 1}"))
 
           {doc, Map.put(image_objects, human_name, image), id + 1}
       end
 
     {doc, image_objects}
   end
+
+  # A PNG image dictionary may reference a palette and/or a soft mask, each of
+  # which is a separate PDF object. Add those first so their references are
+  # known before the image dictionary is finalised.
+  defp add_image(doc, %Png{} = png) do
+    {doc, palette_ref} = maybe_add(doc, Png.palette_object(png))
+    {doc, smask_ref} = maybe_add(doc, Png.soft_mask(png))
+
+    refs =
+      %{}
+      |> put_ref(:palette, palette_ref)
+      |> put_ref(:smask, smask_ref)
+
+    Document.add(doc, Png.put_dictionary(png, refs))
+  end
+
+  defp add_image(doc, %__MODULE__{} = image) do
+    Document.add(doc, image)
+  end
+
+  defp maybe_add(doc, nil), do: {doc, nil}
+
+  defp maybe_add(doc, object) do
+    {doc, added} = Document.add(doc, object)
+    {doc, added.ref}
+  end
+
+  defp put_ref(refs, _key, nil), do: refs
+  defp put_ref(refs, key, ref), do: Map.put(refs, key, ref)
 
   defp file_dependent_opts({"image/jpeg", width, height, _variant}) do
     [
@@ -79,8 +106,12 @@ defmodule Mudbrick.Image do
     ]
   end
 
-  defp file_dependent_opts({"image/png", _width, _height, _variant}) do
-    raise NotSupported, "PNGs are currently not supported"
+  defp file_dependent_opts({format, _width, _height, _variant}) do
+    raise NotSupported, "Unsupported image format: #{format}"
+  end
+
+  defp file_dependent_opts(nil) do
+    raise NotSupported, "Unrecognised image format"
   end
 
   defimpl Mudbrick.Object do
