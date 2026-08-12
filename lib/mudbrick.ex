@@ -238,6 +238,10 @@ defmodule Mudbrick do
   - `:align` - `:left`, `:right` or `:centre`. Default: `:left`.
     Note that the rightmost point of right-aligned text is the horizontal offset provided to `:position`.
     The same position defines the centre point of centre-aligned text.
+  - `:max_width` - Maximum line width in points. When set, text is wrapped at
+    word boundaries to fit within this width.
+  - `:break_words` - When `:max_width` is set, break a single word that is wider
+    than `:max_width` instead of letting it overflow. Default: `false`.
 
   ## Individual write options
 
@@ -325,6 +329,23 @@ defmodule Mudbrick do
       ...> |> then(&File.write("examples/underlined_text_centre_align.pdf", &1))
 
   <object width="400" height="130" data="examples/underlined_text_centre_align.pdf?#navpanes=0" type="application/pdf"></object>
+
+  [Automatically wrapped text](examples/text_wrapping.pdf?#navpanes=0).
+
+      iex> import Mudbrick
+      ...> new(fonts: %{bodoni: Mudbrick.TestHelper.bodoni_regular()})
+      ...> |> page(size: {250, 200})
+      ...> |> text(
+      ...>      "This is a long line of text that wraps automatically to fit the given width.",
+      ...>      font: :bodoni,
+      ...>      font_size: 12,
+      ...>      position: {10, 180},
+      ...>      max_width: 230
+      ...>    )
+      ...> |> render()
+      ...> |> then(&File.write("examples/text_wrapping.pdf", &1))
+
+  <object width="400" height="320" data="examples/text_wrapping.pdf?#navpanes=0" type="application/pdf"></object>
   """
 
   @spec text(context(), Mudbrick.TextBlock.write(), Mudbrick.TextBlock.options()) :: context()
@@ -462,13 +483,29 @@ defmodule Mudbrick do
   end
 
   defp text_block(doc, writes, top_level_opts) do
+    {max_width, top_level_opts} = Keyword.pop(top_level_opts, :max_width)
+    {break_words, top_level_opts} = Keyword.pop(top_level_opts, :break_words, false)
+
     Enum.reduce(writes, Mudbrick.TextBlock.new(top_level_opts), fn
       {text, opts}, acc ->
-        Mudbrick.TextBlock.write(acc, text, fetch_font(doc, opts))
+        write_block(acc, text, fetch_font(doc, opts), max_width, break_words)
 
       text, acc ->
-        Mudbrick.TextBlock.write(acc, text, [])
+        write_block(acc, text, [], max_width, break_words)
     end)
+  end
+
+  defp write_block(block, text, opts, nil, _break_words) do
+    Mudbrick.TextBlock.write(block, text, opts)
+  end
+
+  defp write_block(block, text, opts, max_width, break_words) do
+    Mudbrick.TextBlock.write_wrapped(
+      block,
+      text,
+      max_width,
+      Keyword.put(opts, :break_words, break_words)
+    )
   end
 
   @spec cm_opts(Mudbrick.Image.t(), Image.image_options()) :: Mudbrick.ContentStream.Cm.options()

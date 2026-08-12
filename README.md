@@ -14,6 +14,7 @@ Currently working:
 - OpenType fonts with ligatures, special characters and automatic kerning.
 - Text positioning.
 - Right and centre alignment.
+- Automatic text wrapping to a maximum width.
 - Coloured text.
 - JPEG images.
 - PNG images, including transparency.

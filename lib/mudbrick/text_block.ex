@@ -76,6 +76,19 @@ defmodule Mudbrick.TextBlock do
     |> assign_offsets()
   end
 
+  @doc false
+  # Write `text`, wrapping it to fit within `max_width` points. Accepts the same
+  # options as `write/3` plus `:break_words`.
+  @spec write_wrapped(t(), String.t(), number(), options()) :: t()
+  def write_wrapped(tb, text, max_width, opts \\ []) do
+    {wrap_opts, text_opts} = Keyword.split(opts, [:break_words])
+    font = Keyword.get(text_opts, :font, tb.font)
+    font_size = Keyword.get(text_opts, :font_size, tb.font_size)
+
+    wrapped = Mudbrick.TextWrapper.wrap(text, font, font_size, max_width, wrap_opts)
+    write(tb, Enum.join(wrapped, "\n"), text_opts)
+  end
+
   defp assign_offsets(tb) do
     {_, lines} =
       for line <- Enum.reverse(tb.lines), reduce: {0.0, []} do
