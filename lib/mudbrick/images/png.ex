@@ -186,10 +186,6 @@ defmodule Mudbrick.Images.Png do
     %{fields(ihdr) | image_data: acc.idat, palette: acc.palette}
   end
 
-  defp build(%{colour_type: 3, bits_per_component: depth}, _acc) when depth != 8 do
-    raise Image.NotSupported, "#{depth}-bit indexed PNGs with transparency are not supported"
-  end
-
   defp build(%{colour_type: 3} = ihdr, acc) do
     alpha = indexed_alpha(acc.idat, acc.transparency, ihdr)
     %{fields(ihdr) | image_data: acc.idat, palette: acc.palette, alpha: alpha}
@@ -222,8 +218,7 @@ defmodule Mudbrick.Images.Png do
     raise Image.NotSupported, "Unsupported PNG compression method: #{method}"
   end
 
-  # Alpha extraction (colour types 4/6 and indexed tRNS) is only implemented for
-  # 8-bit samples.
+  # Alpha extraction for colour types 4/6 is only implemented for 8-bit samples.
   defp guard_supported!(%{colour_type: type, bits_per_component: depth})
        when type in [4, 6] and depth != 8 do
     raise Image.NotSupported, "#{depth}-bit alpha PNGs are not supported"
@@ -273,15 +268,31 @@ defmodule Mudbrick.Images.Png do
 
   # For indexed images, map each pixel's palette index through the tRNS table to
   # produce an 8-bit alpha value (indices beyond the table are fully opaque).
+  # Indices narrower than 8 bits are packed big-endian within each scanline,
+  # with the final byte of a row padded to a byte boundary.
   defp indexed_alpha(idat, transparency, ihdr) do
+    depth = ihdr.bits_per_component
+    row_length = div(ihdr.width * depth + 7, 8)
+
     idat
     |> inflate()
-    |> unfilter(ihdr.width, ihdr.height, 1)
-    |> :binary.bin_to_list()
-    |> Enum.map(fn index ->
-      if index < byte_size(transparency), do: :binary.at(transparency, index), else: 255
+    |> unfilter(row_length, ihdr.height, 1)
+    |> rows(row_length)
+    |> Enum.flat_map(fn row ->
+      <<pixels::bitstring-size(ihdr.width * depth), _padding::bitstring>> = row
+
+      for <<index::size(depth) <- pixels>> do
+        if index < byte_size(transparency), do: :binary.at(transparency, index), else: 255
+      end
     end)
     |> :binary.list_to_bin()
+  end
+
+  defp rows(<<>>, _row_length), do: []
+
+  defp rows(data, row_length) do
+    <<row::binary-size(row_length), rest::binary>> = data
+    [row | rows(rest, row_length)]
   end
 
   defp split_colour_and_alpha(idat, %{colour_type: type, width: width, height: height}) do
@@ -290,7 +301,7 @@ defmodule Mudbrick.Images.Png do
 
     idat
     |> inflate()
-    |> unfilter(width, height, bytes_per_pixel)
+    |> unfilter(width * bytes_per_pixel, height, bytes_per_pixel)
     |> split_samples(colours, 1, <<>>, <<>>)
   end
 
@@ -312,10 +323,11 @@ defmodule Mudbrick.Images.Png do
   # --- PNG scanline filtering ---------------------------------------------
 
   # Reverse the per-scanline PNG filters, returning the raw sample bytes with
-  # the leading filter-type byte of each row removed.
-  defp unfilter(data, width, height, bytes_per_pixel) do
-    row_length = width * bytes_per_pixel
-    do_unfilter(data, row_length, bytes_per_pixel, height, :binary.copy(<<0>>, row_length), <<>>)
+  # the leading filter-type byte of each row removed. `row_length` is the packed
+  # length of a row in bytes; `bpp` is the filter's "left" pixel offset, which
+  # is 1 byte for sub-byte bit depths.
+  defp unfilter(data, row_length, height, bpp) do
+    do_unfilter(data, row_length, bpp, height, :binary.copy(<<0>>, row_length), <<>>)
   end
 
   defp do_unfilter(_data, _row_length, _bpp, 0, _previous, acc), do: acc

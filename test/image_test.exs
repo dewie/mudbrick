@@ -166,21 +166,61 @@ defmodule Mudbrick.ImageTest do
       end
     end
 
-    test "raises for sub-8-bit indexed PNGs with transparency" do
+    test "maps a tRNS chunk to per-pixel alpha for a 4-bit indexed PNG" do
+      # 3x2 image, pixel indices 0, 1, 2 / 2, 1, 0, packed two per byte.
       file =
         build_png(
-          width: 1,
-          height: 1,
+          width: 3,
+          height: 2,
           colour_type: 3,
           bits: 4,
-          palette: <<0, 0, 0>>,
-          transparency: <<0>>,
-          scanlines: [<<0>>]
+          palette: <<0, 0, 0, 1, 1, 1, 2, 2, 2>>,
+          transparency: <<0, 128>>,
+          scanlines: [<<0x01, 0x20>>, <<0x21, 0x00>>]
         )
 
-      assert_raise Image.NotSupported, fn ->
-        Png.new(file: file, resource_identifier: :I1)
-      end
+      png = Png.new(file: file, resource_identifier: :I1)
+
+      assert png.bits_per_component == 4
+      assert png.alpha == <<0, 128, 255, 255, 128, 0>>
+    end
+
+    test "maps a tRNS chunk to per-pixel alpha for a 1-bit indexed PNG" do
+      # 3x2 image: each packed row is a single byte carrying 3 index bits and 5
+      # padding bits. Rows are 0, 1, 1 and 1, 0, 1.
+      file =
+        build_png(
+          width: 3,
+          height: 2,
+          colour_type: 3,
+          bits: 1,
+          palette: <<0, 0, 0, 255, 255, 255>>,
+          transparency: <<0>>,
+          scanlines: [<<0b01100000>>, <<0b10100000>>]
+        )
+
+      png = Png.new(file: file, resource_identifier: :I1)
+
+      assert png.bits_per_component == 1
+      assert png.alpha == <<0, 255, 255, 255, 0, 255>>
+    end
+
+    test "maps a tRNS chunk to per-pixel alpha for a 2-bit indexed PNG" do
+      # 3x1 image, indices 0, 1, 3; index 3 is beyond the tRNS table, so opaque.
+      file =
+        build_png(
+          width: 3,
+          height: 1,
+          colour_type: 3,
+          bits: 2,
+          palette: <<0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3>>,
+          transparency: <<0, 64, 128>>,
+          scanlines: [<<0b00011100>>]
+        )
+
+      png = Png.new(file: file, resource_identifier: :I1)
+
+      assert png.alpha == <<0, 64, 255>>
     end
 
     test "raises for unrecognised image formats" do
@@ -260,6 +300,40 @@ defmodule Mudbrick.ImageTest do
       assert entries[:Width] == png.width
       assert entries[:Height] == png.height
       assert IO.iodata_to_binary(Mudbrick.decompress(smask.data)) == png.alpha
+    end
+
+    test "a 1-bit indexed transparent PNG keeps its bit depth and gains a soft mask" do
+      file =
+        build_png(
+          width: 3,
+          height: 2,
+          colour_type: 3,
+          bits: 1,
+          palette: <<0, 0, 0, 255, 255, 255>>,
+          transparency: <<0>>,
+          scanlines: [<<0b01100000>>, <<0b10100000>>]
+        )
+
+      doc = new(images: %{tiny: file})
+
+      image = Document.find_object(doc, &match?(%Png{}, &1))
+      dictionary = image.value.dictionary
+
+      assert dictionary[:BitsPerComponent] == 1
+
+      assert dictionary[:DecodeParms] == %{
+               Predictor: 15,
+               Colors: 1,
+               BitsPerComponent: 1,
+               Columns: 3
+             }
+
+      assert [:Indexed, :DeviceRGB, 1, _palette_ref] = dictionary[:ColorSpace]
+
+      smask = Document.object_with_ref(doc, dictionary[:SMask]).value
+      assert smask.additional_entries[:BitsPerComponent] == 8
+      # Too small to benefit from compression, so the alpha is stored as-is.
+      assert smask.data == <<0, 255, 255, 255, 0, 255>>
     end
   end
 
