@@ -40,6 +40,86 @@ defmodule Mudbrick.ImageTest do
                >>
                """
     end
+
+    test "a greyscale JPEG is declared as DeviceGray" do
+      file = build_jpeg(width: 3, height: 2, components: 1)
+
+      assert dictionary(Image.new(file: file, resource_identifier: :I1)) =~
+               "/ColorSpace /DeviceGray"
+    end
+
+    # Declaring a CMYK JPEG as RGB makes the reader consume three samples per
+    # pixel out of four, which shears the image diagonally and drains its colour.
+    test "a CMYK JPEG is declared as DeviceCMYK" do
+      file = build_jpeg(width: 3, height: 2, components: 4)
+      dict = dictionary(Image.new(file: file, resource_identifier: :I1))
+
+      assert dict =~ "/ColorSpace /DeviceCMYK"
+      refute dict =~ "/Decode"
+    end
+
+    test "an Adobe CMYK JPEG has its inverted samples decoded back" do
+      file = build_jpeg(width: 3, height: 2, components: 4, adobe: true)
+      dict = dictionary(Image.new(file: file, resource_identifier: :I1))
+
+      assert dict =~ "/ColorSpace /DeviceCMYK"
+      assert dict =~ "/Decode [1 0 1 0 1 0 1 0]"
+    end
+
+    test "an Adobe RGB JPEG is not inverted" do
+      file = build_jpeg(width: 3, height: 2, components: 3, adobe: true)
+      dict = dictionary(Image.new(file: file, resource_identifier: :I1))
+
+      assert dict =~ "/ColorSpace /DeviceRGB"
+      refute dict =~ "/Decode"
+    end
+
+    # APPn segments may legally follow the frame header, so the walk can't stop
+    # at SOF: doing so leaves a CMYK image without its /Decode, i.e. inverted.
+    test "an Adobe marker after the frame header is still found" do
+      file = build_jpeg(width: 3, height: 2, components: 4, adobe: :after_sof)
+
+      assert dictionary(Image.new(file: file, resource_identifier: :I1)) =~
+               "/Decode [1 0 1 0 1 0 1 0]"
+    end
+
+    # ExImageInfo reads dimensions from the first seven payload bytes without
+    # checking that the declared length fits, so a file it accepts may still
+    # have a frame header running past the end.
+    test "a truncated frame header is read rather than guessed" do
+      file = build_jpeg(width: 3, height: 2, components: 4, adobe: true)
+      # Cuts into the component specifications, past the component count.
+      truncated = binary_part(file, 0, byte_size(file) - 21)
+
+      assert dictionary(Image.new(file: truncated, resource_identifier: :I1)) =~
+               "/ColorSpace /DeviceCMYK"
+    end
+
+    test "a progressive JPEG's frame header is read too" do
+      file = build_jpeg(width: 3, height: 2, components: 1, sof: 0xC2)
+
+      assert dictionary(Image.new(file: file, resource_identifier: :I1)) =~
+               "/ColorSpace /DeviceGray"
+    end
+
+    test "raises rather than guess a colour space for an unexpected component count" do
+      file = build_jpeg(width: 3, height: 2, components: 2)
+
+      assert_raise Image.NotSupported,
+                   "Unsupported number of JPEG colour components: 2",
+                   fn -> Image.new(file: file, resource_identifier: :I1) end
+    end
+
+    # Photoshop and Illustrator store a full JPEG thumbnail inside APP13/APP1.
+    # Scanning for frame-header bytes instead of walking segment lengths would
+    # pick up the thumbnail's component count.
+    test "an embedded thumbnail does not decide the colour space" do
+      thumbnail = build_jpeg(width: 2, height: 2, components: 3)
+      file = build_jpeg(width: 3, height: 2, components: 4, adobe: true, app13: thumbnail)
+
+      assert dictionary(Image.new(file: file, resource_identifier: :I1)) =~
+               "/ColorSpace /DeviceCMYK"
+    end
   end
 
   describe "placement" do
@@ -349,6 +429,36 @@ defmodule Mudbrick.ImageTest do
 
   defp read_fixture(name) do
     Path.join([__DIR__, "fixtures", name]) |> File.read!()
+  end
+
+  # Assembles a JPEG with just the header segments that decide the colour space,
+  # so CMYK and greyscale can be covered without checking in binaries.
+  defp build_jpeg(opts) do
+    components = opts[:components]
+
+    sof =
+      <<8, opts[:height]::16, opts[:width]::16, components>> <>
+        for id <- 1..components, into: <<>>, do: <<id, 0x11, 0>>
+
+    # "Adobe" + version, two flag fields and the colour transform.
+    app14 = marker_segment(0xEE, "Adobe" <> <<0, 100, 128, 0, 0, 0, 0>>)
+    app13 = if opts[:app13], do: [marker_segment(0xED, opts[:app13])], else: []
+
+    IO.iodata_to_binary([
+      <<0xFF, 0xD8>>,
+      marker_segment(0xE0, "JFIF" <> <<0, 1, 2, 0, 0, 1, 0, 1, 0, 0>>),
+      app13,
+      if(opts[:adobe] == true, do: [app14], else: []),
+      marker_segment(opts[:sof] || 0xC0, sof),
+      if(opts[:adobe] == :after_sof, do: [app14], else: []),
+      # A start-of-scan with no entropy-coded data; enough to end the headers.
+      marker_segment(0xDA, <<1, 1, 0, 0, 63, 0>>),
+      <<0xFF, 0xD9>>
+    ])
+  end
+
+  defp marker_segment(marker, payload) do
+    [<<0xFF, marker, byte_size(payload) + 2::16>>, payload]
   end
 
   # Assembles a minimal, valid PNG so transparency handling can be tested with
