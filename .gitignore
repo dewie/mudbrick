@@ -27,3 +27,6 @@ mudbrick-*.tar
 /.direnv
 test.pdf
 /examples/*.pdf
+
+# Locally downloaded test fonts (normally provided by the Nix dev shell).
+/fonts/
