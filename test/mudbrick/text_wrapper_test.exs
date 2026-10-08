@@ -59,6 +59,39 @@ defmodule Mudbrick.TextWrapperTest do
       # No characters are lost when the pieces are rejoined.
       assert Enum.join(lines) == word
     end
+
+    test "keeps runs of spaces inside a line that already fits" do
+      assert TextWrapper.wrap("1.    10,0    10,0", @font, 12, 500) == ["1.    10,0    10,0"]
+    end
+
+    test "keeps the indentation a line starts with" do
+      assert TextWrapper.wrap("    indented", @font, 12, 500) == ["    indented"]
+      assert TextWrapper.wrap("alpha\n    beta", @font, 12, 500) == ["alpha", "    beta"]
+    end
+
+    test "a line consisting only of spaces survives as its own line" do
+      assert TextWrapper.wrap("alpha\n   \nbeta", @font, 12, 500) == ["alpha", "   ", "beta"]
+    end
+
+    test "drops only the run of spaces a line is broken on" do
+      lines = TextWrapper.wrap("alpha    beta    #{@long_text}", @font, 12, 200)
+
+      assert length(lines) > 1
+
+      for line <- lines do
+        assert line == String.trim(line)
+        assert Font.width(@font, 12, line, auto_kern: true) <= 200
+      end
+    end
+
+    test "gives up the indentation when the first word needs the whole width" do
+      assert ["supercalifragilisticexpialidocious"] =
+               TextWrapper.wrap("        supercalifragilisticexpialidocious", @font, 12, 60)
+    end
+
+    test "a tab becomes a single space" do
+      assert TextWrapper.wrap("alpha\tbeta", @font, 12, 500) == ["alpha beta"]
+    end
   end
 
   test "TextBlock.write_wrapped puts each wrapped line into its own line" do
